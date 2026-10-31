@@ -9,8 +9,8 @@ import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 P = ROOT / "portal"
-sources = [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md")), *sorted((ROOT / "adr").glob("*.md")), *sorted((ROOT / "contracts").glob("*.json")), *sorted((ROOT / "examples/manifests").glob("*.json")), *sorted((ROOT / "sources").glob("*.md"))]
-mapping = {p.resolve(): str(p.relative_to(ROOT)).replace("/", "--").replace(".md", ".html").replace(".json", ".html") for p in sources}
+sources = [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"), key=Path.as_posix), *sorted((ROOT / "adr").glob("*.md"), key=Path.as_posix), *sorted((ROOT / "contracts").glob("*.json"), key=Path.as_posix), *sorted((ROOT / "examples/manifests").glob("*.json"), key=Path.as_posix), *sorted((ROOT / "sources").glob("*.md"), key=Path.as_posix)]
+mapping = {p.resolve(): p.relative_to(ROOT).as_posix().replace("/", "--").replace(".md", ".html").replace(".json", ".html") for p in sources}
 
 
 def link(p):
@@ -57,7 +57,7 @@ def rewrite_links(body, source):
             # Generated Markdown heading IDs are not stable across languages. Link to module top.
         else:
             try:
-                href = "../" + str(resolved.relative_to(ROOT))
+                href = "../" + resolved.relative_to(ROOT).as_posix()
             except ValueError:
                 href = "#"
         return 'href="' + html.escape(href) + '"'
@@ -67,8 +67,8 @@ def rewrite_links(body, source):
 files = {}
 index = []
 for source in sources:
-    text = source.read_text()
-    relative = str(source.relative_to(ROOT))
+    text = source.read_text(encoding="utf-8")
+    relative = source.relative_to(ROOT).as_posix()
     title = re.search(r"^# (.+)", text, re.M).group(1) if source.suffix == ".md" else source.name
     if source.suffix == ".json" or relative.startswith("sources/") and source.name != "README.md":
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
@@ -100,20 +100,20 @@ catalog = "<h1>계약 · Fixture · ADR</h1><p>Machine-readable 원본과 읽기
 for prefix, label in [("contracts/", "API / JSON Schema"), ("examples/manifests/", "4종 Agent Manifest"), ("adr/", "Architecture Decision Records"), ("sources/", "Deep Research 출처")]:
     catalog += "<h2>" + label + "</h2><ul>"
     for p in sources:
-        if str(p.relative_to(ROOT)).startswith(prefix):
-            catalog += f'<li><a href="{mapping[p.resolve()]}">{html.escape(str(p.relative_to(ROOT)))}</a></li>'
+        if p.relative_to(ROOT).as_posix().startswith(prefix):
+            catalog += f'<li><a href="{mapping[p.resolve()]}">{html.escape(p.relative_to(ROOT).as_posix())}</a></li>'
     catalog += "</ul>"
 catalog += '<h2>실행 예제와 테스트</h2><ul><li><a href="../examples/python/platform_ref.py">Python local reference</a></li><li><a href="../examples/python/client.py">Python HTTP client</a></li><li><a href="../examples/typescript/client.ts">TypeScript client</a></li><li><a href="../tests/test_contracts.py">Contract tests</a></li><li><a href="../tests/test_runtime.py">Runtime / security tests</a></li></ul>'
 files["portal/catalog.html"] = layout("계약과 ADR", catalog)
 diagrams = "<h1>아키텍처 도식</h1><p>SVG는 네트워크나 Mermaid runtime 없이 열립니다. 동일 논리 흐름의 Mermaid 원문을 함께 제공합니다.</p>"
-for svg in sorted((ROOT / "diagrams").glob("*.svg")):
+for svg in sorted((ROOT / "diagrams").glob("*.svg"), key=Path.as_posix):
     diagrams += f'<h2>{html.escape(svg.stem)}</h2><img class="diagram" src="../diagrams/{svg.name}" alt="{html.escape(svg.stem)} 아키텍처 도식"><p><a href="../diagrams/{svg.stem}.mmd">Mermaid 원문</a> · <a href="../diagrams/{svg.name}">SVG 원본</a></p>'
 files["portal/diagrams.html"] = layout("아키텍처 도식", diagrams)
 files["portal/search-index.js"] = "window.PLATFORM_SEARCH = " + json.dumps(index, ensure_ascii=False).replace("</", "<\\/") + ";\n"
 if "--write" in sys.argv:
     for p, content in files.items():
         (ROOT / p).parent.mkdir(parents=True, exist_ok=True)
-        (ROOT / p).write_text(content)
+        (ROOT / p).write_text(content, encoding="utf-8")
     print(f"Built {len(files)} offline portal files")
 else:
     print(json.dumps(files, ensure_ascii=False))
