@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "invocationId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "enum": [
+        "accepted",
+        "started",
+        "checkpointed",
+        "approval_requested",
+        "approval_decided",
+        "cancel_requested",
+        "completed",
+        "failed"
+      ]
+    },
+    "state": {
+      "$ref": "https://agent.example.invalid/contracts/execution.schema.json"
+    }
+  },
+  "required": [
+    "invocationId",
+    "sequence",
+    "at",
+    "type",
+    "state"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/event.schema.json",
+  "title": "event"
+}

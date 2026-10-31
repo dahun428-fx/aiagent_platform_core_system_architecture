@@ -1,0 +1,18 @@
+{
+  "decisionId": "policy-demo",
+  "policyVersion": "0.1.0",
+  "tenantId": "tenant-demo",
+  "classification": "internal",
+  "allowed": true,
+  "allowedScopes": [
+    "tools.read",
+    "agents.invoke",
+    "models.invoke"
+  ],
+  "allowedResources": [
+    "tool-search",
+    "model-self-hosted",
+    "model-external"
+  ],
+  "expiresAt": "2099-01-01T00:00:00Z"
+}

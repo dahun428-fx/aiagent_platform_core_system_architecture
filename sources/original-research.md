@@ -1,0 +1,786 @@
+# Enterprise AI Agent Platform: Actionable Implementation Plan and Production Deliverables
+
+## Executive Summary
+
+The finalized architecture is internally coherent and is implementation-ready at the **standards-package level**. The strongest design choice is not any single product; it is the combination of **Local-First/CLI-First development, a Shared Control Plane, a Distributed Execution Plane, contract-first interoperability, risk-based deployment gates, and vendor-neutral adapters**. That combination avoids forcing developers into a central IDE or Agent Studio while still giving the enterprise centralized governance over identity, policy, evaluation, observability, registration, and production deployment.
+
+The recommended MVP is therefore **not** “build every platform module.” It is one production-capable vertical path:
+
+**existing local Agent → Manifest validation → authenticated Agent Gateway invocation → policy/identity context → Agent Runtime adapter → Model Gateway → external or local model → OpenTelemetry trace → evaluation result → Registry record → CI quality gate → approved execution target.**
+
+Everything else should attach to that path incrementally: Tool/MCP support, RAG contracts, durable execution, HITL, multi-Agent/A2A, distributed Mac mini/cloud execution, richer evaluation, and later shared knowledge or internal GPU infrastructure.
+
+For API definitions, OpenAPI remains the appropriate language-neutral contract technology; the OpenAPI Initiative describes it as a programming-language-independent description of HTTP APIs. The newest published specification is **OpenAPI 3.2.1, published September 10, 2026**. Because 3.2.1 is very recent relative to the current date, I recommend an explicit tooling-compatibility decision during kickoff: adopt 3.2.1 only if the selected linters, generators, gateways, and validators support it; otherwise pin the MVP to 3.1.2 and schedule migration. citeturn847127view0turn977545view1
+
+For standalone contracts such as `agent-manifest.schema.json`, use **JSON Schema Draft 2020-12**. It has a defined metaschema, improved reference/bundling behavior, and clear validation semantics. Importantly, format validation is not automatically enforced by all validators, so CI must explicitly turn on format checking where relied upon. citeturn977545view2turn530228search2
+
+For observability, propagate W3C `traceparent`/`tracestate` through Agent Gateway, Runtime, Model Gateway, Tool Gateway, RAG calls, and cross-Agent calls. OpenTelemetry identifies context propagation as the mechanism that correlates distributed operations and uses W3C Trace Context by default; the W3C specification standardizes the corresponding HTTP headers. citeturn977545view3turn691511search6
+
+For authentication, the contract should be **identity-provider neutral** but modeled around OAuth 2.0 bearer access tokens/OIDC identity claims, with support for service-to-service workload identity. OAuth security controls should follow the current OAuth 2.0 Security BCP, RFC 9700. API errors should use `application/problem+json` following RFC 9457 rather than inventing a separate error envelope. citeturn977545view4turn897325search3turn977545view5
+
+The implementation estimate below assumes **no fixed deadline, no fixed budget, no pre-selected cloud, no existing centralized GPU scheduler, and no fixed enterprise CI/CD/IdP product**. A focused MVP standards package can reasonably be organized as roughly **20–30 person-weeks of engineering/documentation work** across architecture, contracts, reference implementations, CI, security, and documentation; that is a planning estimate, not an externally sourced benchmark. A 4–6 person core team can make meaningful progress in parallel, while a 1–2 week kickoff should produce the baseline repository, the first Manifest schema, first Gateway OpenAPI definitions, runnable Python/TypeScript examples, CI skeleton, and initial static portal.
+
+### System context
+
+```mermaid
+flowchart LR
+    U[Enterprise User / Business Application]
+    DEV[Developer Workstation\nIDE + Git + CLI]
+    CP[Shared Control Plane\nRegistry • Identity • Policy\nEvaluation • Observability]
+    AG[Agent Gateway]
+    RT[Distributed Agent Runtime]
+    MG[Model Gateway]
+    TG[Tool Gateway]
+    KG[Knowledge / RAG Backend]
+    EXTLLM[External LLM APIs]
+    LOCAL[Local / Mac mini / Cloud Model Endpoints]
+    TOOLS[REST / OpenAPI / MCP Tools]
+    FUTURE[Future Internal GPU Infrastructure]
+
+    DEV -->|Manifest / CI / Register| CP
+    U -->|Authenticated invocation| AG
+    AG -->|Identity + policy context| RT
+    RT --> MG
+    RT --> TG
+    RT --> KG
+    MG --> EXTLLM
+    MG --> LOCAL
+    MG -.future adapter.-> FUTURE
+    TG --> TOOLS
+    AG --> CP
+    RT --> CP
+```
+
+Backend.AI is intentionally excluded from this baseline. Developer laptops and Mac mini systems may participate as registered execution environments, but they are **not automatically production-approved targets**.
+
+## Requirements Baseline
+
+The baseline below consolidates Questions 1–30. The ADR identifiers are proposed repository identifiers and can be created immediately. “Recommended” means the architectural direction is adopted but specific implementation products remain open. Q30 was not separately answered in the visible sequence; because the current request explicitly asks for the **implementation-ready standards package (B)** and describes Questions 1–30 as finalized, this report treats Q30/B as the operative baseline while flagging that provenance.
+
+| Q | Decision | Chosen option / baseline | Rationale | Status | ADR |
+|---|---|---|---|---|---|
+| Q1 | Platform scope | Enterprise-wide shared AI Agent Platform | Avoid project-specific duplication; establish enterprise contracts | Decided | ADR-001 |
+| Q2 | Primary audience | Architects, Agent/backend developers, DevOps/SRE, security/governance | Implementation-oriented standards need multiple operational audiences | Decided | ADR-002 |
+| Q3 | Infrastructure model | Hybrid Cloud; current stack TBD | Preserve on-prem/public-cloud portability | Decided | ADR-003 |
+| Q4 | Model sourcing | External commercial LLM + self-hosted open-source models | Avoid single-provider dependence; support data/cost/routing policies | Decided | ADR-004 |
+| Q5 | Agent types | RAG, tool-using, workflow automation, multi-Agent from initial baseline | Platform contract must cover major enterprise Agent patterns | Decided | ADR-005 |
+| Q6 | Runtime/framework model | Common Runtime Contract + framework adapters | Central standards without forcing a single Agent framework | Decided | ADR-006 |
+| Q7 | Tenant isolation | Logical isolation plus selective physical separation | Match isolation level to sensitivity/risk | Decided | ADR-007 |
+| Q8 | Identity | User identity + Agent identity | Support delegated and independent execution with auditability | Decided | ADR-008 |
+| Q9 | Tool integration | REST/OpenAPI + MCP + custom adapters | Support existing APIs and emerging Agent tooling | Decided | ADR-009 |
+| Q10 | Quality/operations | Integrated observability + automated evaluation + quality gates | Make quality and traceability part of delivery lifecycle | Decided | ADR-010 |
+| Q11 | Agent lifecycle | Self-service with automated gates; human approval for higher risk | Balance developer autonomy and governance | Decided | ADR-011 |
+| Q12 | Gateway separation | Agent Gateway and Model Gateway separate; dynamic policy routing | Separate invocation control from model-provider abstraction | Decided | ADR-012 |
+| Q13 | Data governance | Classification-based access and data-movement policy | Model routing must respect data sensitivity | Decided | ADR-013 |
+| Q14 | Execution reliability | Durable execution + HITL + policy controls | Required for long-running, retryable and sensitive workflows | Decided | ADR-014 |
+| Q15 | Compute/model serving | Vendor-neutral endpoint contract; Backend.AI excluded | Current execution resources are heterogeneous and evolving | Decided | ADR-015 |
+| Q16 | NFR/SLO | Environment- and business-risk-based phased SLO | Avoid pretending all local/experimental resources are HA production | Decided | ADR-016 |
+| Q17 | Platform topology | Shared Control Plane + Distributed Execution Plane | Central governance with heterogeneous execution targets | Decided | ADR-017 |
+| Q18 | Developer experience | Contract-first SDK + CLI + templates; Local-First/CLI-First | Preserve current IDE/Git/CLI workflows; no mandatory source upload | Decided | ADR-018 |
+| Q19 | RAG | Common RAG contract + interchangeable knowledge backend | Avoid mandatory central vector/database choice | Decided | ADR-019 |
+| Q20 | Agent-to-Agent | Common Agent communication contract + adapters; A2A optional | Allow framework-native and cross-team Agent collaboration | Decided | ADR-020 |
+| Q21 | Experimentation | Local experimentation + shared experiment/evaluation registry | Preserve iteration speed while enabling promotion evidence | Decided | ADR-021 |
+| Q22 | Rollout strategy | Local-First vertical MVP → phased expansion | Deliver one usable end-to-end path before broad platform build | Decided | ADR-022 |
+| Q23 | Documentation product | Modular static HTML technical standards portal | Searchable/navigable enterprise standards without backend dependency | Decided | ADR-023 |
+| Q24 | Reference stack | Language-neutral contracts + Python reference + TypeScript core examples | Concrete implementation without language lock-in | Decided | ADR-024 |
+| Q25 | Diagrams | C4 hierarchy + key sequences + deployment/security boundaries + MVP flow | Architecture must be understandable at both system and implementation levels | Decided | ADR-025 |
+| Q26 | Conformance | Contract-as-Code + automated validation + versioning | Make standards executable rather than prose-only | Decided | ADR-026 |
+| Q27 | Completion level | Implementation-ready standards package | Developers need schemas, examples and tests, not just architecture prose | Decided | ADR-027 |
+| Q28 | Distribution | Git source + static HTML + offline ZIP | Supports connected and disconnected use; one source of truth | Decided | ADR-028 |
+| Q29 | Writing/governance | Korean-first docs + English technical terms + MUST/SHOULD/MAY + ADRs | Reduce ambiguity while keeping standard technical vocabulary | Decided | ADR-029 |
+| Q30 | Production approach | B: baseline-first implementation-ready package | Current request explicitly calls for package B and finalized Q1–Q30 | Recommended / treated as baseline | ADR-030 |
+
+A useful rule is to avoid equating an ADR with a product selection. For example, ADR-012 should say that **Agent Gateway and Model Gateway are separate logical responsibilities**; it should not say they must be deployed as two particular products or even two physical processes.
+
+## MVP Scope, Roadmap, Deliverables, Effort and Risks
+
+### MVP definition
+
+The MVP should prove one **production-shaped vertical slice**, not every advanced feature:
+
+1. A developer keeps an Agent in an ordinary Git repository.
+2. `agent-manifest.yaml` or JSON is validated locally against a versioned JSON Schema.
+3. CI verifies Manifest, API compatibility, security metadata, tests and a minimal evaluation.
+4. The Agent is registered by immutable version/reference, not by mandatory source upload.
+5. A client calls the Agent Gateway using an enterprise access token.
+6. Gateway resolves Agent metadata and applies identity/policy checks.
+7. A framework/runtime adapter invokes the Agent.
+8. The Agent calls the Model Gateway instead of binding directly to one provider in production.
+9. Model Gateway routes against declared policy/context.
+10. W3C trace context follows the complete request path. OpenTelemetry's model is explicitly designed for propagating such causal context across process and network boundaries. citeturn977545view3turn691511search5
+11. Invocation/evaluation evidence is persisted.
+12. CI or a deployment workflow gates promotion to an **approved production target**.
+
+The first vertical slice should support the four declared Agent categories at the **contract level**, but does not need advanced parity. For example, a RAG Agent can initially call one adapter implementation; multi-Agent can initially demonstrate one common cross-Agent invocation while leaving advanced A2A negotiation for a later phase.
+
+### Roadmap and effort assumptions
+
+| Phase | Scope | Key milestone | Planning effort | Minimal roles |
+|---|---|---|---:|---|
+| Phase 0 — Baseline | ADRs, terminology, Manifest, API/error/auth/trace conventions, repo/CI skeleton | Standards v0.1 compiles and validates | 4–6 person-weeks | Platform architect, API engineer, security |
+| Phase 1 — Vertical MVP | Agent Gateway stub, Runtime adapter, Model Gateway, Python Agent, TS client, Registry metadata, OTel traces | One local Agent passes CI and can be invoked end-to-end | 7–10 person-weeks | 2 backend/platform engineers, architect/SRE |
+| Phase 2 — Production controls | Policy hook, user+Agent identity context, environment approval, evaluation gate, audit events | Same Agent is promotable to approved runtime with auditable controls | 5–7 person-weeks | Security/IAM, platform engineer, SRE |
+| Phase 3 — Core extensions | Tool Gateway, MCP/OpenAPI adapter, common RAG, durable state/checkpoints, HITL | Tool/RAG/workflow examples pass conformance tests | 5–8 person-weeks | Agent engineer, platform engineer, test/eval engineer |
+| Phase 4 — Distributed operation | Mac mini/cloud/external model endpoints, health/routing, environment registry, failure handling | Two heterogeneous execution/model targets demonstrate policy routing | 4–6 person-weeks | SRE/platform, security |
+| Phase 5 — Advanced | Multi-Agent cross-team contract, optional A2A, experiment registry, richer portal | Advanced capabilities are additive without breaking v1 contract | TBD | Depends on use cases |
+
+These estimates assume work can proceed in parallel, reference implementations are intentionally minimal, and no enterprise procurement or complex network/security accreditation is included. A realistic minimal core team is **one platform/solution architect, two platform/backend engineers, one AI/Agent engineer, and part-time SRE plus security/IAM support**. Documentation can be owned by the architect/engineers initially, though a dedicated technical writer improves package quality.
+
+### Priority risks
+
+The most serious risk is **premature product lock-in**: choosing a gateway, vector database, workflow engine, Agent framework, or GPU scheduler before the contract has been tested with at least two adapters. The second risk is **false centralization**: treating the Shared Control Plane as a requirement to execute all Agents centrally, which contradicts the Distributed Execution Plane decision. The third is **security-context loss across Agent/model/tool boundaries**; trace identity, delegated identity, tenant, classification and policy decision metadata should be designed together rather than independently.
+
+A fourth risk is **schema drift** between documentation, OpenAPI, code models and generated examples. Contract-as-Code addresses this only if generated/tested artifacts come from the same tagged source. A fifth risk is **productionizing developer hardware by accident**: “registered execution environment” must remain distinct from “approved production deployment target.”
+
+### Production standards package
+
+| Deliverable | File/format | MVP acceptance criterion |
+|---|---|---|
+| Architecture portal | `docs/site/**/*.html`, CSS/JS/SVG | Works as static site and offline without external CDN |
+| Architecture source | Mermaid `.mmd` or Markdown Mermaid blocks | C4-like context/container/component + required sequences |
+| Requirements baseline | `docs/requirements/baseline.md` + HTML | All Q1–Q30 mapped to ADRs and deliverables |
+| ADRs | `adr/ADR-001-*.md` … | Status, context, decision, alternatives, consequences |
+| Agent Manifest | `contracts/agent-manifest.schema.json` | Draft 2020-12 validation succeeds/fails on positive/negative fixtures |
+| Agent Gateway API | `contracts/agent-gateway.openapi.yaml` | OpenAPI validation and contract tests pass |
+| Model Gateway API | `contracts/model-gateway.openapi.yaml` | Same |
+| Shared schemas | `contracts/common/*.schema.json` | IDs, identity context, policy context, errors, trace metadata |
+| Example Manifests | `examples/manifests/*.yaml` | RAG/tool/workflow/multi-Agent examples validate |
+| Python reference | `examples/python/` | Runs locally and passes pytest |
+| TypeScript client | `examples/typescript/` | Type-checks and invokes mock/real Agent Gateway |
+| CI contract tests | `tests/contracts/` | Positive/negative schema and API tests |
+| Integration tests | `tests/integration/` | Agent→Gateway→Runtime→Model Gateway flow passes |
+| Evaluation fixture | `tests/evaluation/` | Small deterministic smoke-evaluation gate |
+| Release scripts | `scripts/validate.*`, `scripts/build-docs.*`, `scripts/package.*` | One command builds validated release |
+| Release manifest | `release/manifest.json`, checksums | Lists versions and hashes of deliverables |
+| Offline package | `dist/ai-agent-platform-standards-vX.Y.Z.zip` | Extract and browse docs locally |
+| Change log | `CHANGELOG.md` | Documents breaking/non-breaking changes |
+| TBD register | `docs/governance/tbd-register.md` | Every unresolved decision has owner/target date/impact |
+
+## Technical Specifications to Draft Immediately
+
+### Agent Manifest
+
+Use JSON Schema Draft 2020-12, with `$schema`, a stable `$id`, explicit required fields, and restrictive defaults such as `additionalProperties: false` or `unevaluatedProperties: false` where extension behavior is intentionally controlled. JSON Schema Draft 2020-12 provides explicit metaschema and vocabulary mechanics and supports schema bundling/reference patterns. citeturn977545view2turn691511search3
+
+The Manifest should describe **what the platform needs to govern and invoke**, not framework-internal implementation details.
+
+| Field | Type | Required | Meaning |
+|---|---|---:|---|
+| `apiVersion` | string | yes | Contract version, e.g. `agent.platform/v1alpha1` |
+| `kind` | const `"Agent"` | yes | Resource type |
+| `metadata.id` | string | yes | Stable enterprise Agent identifier |
+| `metadata.name` | string | yes | Human-readable name |
+| `metadata.version` | string | yes | Immutable Agent release version |
+| `metadata.owner` | object | yes | Team/service ownership |
+| `metadata.labels` | object<string,string> | no | Classification/search metadata |
+| `source.repository` | URI | yes | Git repository reference |
+| `source.revision` | string | yes | Commit SHA/tag |
+| `runtime.framework` | string | yes | `langgraph`, `google-adk`, `custom`, etc. |
+| `runtime.adapter` | string | yes | Common Runtime adapter identifier |
+| `runtime.entrypoint` | string | yes | Entrypoint metadata, not necessarily executable path |
+| `runtime.executionMode` | enum | yes | `sync`, `async`, `durable` |
+| `capabilities.agentTypes` | array enum | yes | `rag`, `tool`, `workflow`, `multi-agent` |
+| `interfaces.invoke` | object | yes | Supported invocation contract/version |
+| `models` | array | no | Logical model capabilities, not hardcoded provider secrets |
+| `tools` | array | no | Tool logical IDs/protocol requirements |
+| `knowledge` | array | no | Required retrieval capabilities/backends |
+| `identity.mode` | enum | yes | `delegated`, `agent`, `hybrid` |
+| `policy.dataClasses` | array | yes | Allowed/expected data classifications |
+| `policy.egress` | object | yes | External transfer constraints |
+| `observability.tracing` | object | yes | Trace propagation requirement |
+| `evaluation.profile` | string | yes | Evaluation suite/profile reference |
+| `deployment.allowedEnvironmentClasses` | array | yes | e.g. `dev`, `test`, `prod-approved` |
+| `resources` | object | no | CPU/GPU/memory hints, non-binding by default |
+| `extensions` | object | no | Namespaced framework/provider extensions |
+
+Example:
+
+```yaml
+apiVersion: agent.platform/v1alpha1
+kind: Agent
+metadata:
+  id: finance.invoice-assistant
+  name: Invoice Assistant
+  version: 0.1.0
+  owner:
+    team: finance-ai
+    contact: finance-ai@example.internal
+  labels:
+    domain: finance
+source:
+  repository: ssh://git.example.internal/finance/invoice-agent.git
+  revision: 6d71c3f
+runtime:
+  framework: langgraph
+  adapter: runtime-adapter-python-v1
+  entrypoint: invoice_agent.app:create_agent
+  executionMode: sync
+capabilities:
+  agentTypes: [rag, tool]
+interfaces:
+  invoke:
+    contract: agent-invoke/v1
+models:
+  - capability: general-chat
+    policyProfile: enterprise-standard
+tools:
+  - id: erp.invoice.lookup
+    protocol: openapi
+knowledge:
+  - id: finance-policy
+    contract: retrieval/v1
+identity:
+  mode: hybrid
+policy:
+  dataClasses: [internal, confidential]
+  egress:
+    externalModels: conditional
+observability:
+  tracing:
+    required: true
+    propagation: w3c-trace-context
+evaluation:
+  profile: finance-agent-baseline-v1
+deployment:
+  allowedEnvironmentClasses: [dev, test, prod-approved]
+```
+
+The actual schema should additionally validate identifier patterns, URI formats, version syntax, enumerations and cross-field constraints where practical. If CI depends on `format: uri`, explicitly enable format validation in the selected JSON Schema validator because format checking can otherwise remain annotation-only. citeturn530228search2
+
+### Agent Gateway OpenAPI
+
+Use versioned paths or media types and keep the first surface small. OpenAPI is explicitly designed to let clients understand and interact with an API without inspecting implementation source. citeturn847127view0
+
+| Path | Method | Purpose | Authentication | Primary response |
+|---|---|---|---|---|
+| `/v1/agents` | `GET` | Discover caller-visible Agents | OAuth2 bearer | `AgentSummary[]` |
+| `/v1/agents/{agentId}` | `GET` | Resolve metadata/capabilities | OAuth2 bearer | `AgentDescriptor` |
+| `/v1/agents/{agentId}/invocations` | `POST` | Invoke Agent synchronously or initiate async execution | OAuth2 bearer + identity context | `InvocationAccepted/Result` |
+| `/v1/invocations/{invocationId}` | `GET` | Poll durable/async invocation | OAuth2 bearer | `InvocationStatus` |
+| `/v1/invocations/{invocationId}/cancel` | `POST` | Request cancellation | OAuth2 bearer | status |
+| `/v1/invocations/{invocationId}/events` | `GET` | Stream/query execution events | OAuth2 bearer | SSE/event stream or JSON |
+| `/health/live` | `GET` | Process liveness | infrastructure-controlled | status |
+| `/health/ready` | `GET` | Readiness | infrastructure-controlled | status |
+
+Recommended invocation request:
+
+```json
+{
+  "input": {
+    "type": "message",
+    "content": "Summarize invoice INV-2048"
+  },
+  "context": {
+    "tenantId": "finance",
+    "conversationId": "conv-123",
+    "dataClassification": "confidential"
+  },
+  "execution": {
+    "mode": "sync",
+    "timeoutMs": 30000
+  }
+}
+```
+
+Do **not** accept a caller-supplied `userId` as authoritative. The authenticated principal should come from the validated access token/security context; request context may contain correlation/business metadata but must not override identity.
+
+Recommended headers include `Authorization: Bearer ...`, `traceparent`, optional `tracestate`, `X-Request-Id`, and an idempotency token for operations where safe retry semantics are deliberately implemented. HTTP itself defines PUT, DELETE and safe methods as idempotent; POST is not inherently idempotent, so automatic retry of an invocation POST requires an application-level mechanism. citeturn897325search5
+
+Responses should include:
+
+```json
+{
+  "invocationId": "inv_01J...",
+  "agentId": "finance.invoice-assistant",
+  "agentVersion": "0.1.0",
+  "status": "completed",
+  "output": {
+    "type": "message",
+    "content": "..."
+  },
+  "usage": {
+    "modelCalls": 1,
+    "inputTokens": 842,
+    "outputTokens": 132
+  },
+  "policy": {
+    "decisionId": "pol_...",
+    "result": "allow"
+  }
+}
+```
+
+Error payloads should use RFC 9457 fields such as `type`, `title`, `status`, `detail`, and `instance`, with extension members such as `code`, `traceId`, and `policyDecisionId`. RFC 9457 was specifically created to provide machine-readable HTTP API error details and supersedes RFC 7807. citeturn977545view5
+
+### Model Gateway OpenAPI
+
+The Model Gateway contract should expose **logical capabilities**, not raw provider-specific behavior.
+
+| Path | Method | Purpose |
+|---|---|---|
+| `/v1/models` | `GET` | List caller-visible logical model endpoints/capabilities |
+| `/v1/models/{modelId}` | `GET` | Capability metadata |
+| `/v1/responses` | `POST` | Unified text/multimodal generation |
+| `/v1/embeddings` | `POST` | Embedding generation |
+| `/v1/routing/decisions/{decisionId}` | `GET` | Authorized routing/audit metadata |
+| `/health/live` | `GET` | Liveness |
+| `/health/ready` | `GET` | Routing/provider readiness |
+
+Example request:
+
+```json
+{
+  "model": "general-chat",
+  "input": [
+    {
+      "role": "user",
+      "content": [{"type": "text", "text": "Summarize this record."}]
+    }
+  ],
+  "policyContext": {
+    "tenantId": "finance",
+    "dataClassification": "confidential",
+    "externalTransferAllowed": false
+  },
+  "parameters": {
+    "temperature": 0.2,
+    "maxOutputTokens": 500
+  }
+}
+```
+
+Example response:
+
+```json
+{
+  "id": "resp_01J...",
+  "model": "general-chat",
+  "resolvedEndpoint": "local-model-endpoint-a",
+  "routingDecisionId": "route_01J...",
+  "output": [
+    {"type": "text", "text": "..."}
+  ],
+  "usage": {
+    "inputTokens": 520,
+    "outputTokens": 104
+  }
+}
+```
+
+`resolvedEndpoint` should be returned only when policy permits revealing infrastructure details; otherwise expose a provider-neutral route class.
+
+### Key invocation sequence
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant AG as Agent Gateway
+    participant P as Identity/Policy
+    participant R as Agent Registry
+    participant RT as Runtime Adapter
+    participant MG as Model Gateway
+    participant M as Model Endpoint
+    participant O as Observability/Evaluation
+
+    User->>AG: POST /v1/agents/{id}/invocations\nBearer token + traceparent
+    AG->>P: Authenticate + authorize + classify
+    P-->>AG: allow + decisionId
+    AG->>R: Resolve immutable Agent version
+    R-->>AG: runtime/manifest metadata
+    AG->>RT: Invoke(agentVersion, identityContext, policyContext)
+    RT->>MG: POST /v1/responses
+    MG->>P: Evaluate model/data routing policy
+    P-->>MG: allowed route constraints
+    MG->>M: Provider/local endpoint request
+    M-->>MG: Model output
+    MG-->>RT: Normalized response + usage
+    RT-->>AG: Agent result
+    AG->>O: Trace + metrics + evaluation/audit metadata
+    AG-->>User: Invocation result
+```
+
+### Model-routing sequence
+
+```mermaid
+sequenceDiagram
+    participant A as Agent Runtime
+    participant MG as Model Gateway
+    participant P as Policy Engine
+    participant C as Model Registry/Catalog
+    participant E as External LLM
+    participant L as Local/Self-hosted Model
+
+    A->>MG: logical model + policy context
+    MG->>P: tenant + classification + permissions
+    P-->>MG: constraints
+    MG->>C: candidate endpoints/capabilities/health
+    C-->>MG: eligible candidates
+
+    alt External transfer allowed
+        MG->>E: request
+        E-->>MG: response
+    else External transfer prohibited
+        MG->>L: request
+        L-->>MG: response
+    end
+
+    MG-->>A: normalized response + route decision ID
+```
+
+### Contract tests required in CI
+
+At minimum, CI should block merge/release when any of the following fail:
+
+| Test family | Example assertions |
+|---|---|
+| JSON Schema meta-validation | Manifest schema itself is valid Draft 2020-12 |
+| Positive Manifest tests | Valid RAG/tool/workflow/multi-Agent fixtures validate |
+| Negative Manifest tests | Missing owner, invalid version, unsupported execution mode, malformed URI fail |
+| OpenAPI structural validation | Gateway documents conform to selected OAS version |
+| OpenAPI examples | Every declared request/response example validates against its schema |
+| Backward compatibility | Breaking change detector compares against last released contract |
+| Security contract | Protected paths declare security; no production invoke route is anonymous |
+| Problem Details | Error responses conform to RFC 9457-based schema |
+| Trace propagation | Gateway accepts/propagates valid W3C trace context |
+| Runtime adapter conformance | Standard invocation fixture yields canonical output/error shape |
+| Model adapter conformance | Provider/local adapters normalize output and usage fields |
+| Authorization tests | Forbidden tenant/Agent/data-class combinations return deterministic denial |
+| Idempotency/retry | Duplicate invocation key does not double-execute when idempotency is enabled |
+| Evaluation gate | Minimal regression dataset stays above configured quality threshold |
+| Offline docs | Static portal has no broken internal links or required CDN dependencies |
+
+## Reference Implementations and CI/Verification
+
+### Python minimal end-to-end reference
+
+Use Python with **FastAPI** as a reference, not as a mandatory enterprise runtime. FastAPI exposes a convenient HTTP/API model and provides a `TestClient` based on HTTPX that integrates directly with pytest. citeturn826584search1
+
+Recommended dependencies:
+
+```text
+fastapi
+uvicorn
+pydantic
+httpx
+jsonschema[format]
+pytest
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+```
+
+The `jsonschema` library supports Draft 2020-12 validators and optional format checking; pytest provides ordinary test discovery and assertions, while FastAPI's test client enables in-process API testing without a real socket. citeturn530228search2turn826584search0turn826584search5
+
+Suggested structure:
+
+```text
+examples/python/
+├── pyproject.toml
+├── README.md
+├── agent/
+│   ├── app.py
+│   ├── runtime_adapter.py
+│   └── model_client.py
+├── gateway/
+│   └── mock_model_gateway.py
+└── tests/
+    ├── test_manifest.py
+    ├── test_agent_invoke.py
+    └── test_trace_context.py
+```
+
+Local run:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+pytest -q
+uvicorn agent.app:app --port 8081
+```
+
+Python's `venv` is the standard-library mechanism for isolated environments, and pytest's documentation explicitly recommends installing/running tests from a virtual environment. citeturn826584search41turn826584search0
+
+Expected smoke output:
+
+```text
+$ pytest -q
+12 passed
+
+$ curl -X POST http://localhost:8081/invoke ...
+{
+  "status": "completed",
+  "output": {"type":"message","content":"pong"},
+  "traceId": "..."
+}
+```
+
+The reference must demonstrate:
+
+```python
+@app.post("/invoke")
+async def invoke(request: InvokeRequest):
+    # 1. Extract propagated trace/security context
+    # 2. Validate policy context
+    # 3. Call logical Model Gateway client
+    # 4. Normalize output
+    # 5. Emit trace/evaluation metadata
+    ...
+```
+
+It should **not** contain cloud credentials, provider API keys, or framework-specific secrets in committed examples.
+
+### TypeScript core client
+
+For TypeScript, prefer native `fetch` for the smallest dependency surface; modern Node documents `fetch` as a global API. Axios can be offered as a secondary example where interceptors, common timeout configuration, or existing enterprise usage justify it. citeturn826584search8turn394803search4
+
+Example client:
+
+```ts
+export interface InvokeRequest {
+  input: {
+    type: "message";
+    content: string;
+  };
+  context?: {
+    tenantId?: string;
+    conversationId?: string;
+    dataClassification?: string;
+  };
+}
+
+export async function invokeAgent(
+  baseUrl: string,
+  agentId: string,
+  token: string,
+  body: InvokeRequest
+) {
+  const response = await fetch(
+    `${baseUrl}/v1/agents/${encodeURIComponent(agentId)}/invocations`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000)
+    }
+  );
+
+  if (!response.ok) {
+    const problem = await response.json();
+    throw new Error(`${problem.title ?? "Agent invocation failed"}: ${problem.detail ?? ""}`);
+  }
+
+  return response.json();
+}
+```
+
+For TypeScript contract tests, Ajv supports JSON Schema 2020-12, but it requires the appropriate draft-specific validator setup; this should be pinned in the example project to avoid accidental dialect mismatch. citeturn530228search3turn530228search24
+
+Vitest is a reasonable optional test runner for the TypeScript example; its current documentation supports standard local installation and CLI execution. citeturn530228search1
+
+Reference links requested:
+
+- [OpenAPI Initiative specification](https://spec.openapis.org/)
+- [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12)
+- [OpenTelemetry context propagation](https://opentelemetry.io/docs/concepts/context-propagation/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [pytest](https://docs.pytest.org/)
+- [Node.js `fetch`](https://nodejs.org/api/globals.html#fetch)
+- [Axios repository/documentation](https://github.com/axios/axios)
+- [Ajv JSON Schema validator](https://ajv.js.org/)
+- [Python `jsonschema`](https://python-jsonschema.readthedocs.io/)
+- [Vitest](https://vitest.dev/)
+
+### Local validation commands
+
+The repository should expose one stable developer command rather than requiring developers to remember tool-specific commands:
+
+```bash
+make validate
+```
+
+or, for cross-platform neutrality:
+
+```bash
+python scripts/validate.py
+```
+
+That wrapper should run approximately:
+
+```bash
+python scripts/validate_json_schemas.py
+python scripts/validate_manifests.py
+python scripts/validate_openapi.py
+pytest -q
+npm --prefix examples/typescript ci
+npm --prefix examples/typescript run typecheck
+npm --prefix examples/typescript test
+python scripts/check_internal_links.py
+python scripts/check_contract_versions.py
+```
+
+Exact OpenAPI lint/compatibility tools remain a kickoff decision because tool support for the very recent OpenAPI 3.2.1 must be verified rather than assumed. citeturn847127view0
+
+### CI flow
+
+Use this merge pipeline:
+
+```text
+Checkout
+   ↓
+Schema meta-validation
+   ↓
+Manifest fixtures
+   ↓
+OpenAPI syntax + examples
+   ↓
+Contract compatibility diff
+   ↓
+Python lint/type/test
+   ↓
+TypeScript type/test
+   ↓
+Security contract tests
+   ↓
+Minimal evaluation regression
+   ↓
+Build static HTML
+   ↓
+Offline/link test
+   ↓
+Package artifact
+```
+
+For release tags, use a repository package version such as `v0.1.0`, while **contract versions remain independently visible**. Do not silently make the repository release number equivalent to every API/schema version.
+
+A sensible release compatibility policy is:
+
+- **Patch release:** documentation corrections and implementation fixes that do not change normative contracts.
+- **Minor release:** backward-compatible additions to contracts or optional fields.
+- **Major release:** breaking API/schema semantics.
+- During `v0.x`, every potentially breaking change should still be explicitly documented because semantic-version expectations before 1.0 vary across organizations.
+
+Every release should produce a machine-readable file such as:
+
+```json
+{
+  "packageVersion": "0.1.0",
+  "contracts": {
+    "agentManifest": "v1alpha1",
+    "agentGateway": "v1alpha1",
+    "modelGateway": "v1alpha1"
+  },
+  "builtAt": "2026-11-...",
+  "gitCommit": "...",
+  "artifacts": [
+    {"path":"contracts/agent-manifest.schema.json","sha256":"..."},
+    {"path":"contracts/agent-gateway.openapi.yaml","sha256":"..."}
+  ]
+}
+```
+
+## Documentation, Packaging, Unresolved Decisions and Kickoff
+
+### Git repository structure
+
+```text
+enterprise-ai-agent-platform/
+├── README.md
+├── CHANGELOG.md
+├── Makefile
+├── adr/
+│   ├── ADR-001-enterprise-common-platform.md
+│   ├── ADR-002-document-audiences.md
+│   └── ...
+├── contracts/
+│   ├── agent-manifest.schema.json
+│   ├── agent-gateway.openapi.yaml
+│   ├── model-gateway.openapi.yaml
+│   └── common/
+│       ├── problem-details.schema.json
+│       ├── identity-context.schema.json
+│       ├── policy-context.schema.json
+│       └── evaluation-result.schema.json
+├── examples/
+│   ├── manifests/
+│   ├── python/
+│   └── typescript/
+├── tests/
+│   ├── contracts/
+│   ├── integration/
+│   ├── fixtures/
+│   └── evaluation/
+├── docs/
+│   ├── source/
+│   │   ├── architecture/
+│   │   ├── components/
+│   │   ├── developer-guide/
+│   │   ├── security/
+│   │   ├── operations/
+│   │   ├── governance/
+│   │   └── roadmap/
+│   └── site/
+├── scripts/
+│   ├── validate.py
+│   ├── build_docs.py
+│   └── package_release.py
+└── dist/
+```
+
+The static portal should include source-controlled diagrams and should not require an Internet connection for essential CSS, JavaScript, fonts or diagrams. Mermaid source may be kept for maintainability, but release packaging should preferably render diagrams to SVG so offline viewers are not dependent on runtime CDN assets.
+
+Documentation pages should consistently show four separate metadata dimensions:
+
+```text
+Normative level: MUST / SHOULD / MAY
+Decision state: Decided / Recommended / TBD / Optional
+Delivery phase: MVP / Follow-up / Optional
+Contract version: e.g. agent-invoke/v1alpha1
+```
+
+That distinction is especially important because **MUST does not mean “specific product MUST be used.”** A requirement might say “production Agent invocation MUST be authenticated,” while the selected IdP remains TBD.
+
+### Prioritized TBD register
+
+| Priority | TBD | Why it matters now | Recommended next decision |
+|---|---|---|---|
+| P0 | Enterprise IdP / workload identity integration | Blocks production auth semantics | Select existing OIDC/OAuth issuer and workload identity pattern |
+| P0 | OpenAPI 3.2.1 vs 3.1.2 | Determines parser/linter/codegen compatibility | Run toolchain spike; use 3.2.1 if all required tooling passes, else pin 3.1.2 |
+| P0 | First business Agent for MVP | Determines realistic manifest/evaluation fixtures | Pick one low-to-medium-risk existing local Agent |
+| P0 | Git + CI/CD product | Needed to implement gates and release automation | Use existing enterprise standard; do not create a new CI platform |
+| P0 | Initial approved production runtime | Required for end-to-end promotion | Choose one cloud/server target; keep laptops/Mac mini non-production unless formally approved |
+| P0 | Enterprise data classification mapping | Required for model-routing policy | Map current corporate labels into contract values |
+| P1 | Registry persistence technology | Needed after MVP metadata model proves stable | Start simple relational metadata store unless enterprise standard dictates otherwise |
+| P1 | Policy engine implementation | Needed for scalable ABAC/data policies | Define policy interface first, then select engine |
+| P1 | Secrets management | Production adapters require credentials | Integrate enterprise secrets service; no secrets in Manifest |
+| P1 | Observability backend | OTel contract can be backend-neutral | Use OTel SDK/Collector-compatible enterprise backend |
+| P1 | Model providers/endpoints | Needed for routing validation | Select at least one external and one local/self-hosted test endpoint |
+| P1 | Tool Gateway first adapters | Needed for tool-using Agent | Select one OpenAPI tool and optionally one MCP server |
+| P1 | RAG backend | Needed for RAG sample | Select one existing vector/search backend for adapter demonstration |
+| P1 | Durable execution store/queue | Needed for workflow/HITL phase | Decide after sync vertical MVP |
+| P2 | A2A protocol adoption details | Optional initial capability | Defer until a cross-team Agent-to-Agent use case exists |
+| P2 | Internal GPU scheduling platform | Future infrastructure | Keep behind model-serving adapter; do not block MVP |
+| P2 | Developer Portal | Optional management UX | Defer until CLI/Git workflow is proven |
+| P2 | Fine-tuning/Tuning system | Not required for platform MVP | Defer until experiment/evaluation data justifies it |
+| P2 | Numeric SLO targets | Need workload evidence | Set after first production Agent baseline measurements |
+
+### Kickoff plan for the first one to two weeks
+
+**Days 1–2: baseline and repository.** Create the Git repository, ADR template, Q1–Q30 baseline, terminology page, normative keywords, version policy, TBD register, and CI skeleton. Identify the first real local Agent and one external/model endpoint. Decide the OpenAPI dialect only after running a compatibility spike across the intended linter/validator/toolchain; OpenAPI 3.2.1 is current but was published only on September 10, 2026. citeturn847127view0
+
+**Days 3–4: contracts.** Draft `agent-manifest.schema.json`, the common Problem Details schema, identity/policy context schemas, and the initial Agent Gateway/Model Gateway OpenAPI files. Create at least four valid Manifest fixtures and six invalid fixtures. Define OAuth/OIDC security schemes in OpenAPI without binding the contract to one IdP; security implementation guidance should align with RFC 9700. citeturn977545view4turn897325search3
+
+**Days 5–6: Python vertical slice.** Implement a minimal FastAPI Agent Runtime adapter and mock/real Model Gateway client. Add pytest contract/integration tests and OpenTelemetry trace propagation. FastAPI's official testing model makes this suitable for a compact reference implementation, while OpenTelemetry gives the cross-service context model required by the architecture. citeturn826584search1turn977545view3
+
+**Days 7–8: TypeScript and CI.** Build the TypeScript core client using native `fetch`, add Ajv validation for Manifest/examples, add test coverage, and make the CI pipeline run both language stacks. Node documents native `fetch`; Ajv explicitly supports Draft 2020-12 when configured for that dialect. citeturn826584search8turn530228search3
+
+**Days 9–10: documentation and release candidate.** Generate the static HTML portal, render Mermaid diagrams to offline-safe SVG, run link checks, package a ZIP, create `release/manifest.json`, calculate checksums, tag `v0.1.0-rc1`, and conduct an architecture/security review.
+
+At the end of the kickoff, the tangible success criterion should be:
+
+> A developer can clone the repository, validate an Agent Manifest locally, run the Python Agent and TypeScript client, invoke the Agent through the reference Agent Gateway path, observe a correlated trace through the Model Gateway, run all contract tests with one command, build the HTML portal, and produce an offline ZIP release from the same tagged source.
+
+That is the right MVP package because it proves the platform's most important architectural claim: **developers keep their local tools and frameworks, while enterprise-wide contracts, identity, policy, observability, evaluation, and deployment governance are enforced at the shared boundary rather than by forcing development into a centralized application.**

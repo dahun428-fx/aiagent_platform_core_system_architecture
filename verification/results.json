@@ -1,0 +1,85 @@
+{
+  "packageVersion": "0.1.0",
+  "status": "passed",
+  "date": "2026-10-30T16:27:52.595459+09:00",
+  "runtime": {
+    "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+    "node": "v22.22.2",
+    "jsonschema": "4.24.0",
+    "openapi-spec-validator": "0.8.0"
+  },
+  "checks": [
+    {
+      "check": "portal-rebuild",
+      "command": [
+        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "scripts/build_portal.py",
+        "--write"
+      ],
+      "exitCode": 0,
+      "stdout": "Built 87 offline portal files\n",
+      "stderr": ""
+    },
+    {
+      "check": "contract-and-runtime-tests",
+      "command": [
+        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "test_four_manifests_validate_locally (test_cli.CLITests.test_four_manifests_validate_locally) ... ok\ntest_invalid_manifest_and_missing_file_return_nonzero (test_cli.CLITests.test_invalid_manifest_and_missing_file_return_nonzero) ... ok\ntest_baseline_adr_traceability (test_contracts.Contracts.test_baseline_adr_traceability) ... ok\ntest_frozen_contract_release (test_contracts.Contracts.test_frozen_contract_release) ... ok\ntest_identity_delegation_conditions (test_contracts.Contracts.test_identity_delegation_conditions) ... ok\ntest_markdown_local_links (test_contracts.Contracts.test_markdown_local_links) ... ok\ntest_metaschemas_and_all_positive_fixtures (test_contracts.Contracts.test_metaschemas_and_all_positive_fixtures) ... ok\ntest_negative_manifest_fixtures (test_contracts.Contracts.test_negative_manifest_fixtures) ... ok\ntest_offline_portal_assets_and_links (test_contracts.Contracts.test_offline_portal_assets_and_links) ... ok\ntest_openapi_documents_security_and_examples (test_contracts.Contracts.test_openapi_documents_security_and_examples) ... ok\ntest_approval_replay_and_expiry (test_runtime.RuntimeTests.test_approval_replay_and_expiry) ... ok\ntest_broker_trace_follows_tool_invocation (test_runtime.RuntimeTests.test_broker_trace_follows_tool_invocation) ... ok\ntest_classification_routing_fail_closed (test_runtime.RuntimeTests.test_classification_routing_fail_closed) ... ok\ntest_concurrent_idempotency (test_runtime.RuntimeTests.test_concurrent_idempotency) ... ok\ntest_cross_agent_cycles_depth_scope_and_tenant (test_runtime.RuntimeTests.test_cross_agent_cycles_depth_scope_and_tenant) ... ok\ntest_evaluation_and_redaction (test_runtime.RuntimeTests.test_evaluation_and_redaction) ... ok\ntest_http_contract_smoke (test_runtime.RuntimeTests.test_http_contract_smoke) ... ok\ntest_idempotency_replay_and_body_conflict (test_runtime.RuntimeTests.test_idempotency_replay_and_body_conflict) ... ok\ntest_input_validation_and_trace_validation (test_runtime.RuntimeTests.test_input_validation_and_trace_validation) ... ok\ntest_lease_binding_expiry_audience_scope (test_runtime.RuntimeTests.test_lease_binding_expiry_audience_scope) ... ok\ntest_missing_auth_and_tenant_spoof_denied (test_runtime.RuntimeTests.test_missing_auth_and_tenant_spoof_denied) ... ok\ntest_policy_unavailable_and_expired (test_runtime.RuntimeTests.test_policy_unavailable_and_expired) ... ok\ntest_retrieval_acl_and_classification_before_context (test_runtime.RuntimeTests.test_retrieval_acl_and_classification_before_context) ... ok\ntest_tool_broker_and_no_credential_leak (test_runtime.RuntimeTests.test_tool_broker_and_no_credential_leak) ... ok\ntest_tool_unknown_scope_tenant_and_write_denied (test_runtime.RuntimeTests.test_tool_unknown_scope_tenant_and_write_denied) ... ok\ntest_unknown_agent_and_unsupported_async (test_runtime.RuntimeTests.test_unknown_agent_and_unsupported_async) ... ok\ntest_vertical_flow_and_output_contract (test_runtime.RuntimeTests.test_vertical_flow_and_output_contract) ... ok\n\n----------------------------------------------------------------------\nRan 27 tests in 0.670s\n\nOK\n"
+    },
+    {
+      "check": "typescript-typecheck",
+      "command": [
+        "node",
+        "/tmp/agent-platform-tools/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "examples/typescript/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "typescript-build",
+      "command": [
+        "node",
+        "/tmp/agent-platform-tools/node_modules/typescript/bin/tsc",
+        "-p",
+        "examples/typescript/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "python-typescript-http-smoke",
+      "command": [
+        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "scripts/smoke_clients.py"
+      ],
+      "exitCode": 0,
+      "stdout": "[\n  {\n    \"check\": \"python-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-f52f19bf92db49c2b9f4e5fc45542af9\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-630ad4d22b614fad98ea2067b6b8a18e-bb41831215b14329-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  },\n  {\n    \"check\": \"typescript-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-210d009f2cf14714ba8b14d47e1eb126\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-55e878a3666943e2bfc229cd4b0efce4-5834a36849954129-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "check": "browser-offline",
+      "command": [
+        "node",
+        "scripts/browser-check.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"browser\": \"151.0.7922.34\",\n  \"mode\": \"file:// + offline:true\",\n  \"checks\": [\n    {\n      \"check\": \"desktop-file-offline\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"local-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"empty-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"all-nine-local-svg\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"baseline-table\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"broker-module\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-menu\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-no-page-overflow\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"console-clean\",\n      \"passed\": true,\n      \"errors\": []\n    },\n    {\n      \"check\": \"zero-network-dependency\",\n      \"passed\": true,\n      \"network\": []\n    }\n  ]\n}\n",
+      "stderr": ""
+    }
+  ],
+  "scope": "Standards and local mock validation only; production integrations / numeric company SLOs TBD."
+}

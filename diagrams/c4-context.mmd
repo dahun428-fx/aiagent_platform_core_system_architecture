@@ -1,0 +1,14 @@
+flowchart TB
+  %% C4 · System Context — 전사 AI Agent Platform / 논리 경계
+  client["Users / Business Apps<br/>Person / enterprise client"]
+  dev["Agent Developers<br/>Local IDE · Git · CLI"]
+  platform["AI Agent Platform<br/>System boundary"]
+  idp["Identity Provider<br/>Issuer / STS · TBD"]
+  models["Model Endpoints<br/>Commercial + self-hosted"]
+  tools["Enterprise Tools / Knowledge<br/>REST · MCP · knowledge"]
+  client -->|"Agent invoke"| platform
+  dev -->|"Manifest / evidence"| platform
+  platform -->|"Identity / exchange"| idp
+  platform -->|"Policy-controlled model egress"| models
+  platform -->|"Controlled data/tool access"| tools
+

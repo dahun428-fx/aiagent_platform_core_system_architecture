@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "invocationId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "agentVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "request": {
+      "$ref": "https://agent.example.invalid/contracts/invocation.schema.json"
+    },
+    "identity": {
+      "$ref": "https://agent.example.invalid/contracts/identity.schema.json"
+    },
+    "policy": {
+      "$ref": "https://agent.example.invalid/contracts/policy.schema.json"
+    },
+    "traceparent": {
+      "type": "string",
+      "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
+    }
+  },
+  "required": [
+    "invocationId",
+    "agentId",
+    "agentVersion",
+    "request",
+    "identity",
+    "policy",
+    "traceparent"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/runtime.schema.json",
+  "title": "runtime"
+}

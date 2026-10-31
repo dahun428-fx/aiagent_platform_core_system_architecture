@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1
+    },
+    "knowledgeId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "identity": {
+      "$ref": "https://agent.example.invalid/contracts/identity.schema.json"
+    },
+    "policy": {
+      "$ref": "https://agent.example.invalid/contracts/policy.schema.json"
+    },
+    "traceparent": {
+      "type": "string",
+      "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "query",
+    "knowledgeId",
+    "identity",
+    "policy",
+    "traceparent",
+    "limit"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/retrieval-request.schema.json",
+  "title": "retrieval-request"
+}

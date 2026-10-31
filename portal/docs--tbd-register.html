@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>TBD 등록부 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html" aria-current="page">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>TBD 등록부</h1>
+<p>회사 현황이나 채택 제품을 추정하지 않는다. 예제의 주소·TTL·depth·test score는 합성값이다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>우선순위</th>
+<th>회사 결정 사항</th>
+<th>책임 역할</th>
+<th>종료 증거</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TBD-01</td>
+<td>P0</td>
+<td>IdP·issuer·audience·workload identity·delegation·STS 지원</td>
+<td>Security</td>
+<td>token 검증·교환·취소 통합 테스트</td>
+</tr>
+<tr>
+<td>TBD-02</td>
+<td>P0</td>
+<td>tenant 모델·분류체계·지역/국경·egress allowlist</td>
+<td>Security/Data</td>
+<td>deny/allow matrix</td>
+</tr>
+<tr>
+<td>TBD-03</td>
+<td>P0</td>
+<td>policy engine·secret/KMS·approval workflow·TTL</td>
+<td>Security/Platform</td>
+<td>rotation·replay·expiry 검증</td>
+</tr>
+<tr>
+<td>TBD-04</td>
+<td>P0</td>
+<td>첫 업무·owner·위험 등급·production target</td>
+<td>Business/SRE</td>
+<td>promotion evidence</td>
+</tr>
+<tr>
+<td>TBD-05</td>
+<td>P0</td>
+<td>회사 OpenAPI lint/codegen/Gateway 지원 버전</td>
+<td>Platform</td>
+<td>3.1.2 호환성 spike</td>
+</tr>
+<tr>
+<td>TBD-06</td>
+<td>P1</td>
+<td>CI·Registry·artifact signing·SBOM 제품</td>
+<td>DevOps</td>
+<td>공급망·승격 gate</td>
+</tr>
+<tr>
+<td>TBD-07</td>
+<td>P1</td>
+<td>SLO·RTO·RPO·latency·quota·비용·용량 수치</td>
+<td>SRE/Business</td>
+<td>측정 baseline·부하/복구 보고서</td>
+</tr>
+<tr>
+<td>TBD-08</td>
+<td>P1</td>
+<td>checkpoint/queue/outbox/durable engine</td>
+<td>Platform</td>
+<td>restart·failover·unknown effect 복구</td>
+</tr>
+<tr>
+<td>TBD-09</td>
+<td>P1</td>
+<td>RAG backend·ACL·corpus·retention·삭제</td>
+<td>Data</td>
+<td>ACL·검색 품질·삭제 검증</td>
+</tr>
+<tr>
+<td>TBD-10</td>
+<td>P1</td>
+<td>모델 endpoint·지역·fallback·budget</td>
+<td>ML/Security</td>
+<td>분류 기반 routing 검증</td>
+</tr>
+<tr>
+<td>TBD-11</td>
+<td>P1</td>
+<td>tool endpoint·schema·MCP transport/version</td>
+<td>Tools owner</td>
+<td>adapter conformance·SSRF 검증</td>
+</tr>
+<tr>
+<td>TBD-12</td>
+<td>P1</td>
+<td>평가 dataset·threshold·관측 exporter·보존</td>
+<td>Quality/SRE</td>
+<td>regression·redaction·접근통제</td>
+</tr>
+<tr>
+<td>TBD-13</td>
+<td>P2</td>
+<td>A2A protocol/adapter·GPU scheduler·Developer Portal</td>
+<td>Platform</td>
+<td>별도 ADR/적합성</td>
+</tr>
+</tbody>
+</table></div><p class="file-link">원본 파일: <a href="../docs/tbd-register.md">docs/tbd-register.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

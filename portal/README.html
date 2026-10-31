@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>전사 공통 AI Agent Platform — v0.1 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html" aria-current="page">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>전사 공통 AI Agent Platform — v0.1</h1>
+<p>구현 착수를 위한 기술 표준 패키지. <a href="../portal/index.html">오프라인 포털</a>을 브라우저에서 열면 전체 문서·계약·ADR을 탐색할 수 있다.</p>
+<h2>시작</h2>
+<ol>
+<li>docs/requirements/baseline-v0.1.md와 docs/corrections.md에서 기준선을 확인한다.</li>
+<li>docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md로 책임·신뢰 경계를 확인한다.</li>
+<li>contracts/의 OpenAPI 3.1.2 JSON과 JSON Schema 2020-12를 소비한다.</li>
+<li>예제를 실행하고 tests/로 계약 적합성을 확인한다.</li>
+<li>docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.</li>
+</ol>
+<h2>로컬 검증</h2>
+<p>Python 3.11+와 Node.js 22+, TypeScript compiler가 필요하다. 최초 개발 의존성 설치에는 네트워크가 필요하다.
+포털 열람에는 설치·서버·인터넷이 필요 없다. 완전 오프라인 재검증용 dependency wheel/npm bundle은 포함하지 않는다.</p>
+<pre><code class="language-sh">python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/agentctl.py validate examples/manifests/*.json
+npm install
+npx playwright install chromium
+npm run typecheck
+npm run build:client
+.venv/bin/python examples/python/platform_ref.py
+</code></pre>
+<p>별도 터미널:</p>
+<pre><code class="language-sh">node examples/typescript/dist/demo.js
+</code></pre>
+<p>서버는 loopback에만 바인딩하며 합성 mock token만 받는다. 회사 IdP·실제 secret·외부 모델에 접속하지 않는다.
+Python SDK 호출 예제: <code>python3 examples/python/client.py</code>.
+전체 검증·체크섬·ZIP: <code>.venv/bin/python scripts/release.py</code>.
+포털 재생성만 수행: <code>.venv/bin/python scripts/build_portal.py --write</code>.
+결과는 verification/, 배포 ZIP은 dist/에 생성된다.
+실행 검증 요약은 docs/validation-results.md에서 확인한다.</p>
+<h2>구성</h2>
+<ul>
+<li>docs/ · adr/: 한국어 규범 문서, baseline 30항목, ADR 30건</li>
+<li>contracts/: Manifest·identity·policy·runtime·tool·credential·RAG·approval·evaluation·cross-Agent 및 API 5종</li>
+<li>examples/: 4종 Manifest, Python mock vertical slice, TypeScript HTTP client</li>
+<li>tests/: schema·API·권한·idempotency·승인·모델 정책·평가·포털 정합성</li>
+<li>portal/ · diagrams/: file:// 정적 HTML, 로컬 검색, Mermaid source와 SVG</li>
+<li>sources/: 두 Deep Research 원문 및 출처 한계</li>
+<li>verification/ · dist/: 실제 실행 결과·SHA256·ZIP</li>
+</ul>
+<p>회사 제품, topology별 주소·수량, NFR·비용·용량·보존 수치는 모두 TBD.
+127.0.0.1:8765, fixture의 TTL·depth·평가값은 합성 예제 값이며 회사 표준 수치가 아니다.</p>
+<p>현재 폴더는 Git 저장소가 아니다. Git에 넣을 수 있는 소스를 제공하며 commit/tag/push는 수행하지 않는다.
+production 구현과 검증의 잔여 범위는 docs/release-scope.md에 명시한다.</p><p class="file-link">원본 파일: <a href="../README.md">README.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

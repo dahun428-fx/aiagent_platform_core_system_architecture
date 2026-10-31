@@ -1,0 +1,14 @@
+flowchart TB
+  %% C4 · Runtime Components — Agent Runtime container 내부 · 공통 계약과 framework adapter
+  entry["Invocation Handler<br/>Validated Runtime envelope"]
+  policy["Context Guard<br/>tenant · policy · trace"]
+  adapter["Framework Adapter<br/>Custom / replaceable framework"]
+  state["State / Effect Ledger<br/>checkpoint · revision · TBD"]
+  ports["Capability Ports<br/>Model · Tool · RAG · Agent"]
+  audit["Event / Trace Emitter<br/>Metadata only · no raw secrets"]
+  entry -->|"validate"| policy
+  policy -->|"execute"| adapter
+  adapter -->|"capability call"| ports
+  entry -->|"CAS / resume"| state
+  ports -->|"event / trace"| audit
+

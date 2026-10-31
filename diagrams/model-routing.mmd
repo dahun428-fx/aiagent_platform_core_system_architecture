@@ -1,0 +1,16 @@
+sequenceDiagram
+  autonumber
+  participant A0 as Runtime
+  participant A1 as Model Gateway
+  participant A2 as Policy
+  participant A3 as Self-hosted
+  participant A4 as External
+  A0->>A1: Identity + policy + messages
+  A1->>A2: Classification / allowed resources
+  A2->>A1: Approved route set
+  A1->>A3: Confidential / restricted allowed route
+  A3->>A1: Canonical response
+  A1->>A4: Only if classification policy permits
+  A4->>A1: Normalized response
+  A1->>A0: Result / fail closed if no safe route
+

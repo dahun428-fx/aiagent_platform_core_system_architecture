@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Forbidden",
+  "status": 403,
+  "code": "FORBIDDEN",
+  "traceId": "0123456789abcdef0123456789abcdef"
+}

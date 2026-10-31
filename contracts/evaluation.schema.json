@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "properties": {
+    "evaluationId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "datasetVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "agentVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "manifestDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "policyVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "metric": {
+      "type": "string",
+      "minLength": 1
+    },
+    "score": {
+      "type": "number"
+    },
+    "threshold": {
+      "type": "number"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "traceId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
+    }
+  },
+  "required": [
+    "evaluationId",
+    "datasetVersion",
+    "agentVersion",
+    "manifestDigest",
+    "policyVersion",
+    "metric",
+    "score",
+    "threshold",
+    "passed",
+    "traceId"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/evaluation.schema.json",
+  "title": "evaluation"
+}

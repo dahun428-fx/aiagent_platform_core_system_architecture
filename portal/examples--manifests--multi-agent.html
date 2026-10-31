@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>multi-agent.json · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>multi-agent.json</h1><pre><code>{
+  &quot;apiVersion&quot;: &quot;agent.platform/v1alpha1&quot;,
+  &quot;kind&quot;: &quot;Agent&quot;,
+  &quot;metadata&quot;: {
+    &quot;id&quot;: &quot;agent-multi-agent&quot;,
+    &quot;name&quot;: &quot;합성 multi-agent Agent&quot;,
+    &quot;version&quot;: &quot;0.1.0&quot;,
+    &quot;owner&quot;: {
+      &quot;team&quot;: &quot;TBD&quot;
+    }
+  },
+  &quot;source&quot;: {
+    &quot;repository&quot;: &quot;https://example.invalid/agents/demo.git&quot;,
+    &quot;revision&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+    &quot;artifactDigest&quot;: &quot;sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb&quot;
+  },
+  &quot;runtime&quot;: {
+    &quot;framework&quot;: &quot;custom&quot;,
+    &quot;adapter&quot;: &quot;adapter-reference&quot;,
+    &quot;entrypoint&quot;: &quot;platform_ref:Runtime&quot;,
+    &quot;executionMode&quot;: &quot;sync&quot;
+  },
+  &quot;capabilities&quot;: {
+    &quot;type&quot;: &quot;multi-agent&quot;,
+    &quot;tools&quot;: [],
+    &quot;knowledge&quot;: [],
+    &quot;agents&quot;: [
+      &quot;agent-child&quot;
+    ]
+  },
+  &quot;identity&quot;: {
+    &quot;mode&quot;: &quot;delegated&quot;,
+    &quot;requiredScopes&quot;: [
+      &quot;agents.invoke&quot;
+    ]
+  },
+  &quot;governance&quot;: {
+    &quot;classification&quot;: &quot;internal&quot;,
+    &quot;risk&quot;: &quot;low&quot;,
+    &quot;policyProfile&quot;: &quot;policy-demo&quot;,
+    &quot;evaluationProfile&quot;: &quot;eval-demo&quot;
+  },
+  &quot;deployment&quot;: {
+    &quot;profile&quot;: &quot;local&quot;,
+    &quot;environmentRef&quot;: &quot;environment-demo&quot;
+  },
+  &quot;contracts&quot;: {
+    &quot;inputSchema&quot;: &quot;https://agent.example.invalid/contracts/invocation.schema.json&quot;,
+    &quot;outputSchema&quot;: &quot;https://agent.example.invalid/contracts/result.schema.json&quot;
+  }
+}
+</code></pre><p class="file-link">원본 파일: <a href="../examples/manifests/multi-agent.json">examples/manifests/multi-agent.json</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "properties": {
+    "toolId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "protocol": {
+      "enum": [
+        "rest-openapi",
+        "mcp",
+        "custom"
+      ]
+    },
+    "resource": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "effect": {
+      "enum": [
+        "read",
+        "write"
+      ]
+    },
+    "inputSchema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "outputSchema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "allowedScopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  },
+  "required": [
+    "toolId",
+    "version",
+    "protocol",
+    "resource",
+    "effect",
+    "inputSchema",
+    "outputSchema",
+    "allowedScopes"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/tool-descriptor.schema.json",
+  "title": "tool-descriptor"
+}

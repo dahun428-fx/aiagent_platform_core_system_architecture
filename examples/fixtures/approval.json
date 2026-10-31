@@ -1,0 +1,10 @@
+{
+  "approvalId": "approval-demo",
+  "tenantId": "tenant-demo",
+  "invocationId": "inv-demo",
+  "subjectDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "policyVersion": "0.1.0",
+  "reviewer": "reviewer-demo",
+  "decision": "approved",
+  "expiresAt": "2099-01-01T00:00:00Z"
+}

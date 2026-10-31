@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>실행·Durable·HITL · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html" aria-current="page">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>실행·Durable·HITL</h1>
+<h2>상태 전이</h2>
+<p>accepted → running → succeeded | failed | waiting_approval | cancel_requested.
+waiting_approval → running(유효 승인 및 재인가) | rejected | expired | cancelled.
+cancel_requested → cancelled 또는 이미 commit된 succeeded/failed.
+terminal 상태는 실행 결과를 덮어쓰지 않는다(MUST). cancellation은 best effort이며 부작용 rollback 보장이 아니다.</p>
+<h2>Contract</h2>
+<p>execution.schema.json은 invocationId, revision, state, checkpointRef, pendingEffectId를 정의한다.
+revision 기반 compare-and-swap으로 동시 재개·중복 worker를 방지한다.
+checkpoint는 tenant scoped storage에 암호화하고 manifest digest·adapter version·policy version에 결합한다.
+checkpointRef와 event payload에는 secret을 넣지 않는다. 저장·복구·보존 수치는 TBD.
+retry 예산·backoff·deadline은 policy에서 결정한다. write의 unknown_outcome은 자동 재실행하지 않는다.
+events는 단조 sequence와 invocationId로 중복 제거하고 polling cursor 이후의 이벤트를 요청한다.</p>
+<h2>Approval</h2>
+<p>approval은 tenant·invocationId·subjectDigest·policyVersion·reviewer·expiry·decision에 결합한다.
+subjectDigest는 승인 대상 canonical request + tool/model/Agent version + destination을 포함해야 한다.
+단순 approved=true를 신뢰해서는 안 된다. 재개 시 digest·tenant·policy version·expiry·revocation을 모두 다시 확인한다.
+승인자 역할과 요청자 분리 수준은 위험 정책 TBD. 승인 이벤트는 append-only audit로 기록한다.
+정책 변경·요청 변경·승인 만료·취소 후 재승인은 새 evidence를 요구한다.</p>
+<h2>참조 범위</h2>
+<p>Python 예제는 sync flow, 메모리 idempotency, approval verifier와 fail-closed 정책을 실행한다.
+process restart를 견디는 checkpoint store, queue, scheduler, transactional outbox, 실제 workflow resume는 구현하지 않는다.
+durable HTTP 경로는 계약만 제공하며 mock에서는 501이다. production durable engine 선정은 TBD.</p><p class="file-link">원본 파일: <a href="../docs/execution.md">docs/execution.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

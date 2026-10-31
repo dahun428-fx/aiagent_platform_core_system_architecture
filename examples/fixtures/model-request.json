@@ -1,0 +1,52 @@
+{
+  "capability": "chat",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    }
+  ],
+  "identity": {
+    "tenantId": "tenant-demo",
+    "agentId": "agent-demo",
+    "workloadId": "runtime-demo",
+    "mode": "delegated",
+    "principalId": "user-demo",
+    "scopes": [
+      "tools.read",
+      "agents.invoke",
+      "models.invoke"
+    ],
+    "delegation": [
+      {
+        "actor": "runtime-demo",
+        "subject": "user-demo",
+        "audience": "tool-gateway",
+        "scopes": [
+          "tools.read",
+          "agents.invoke",
+          "models.invoke"
+        ]
+      }
+    ]
+  },
+  "policy": {
+    "decisionId": "policy-demo",
+    "policyVersion": "0.1.0",
+    "tenantId": "tenant-demo",
+    "classification": "internal",
+    "allowed": true,
+    "allowedScopes": [
+      "tools.read",
+      "agents.invoke",
+      "models.invoke"
+    ],
+    "allowedResources": [
+      "tool-search",
+      "model-self-hosted",
+      "model-external"
+    ],
+    "expiresAt": "2099-01-01T00:00:00Z"
+  },
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+}

@@ -1,0 +1,15 @@
+{
+  "documents": [
+    {
+      "documentId": "document-demo",
+      "content": "hello",
+      "citation": "https://example.invalid/document-demo",
+      "classification": "internal",
+      "tenantId": "tenant-demo",
+      "allowedPrincipals": [
+        "user-demo"
+      ]
+    }
+  ],
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+}

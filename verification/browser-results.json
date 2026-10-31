@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "browser": "151.0.7922.34",
+  "mode": "file:// + offline:true",
+  "checks": [
+    {
+      "check": "desktop-file-offline",
+      "passed": true
+    },
+    {
+      "check": "local-search",
+      "passed": true
+    },
+    {
+      "check": "empty-search",
+      "passed": true
+    },
+    {
+      "check": "all-nine-local-svg",
+      "passed": true
+    },
+    {
+      "check": "baseline-table",
+      "passed": true
+    },
+    {
+      "check": "broker-module",
+      "passed": true
+    },
+    {
+      "check": "mobile-menu",
+      "passed": true
+    },
+    {
+      "check": "mobile-no-page-overflow",
+      "passed": true
+    },
+    {
+      "check": "console-clean",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "check": "zero-network-dependency",
+      "passed": true,
+      "network": []
+    }
+  ]
+}

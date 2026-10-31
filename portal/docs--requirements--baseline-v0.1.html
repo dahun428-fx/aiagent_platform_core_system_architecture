@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>요구사항 기준선 v0.1 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html" aria-current="page">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>요구사항 기준선 v0.1</h1>
+<p>상태: Decided (아키텍처 결정). 회사의 공식 승인·production 배포 승인을 대신하지 않는다.
+기준일: 2026-10-30 (Asia/Seoul). 버전: 0.1.0.</p>
+<h2>출처와 정정</h2>
+<p>두 첨부 Deep Research 보고서의 Q1–30 표 및 검증 결과를 기준으로 한다.
+원 Q&amp;A 원문은 대화 도구가 content-reference로만 반환하여 직접 대조하지 못했다.
+따라서 아래 한국어는 질문 원문 인용이 아닌 결정의 규범적 정리다.
+Q30은 검증 보고서 및 현재 사용자 지시에 따라 명시적 B 선택으로 정정한다.
+회사 환경·제품·수치는 TBD이며 예제 fixture 수치는 합성 테스트 값이다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Q</th>
+<th>결정</th>
+<th>규범 요구</th>
+<th>ADR</th>
+<th>구현/검증 추적</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>전사 공통 플랫폼</td>
+<td>MUST: 전사 공통 AI Agent Platform을 구축한다.</td>
+<td><a href="adr--ADR-001.html">ADR-001</a></td>
+<td><a href="docs--architecture.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>기술 표준의 독자</td>
+<td>MUST: 아키텍트, Agent/백엔드 개발자, DevOps/SRE, 보안·거버넌스 담당자를 대상으로 한다.</td>
+<td><a href="adr--ADR-002.html">ADR-002</a></td>
+<td><a href="docs--operating-model.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>Hybrid Cloud</td>
+<td>MUST: Hybrid Cloud를 지원하고 회사의 현행 스택은 TBD로 둔다.</td>
+<td><a href="adr--ADR-003.html">ADR-003</a></td>
+<td><a href="docs--deployment.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>복수 모델 소싱</td>
+<td>MUST: 외부 상용 LLM과 자체 호스팅 OSS 모델을 지원한다.</td>
+<td><a href="adr--ADR-004.html">ADR-004</a></td>
+<td><a href="contracts--model-gateway.openapi.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>네 종류 Agent</td>
+<td>MUST: RAG, tool-using, workflow, multi-Agent의 초기 계약을 지원한다.</td>
+<td><a href="adr--ADR-005.html">ADR-005</a></td>
+<td><a href="examples--manifests--rag.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>공통 Runtime</td>
+<td>MUST: 공통 Runtime Contract와 프레임워크 어댑터를 사용한다.</td>
+<td><a href="adr--ADR-006.html">ADR-006</a></td>
+<td><a href="contracts--runtime.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>테넌트 격리</td>
+<td>MUST: 논리 격리를 기본으로 위험에 따라 물리 격리를 선택한다.</td>
+<td><a href="adr--ADR-007.html">ADR-007</a></td>
+<td><a href="contracts--identity.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>사용자·Agent Identity</td>
+<td>MUST: 사용자 및 Agent/workload 신원, 위임 및 독립 실행을 지원한다.</td>
+<td><a href="adr--ADR-008.html">ADR-008</a></td>
+<td><a href="docs--identity-and-credentials.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td>Agent Tools</td>
+<td>MUST: REST/OpenAPI, MCP, custom adapter를 지원한다.</td>
+<td><a href="adr--ADR-009.html">ADR-009</a></td>
+<td><a href="docs--agent-tools.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q10</td>
+<td>관측·평가</td>
+<td>MUST: 통합 관측, 자동 평가, 품질 gate를 적용한다.</td>
+<td><a href="adr--ADR-010.html">ADR-010</a></td>
+<td><a href="contracts--evaluation.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q11</td>
+<td>셀프서비스 수명주기</td>
+<td>MUST: 자동 gate와 고위험 human approval을 결합한다.</td>
+<td><a href="adr--ADR-011.html">ADR-011</a></td>
+<td><a href="contracts--approval.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q12</td>
+<td>Gateway 분리</td>
+<td>MUST: Agent Gateway와 Model Gateway를 논리적으로 분리하고 정책 라우팅한다.</td>
+<td><a href="adr--ADR-012.html">ADR-012</a></td>
+<td><a href="docs--architecture.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q13</td>
+<td>데이터 거버넌스</td>
+<td>MUST: 분류 기반 접근·데이터 이동 정책을 적용한다.</td>
+<td><a href="adr--ADR-013.html">ADR-013</a></td>
+<td><a href="contracts--policy.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q14</td>
+<td>Durable/HITL</td>
+<td>MUST: checkpoint, retry, idempotency, HITL, policy 제어를 계약화한다.</td>
+<td><a href="adr--ADR-014.html">ADR-014</a></td>
+<td><a href="docs--execution.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q15</td>
+<td>중립 모델 서빙</td>
+<td>MUST: 벤더 중립 endpoint 계약을 채택한다. Backend.AI는 Out of Scope다.</td>
+<td><a href="adr--ADR-015.html">ADR-015</a></td>
+<td><a href="docs--deployment.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q16</td>
+<td>위험별 NFR</td>
+<td>MUST: 환경·업무 위험별 단계적 SLO를 사용하고 수치는 TBD로 둔다.</td>
+<td><a href="adr--ADR-016.html">ADR-016</a></td>
+<td><a href="docs--tbd-register.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q17</td>
+<td>공통 제어·분산 실행</td>
+<td>MUST: Shared Control Plane + Distributed Execution Plane을 채택한다.</td>
+<td><a href="adr--ADR-017.html">ADR-017</a></td>
+<td><a href="../diagrams/c4-container.mmd">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q18</td>
+<td>Local-First/CLI-First</td>
+<td>MUST: Contract-first SDK·CLI·템플릿을 제공하고 중앙 소스 업로드나 Agent Studio를 강제하지 않는다.</td>
+<td><a href="adr--ADR-018.html">ADR-018</a></td>
+<td><a href="README.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q19</td>
+<td>공통 RAG</td>
+<td>MUST: 공통 RAG 계약과 교체 가능한 knowledge backend를 사용한다.</td>
+<td><a href="adr--ADR-019.html">ADR-019</a></td>
+<td><a href="contracts--retrieval.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q20</td>
+<td>Agent 간 통신</td>
+<td>MUST: 공통 Agent 통신 envelope와 adapter를 제공하고 A2A는 선택 사항이다.</td>
+<td><a href="adr--ADR-020.html">ADR-020</a></td>
+<td><a href="contracts--cross-agent.schema.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q21</td>
+<td>로컬 실험</td>
+<td>MUST: 로컬 실험과 공통 experiment/evaluation registry를 병행한다.</td>
+<td><a href="adr--ADR-021.html">ADR-021</a></td>
+<td><a href="docs--operating-model.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q22</td>
+<td>단계적 MVP</td>
+<td>MUST: Local-First vertical MVP 이후 기능을 단계적으로 확장한다.</td>
+<td><a href="adr--ADR-022.html">ADR-022</a></td>
+<td><a href="docs--implementation-plan.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q23</td>
+<td>정적 포털</td>
+<td>MUST: 모듈형 정적 HTML 기술 표준 포털을 제공한다.</td>
+<td><a href="adr--ADR-023.html">ADR-023</a></td>
+<td><a href="../portal/index.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q24</td>
+<td>언어 중립 계약</td>
+<td>MUST: 언어 중립 계약, Python 참조, TypeScript 핵심 예제를 제공한다.</td>
+<td><a href="adr--ADR-024.html">ADR-024</a></td>
+<td><a href="../examples/python/platform_ref.py">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q25</td>
+<td>아키텍처 도식</td>
+<td>MUST: C4 계층, 주요 시퀀스, 배포/보안 경계, MVP 흐름을 제공한다.</td>
+<td><a href="adr--ADR-025.html">ADR-025</a></td>
+<td><a href="docs--architecture.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q26</td>
+<td>Contract-as-Code</td>
+<td>MUST: 자동 검증·버전 관리·호환성 검사를 적용한다.</td>
+<td><a href="adr--ADR-026.html">ADR-026</a></td>
+<td><a href="docs--versioning.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q27</td>
+<td>구현 착수 가능</td>
+<td>MUST: 실제 schema·API·예제·테스트를 포함하는 기술 표준 패키지를 완성한다.</td>
+<td><a href="adr--ADR-027.html">ADR-027</a></td>
+<td><a href="docs--release-scope.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q28</td>
+<td>배포 형식</td>
+<td>MUST: Git에 넣을 수 있는 소스, static HTML, offline ZIP을 제공한다.</td>
+<td><a href="adr--ADR-028.html">ADR-028</a></td>
+<td><a href="README.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q29</td>
+<td>한국어 표준 문서</td>
+<td>MUST: 한국어 중심, English technical terms, MUST/SHOULD/MAY, ADR을 사용한다.</td>
+<td><a href="adr--ADR-029.html">ADR-029</a></td>
+<td><a href="docs--glossary.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+<tr>
+<td>Q30</td>
+<td>기준선 후 전체 제작</td>
+<td>MUST: B. 요구사항 기준선 검토 → 전체 패키지 제작. 명시적으로 답변한 확정 결정이다.</td>
+<td><a href="adr--ADR-030.html">ADR-030</a></td>
+<td><a href="docs--corrections.html">산출물</a> · tests/test_contracts.py</td>
+</tr>
+</tbody>
+</table></div>
+<h2>승인과 변경</h2>
+<p>기준선 변경은 영향받는 Q·ADR·계약·fixture·테스트를 같은 변경 단위로 수정해야 한다(MUST).
+회사 적용 승인자·보안 승인자·업무 owner는 TBD. 변경 이력은 docs/versioning.md를 따른다.</p><p class="file-link">원본 파일: <a href="../docs/requirements/baseline-v0.1.md">docs/requirements/baseline-v0.1.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

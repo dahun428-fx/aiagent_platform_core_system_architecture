@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/tool-output.schema.json",
+  "title": "tool-output",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "content"
+  ],
+  "additionalProperties": false
+}

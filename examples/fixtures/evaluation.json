@@ -1,0 +1,12 @@
+{
+  "evaluationId": "eval-demo",
+  "datasetVersion": "0.1.0",
+  "agentVersion": "0.1.0",
+  "manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "policyVersion": "0.1.0",
+  "metric": "fixture-exact-match",
+  "score": 1,
+  "threshold": 1,
+  "passed": true,
+  "traceId": "0123456789abcdef0123456789abcdef"
+}

@@ -1,0 +1,51 @@
+{
+  "apiVersion": "agent.platform/v1alpha1",
+  "kind": "Agent",
+  "metadata": {
+    "id": "agent-tool",
+    "name": "합성 tool Agent",
+    "version": "latest",
+    "owner": {
+      "team": "TBD"
+    }
+  },
+  "source": {
+    "repository": "https://example.invalid/agents/demo.git",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifactDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "runtime": {
+    "framework": "custom",
+    "adapter": "adapter-reference",
+    "entrypoint": "platform_ref:Runtime",
+    "executionMode": "sync"
+  },
+  "capabilities": {
+    "type": "tool",
+    "tools": [
+      "tool-search"
+    ],
+    "knowledge": [],
+    "agents": []
+  },
+  "identity": {
+    "mode": "delegated",
+    "requiredScopes": [
+      "agents.invoke"
+    ]
+  },
+  "governance": {
+    "classification": "internal",
+    "risk": "low",
+    "policyProfile": "policy-demo",
+    "evaluationProfile": "eval-demo"
+  },
+  "deployment": {
+    "profile": "local",
+    "environmentRef": "environment-demo"
+  },
+  "contracts": {
+    "inputSchema": "https://agent.example.invalid/contracts/invocation.schema.json",
+    "outputSchema": "https://agent.example.invalid/contracts/result.schema.json"
+  }
+}

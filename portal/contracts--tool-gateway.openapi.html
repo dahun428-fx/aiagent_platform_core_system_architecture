@@ -1,0 +1,2098 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>tool-gateway.openapi.json · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>tool-gateway.openapi.json</h1><pre><code>{
+  &quot;openapi&quot;: &quot;3.1.2&quot;,
+  &quot;info&quot;: {
+    &quot;title&quot;: &quot;Tool Gateway (Agent Tools)&quot;,
+    &quot;version&quot;: &quot;0.1.0&quot;,
+    &quot;description&quot;: &quot;전사 표준 목표 계약. 회사 주소·IdP 제품은 TBD. examples의 example.invalid는 합성 fixture다. mock 구현 범위는 docs/release-scope.md 참조.&quot;
+  },
+  &quot;servers&quot;: [
+    {
+      &quot;url&quot;: &quot;https://gateway.example.invalid&quot;,
+      &quot;description&quot;: &quot;합성 placeholder. 회사 endpoint TBD&quot;
+    }
+  ],
+  &quot;security&quot;: [
+    {
+      &quot;workloadMTLS&quot;: []
+    }
+  ],
+  &quot;paths&quot;: {
+    &quot;/v1/tools/{toolId}&quot;: {
+      &quot;get&quot;: {
+        &quot;operationId&quot;: &quot;getTool&quot;,
+        &quot;summary&quot;: &quot;getTool&quot;,
+        &quot;description&quot;: &quot;tenant/object authorization 및 policy enforcement 필수. trace header는 W3C 형식. body identity는 내부 검증 컨텍스트만 수용.&quot;,
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;toolId&quot;,
+            &quot;in&quot;: &quot;path&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;minLength&quot;: 1
+            }
+          },
+          {
+            &quot;name&quot;: &quot;traceparent&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: false,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+            },
+            &quot;example&quot;: &quot;00-0123456789abcdef0123456789abcdef-0123456789abcdef-01&quot;
+          }
+        ],
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Success&quot;,
+            &quot;headers&quot;: {
+              &quot;traceparent&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/tool-descriptor&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;toolId&quot;: &quot;tool-search&quot;,
+                  &quot;version&quot;: &quot;0.1.0&quot;,
+                  &quot;protocol&quot;: &quot;rest-openapi&quot;,
+                  &quot;resource&quot;: &quot;tool-search&quot;,
+                  &quot;effect&quot;: &quot;read&quot;,
+                  &quot;inputSchema&quot;: &quot;https://agent.example.invalid/contracts/tool-input.schema.json&quot;,
+                  &quot;outputSchema&quot;: &quot;https://agent.example.invalid/contracts/tool-output.schema.json&quot;,
+                  &quot;allowedScopes&quot;: [
+                    &quot;tools.read&quot;
+                  ]
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;Problem Details (400)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 400,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;401&quot;: {
+            &quot;description&quot;: &quot;Problem Details (401)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 401,
+                  &quot;code&quot;: &quot;UNAUTHENTICATED&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;Problem Details (403)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 403,
+                  &quot;code&quot;: &quot;FORBIDDEN&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Problem Details (404)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 404,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;Problem Details (409)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 409,
+                  &quot;code&quot;: &quot;CONFLICT&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;422&quot;: {
+            &quot;description&quot;: &quot;Problem Details (422)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 422,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;429&quot;: {
+            &quot;description&quot;: &quot;Problem Details (429)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 429,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;Problem Details (500)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 500,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;501&quot;: {
+            &quot;description&quot;: &quot;Problem Details (501)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 501,
+                  &quot;code&quot;: &quot;NOT_IMPLEMENTED&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;503&quot;: {
+            &quot;description&quot;: &quot;Problem Details (503)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 503,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/v1/tool-invocations&quot;: {
+      &quot;post&quot;: {
+        &quot;operationId&quot;: &quot;invokeTool&quot;,
+        &quot;summary&quot;: &quot;invokeTool&quot;,
+        &quot;description&quot;: &quot;tenant/object authorization 및 policy enforcement 필수. trace header는 W3C 형식. body identity는 내부 검증 컨텍스트만 수용.&quot;,
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;traceparent&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: false,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+            },
+            &quot;example&quot;: &quot;00-0123456789abcdef0123456789abcdef-0123456789abcdef-01&quot;
+          },
+          {
+            &quot;name&quot;: &quot;Idempotency-Key&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;minLength&quot;: 1
+            },
+            &quot;example&quot;: &quot;example-request-key&quot;
+          }
+        ],
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Success&quot;,
+            &quot;headers&quot;: {
+              &quot;traceparent&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/tool-result&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;invocationId&quot;: &quot;inv-demo&quot;,
+                  &quot;toolId&quot;: &quot;tool-search&quot;,
+                  &quot;status&quot;: &quot;succeeded&quot;,
+                  &quot;output&quot;: {
+                    &quot;content&quot;: &quot;tool:hello&quot;
+                  },
+                  &quot;traceparent&quot;: &quot;00-0123456789abcdef0123456789abcdef-0123456789abcdef-01&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;Problem Details (400)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 400,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;401&quot;: {
+            &quot;description&quot;: &quot;Problem Details (401)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 401,
+                  &quot;code&quot;: &quot;UNAUTHENTICATED&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;Problem Details (403)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 403,
+                  &quot;code&quot;: &quot;FORBIDDEN&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Problem Details (404)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 404,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;Problem Details (409)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 409,
+                  &quot;code&quot;: &quot;CONFLICT&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;422&quot;: {
+            &quot;description&quot;: &quot;Problem Details (422)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 422,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;429&quot;: {
+            &quot;description&quot;: &quot;Problem Details (429)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 429,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;Problem Details (500)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 500,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;501&quot;: {
+            &quot;description&quot;: &quot;Problem Details (501)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 501,
+                  &quot;code&quot;: &quot;NOT_IMPLEMENTED&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          },
+          &quot;503&quot;: {
+            &quot;description&quot;: &quot;Problem Details (503)&quot;,
+            &quot;content&quot;: {
+              &quot;application/problem+json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/problem&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;type&quot;: &quot;about:blank&quot;,
+                  &quot;title&quot;: &quot;Request failed&quot;,
+                  &quot;status&quot;: 503,
+                  &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+                  &quot;traceId&quot;: &quot;0123456789abcdef0123456789abcdef&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/tool-invoke&quot;
+              },
+              &quot;example&quot;: {
+                &quot;invocationId&quot;: &quot;inv-demo&quot;,
+                &quot;toolId&quot;: &quot;tool-search&quot;,
+                &quot;version&quot;: &quot;0.1.0&quot;,
+                &quot;arguments&quot;: {
+                  &quot;query&quot;: &quot;hello&quot;
+                },
+                &quot;identity&quot;: {
+                  &quot;tenantId&quot;: &quot;tenant-demo&quot;,
+                  &quot;agentId&quot;: &quot;agent-demo&quot;,
+                  &quot;workloadId&quot;: &quot;runtime-demo&quot;,
+                  &quot;mode&quot;: &quot;delegated&quot;,
+                  &quot;principalId&quot;: &quot;user-demo&quot;,
+                  &quot;scopes&quot;: [
+                    &quot;tools.read&quot;,
+                    &quot;agents.invoke&quot;,
+                    &quot;models.invoke&quot;
+                  ],
+                  &quot;delegation&quot;: [
+                    {
+                      &quot;actor&quot;: &quot;runtime-demo&quot;,
+                      &quot;subject&quot;: &quot;user-demo&quot;,
+                      &quot;audience&quot;: &quot;tool-gateway&quot;,
+                      &quot;scopes&quot;: [
+                        &quot;tools.read&quot;,
+                        &quot;agents.invoke&quot;,
+                        &quot;models.invoke&quot;
+                      ]
+                    }
+                  ]
+                },
+                &quot;policy&quot;: {
+                  &quot;decisionId&quot;: &quot;policy-demo&quot;,
+                  &quot;policyVersion&quot;: &quot;0.1.0&quot;,
+                  &quot;tenantId&quot;: &quot;tenant-demo&quot;,
+                  &quot;classification&quot;: &quot;internal&quot;,
+                  &quot;allowed&quot;: true,
+                  &quot;allowedScopes&quot;: [
+                    &quot;tools.read&quot;,
+                    &quot;agents.invoke&quot;,
+                    &quot;models.invoke&quot;
+                  ],
+                  &quot;allowedResources&quot;: [
+                    &quot;tool-search&quot;,
+                    &quot;model-self-hosted&quot;,
+                    &quot;model-external&quot;
+                  ],
+                  &quot;expiresAt&quot;: &quot;2099-01-01T00:00:00Z&quot;
+                },
+                &quot;idempotencyKey&quot;: &quot;fixture-tool&quot;,
+                &quot;traceparent&quot;: &quot;00-0123456789abcdef0123456789abcdef-0123456789abcdef-01&quot;
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  &quot;components&quot;: {
+    &quot;securitySchemes&quot;: {
+      &quot;bearerAuth&quot;: {
+        &quot;type&quot;: &quot;http&quot;,
+        &quot;scheme&quot;: &quot;bearer&quot;,
+        &quot;bearerFormat&quot;: &quot;OAuth2 access token&quot;,
+        &quot;description&quot;: &quot;issuer/aud/signature/expiry 검증. OIDC user identity와 workload identity 분리. 회사 IdP TBD.&quot;
+      },
+      &quot;workloadMTLS&quot;: {
+        &quot;type&quot;: &quot;mutualTLS&quot;,
+        &quot;description&quot;: &quot;내부 workload 인증 및 signed context 검증 필수. 회사 trust bundle TBD.&quot;
+      }
+    },
+    &quot;schemas&quot;: {
+      &quot;identity&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;tenantId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;agentId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;workloadId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;mode&quot;: {
+            &quot;enum&quot;: [
+              &quot;delegated&quot;,
+              &quot;independent&quot;
+            ]
+          },
+          &quot;principalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;scopes&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          },
+          &quot;delegation&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;properties&quot;: {
+                &quot;actor&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;subject&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;audience&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;scopes&quot;: {
+                  &quot;type&quot;: &quot;array&quot;,
+                  &quot;items&quot;: {
+                    &quot;type&quot;: &quot;string&quot;,
+                    &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                  },
+                  &quot;uniqueItems&quot;: true,
+                  &quot;minItems&quot;: 1
+                }
+              },
+              &quot;required&quot;: [
+                &quot;actor&quot;,
+                &quot;subject&quot;,
+                &quot;audience&quot;,
+                &quot;scopes&quot;
+              ],
+              &quot;additionalProperties&quot;: false
+            },
+            &quot;maxItems&quot;: 16
+          }
+        },
+        &quot;required&quot;: [
+          &quot;tenantId&quot;,
+          &quot;agentId&quot;,
+          &quot;workloadId&quot;,
+          &quot;mode&quot;,
+          &quot;scopes&quot;,
+          &quot;delegation&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;allOf&quot;: [
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;mode&quot;: {
+                  &quot;const&quot;: &quot;delegated&quot;
+                }
+              }
+            },
+            &quot;then&quot;: {
+              &quot;required&quot;: [
+                &quot;principalId&quot;
+              ],
+              &quot;properties&quot;: {
+                &quot;delegation&quot;: {
+                  &quot;minItems&quot;: 1
+                }
+              }
+            },
+            &quot;else&quot;: {
+              &quot;properties&quot;: {
+                &quot;delegation&quot;: {
+                  &quot;maxItems&quot;: 0
+                }
+              },
+              &quot;not&quot;: {
+                &quot;required&quot;: [
+                  &quot;principalId&quot;
+                ]
+              }
+            }
+          }
+        ],
+        &quot;title&quot;: &quot;identity&quot;
+      },
+      &quot;policy&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;decisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;policyVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;tenantId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;classification&quot;: {
+            &quot;enum&quot;: [
+              &quot;public&quot;,
+              &quot;internal&quot;,
+              &quot;confidential&quot;,
+              &quot;restricted&quot;
+            ]
+          },
+          &quot;allowed&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          },
+          &quot;allowedScopes&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          },
+          &quot;allowedResources&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          },
+          &quot;expiresAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;decisionId&quot;,
+          &quot;policyVersion&quot;,
+          &quot;tenantId&quot;,
+          &quot;classification&quot;,
+          &quot;allowed&quot;,
+          &quot;allowedScopes&quot;,
+          &quot;allowedResources&quot;,
+          &quot;expiresAt&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;policy&quot;
+      },
+      &quot;problem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;type&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uri&quot;
+          },
+          &quot;title&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;status&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 400,
+            &quot;maximum&quot;: 599
+          },
+          &quot;detail&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;instance&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;code&quot;: {
+            &quot;enum&quot;: [
+              &quot;UNAUTHENTICATED&quot;,
+              &quot;FORBIDDEN&quot;,
+              &quot;VALIDATION_ERROR&quot;,
+              &quot;NOT_FOUND&quot;,
+              &quot;CONFLICT&quot;,
+              &quot;NOT_IMPLEMENTED&quot;,
+              &quot;UPSTREAM_UNAVAILABLE&quot;
+            ]
+          },
+          &quot;traceId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-f0-9]{32}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;type&quot;,
+          &quot;title&quot;,
+          &quot;status&quot;,
+          &quot;code&quot;,
+          &quot;traceId&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;problem&quot;
+      },
+      &quot;agent-manifest&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;apiVersion&quot;: {
+            &quot;const&quot;: &quot;agent.platform/v1alpha1&quot;
+          },
+          &quot;kind&quot;: {
+            &quot;const&quot;: &quot;Agent&quot;
+          },
+          &quot;metadata&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;id&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              },
+              &quot;name&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              },
+              &quot;version&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+              },
+              &quot;owner&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {
+                  &quot;team&quot;: {
+                    &quot;type&quot;: &quot;string&quot;,
+                    &quot;minLength&quot;: 1
+                  }
+                },
+                &quot;required&quot;: [
+                  &quot;team&quot;
+                ],
+                &quot;additionalProperties&quot;: false
+              },
+              &quot;labels&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;additionalProperties&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                }
+              }
+            },
+            &quot;required&quot;: [
+              &quot;id&quot;,
+              &quot;name&quot;,
+              &quot;version&quot;,
+              &quot;owner&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;source&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;repository&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;format&quot;: &quot;uri&quot;
+              },
+              &quot;revision&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-f0-9]{40}$&quot;
+              },
+              &quot;artifactDigest&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^sha256:[a-f0-9]{64}$&quot;
+              }
+            },
+            &quot;required&quot;: [
+              &quot;repository&quot;,
+              &quot;revision&quot;,
+              &quot;artifactDigest&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;runtime&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;framework&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              },
+              &quot;adapter&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              },
+              &quot;entrypoint&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              },
+              &quot;executionMode&quot;: {
+                &quot;enum&quot;: [
+                  &quot;sync&quot;,
+                  &quot;async&quot;,
+                  &quot;durable&quot;
+                ]
+              }
+            },
+            &quot;required&quot;: [
+              &quot;framework&quot;,
+              &quot;adapter&quot;,
+              &quot;entrypoint&quot;,
+              &quot;executionMode&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;capabilities&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;type&quot;: {
+                &quot;enum&quot;: [
+                  &quot;rag&quot;,
+                  &quot;tool&quot;,
+                  &quot;workflow&quot;,
+                  &quot;multi-agent&quot;
+                ]
+              },
+              &quot;tools&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;uniqueItems&quot;: true
+              },
+              &quot;knowledge&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;uniqueItems&quot;: true
+              },
+              &quot;agents&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;uniqueItems&quot;: true
+              }
+            },
+            &quot;required&quot;: [
+              &quot;type&quot;,
+              &quot;tools&quot;,
+              &quot;knowledge&quot;,
+              &quot;agents&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;identity&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;mode&quot;: {
+                &quot;enum&quot;: [
+                  &quot;delegated&quot;,
+                  &quot;independent&quot;
+                ]
+              },
+              &quot;requiredScopes&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;uniqueItems&quot;: true,
+                &quot;minItems&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;mode&quot;,
+              &quot;requiredScopes&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;governance&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;classification&quot;: {
+                &quot;enum&quot;: [
+                  &quot;public&quot;,
+                  &quot;internal&quot;,
+                  &quot;confidential&quot;,
+                  &quot;restricted&quot;
+                ]
+              },
+              &quot;risk&quot;: {
+                &quot;enum&quot;: [
+                  &quot;low&quot;,
+                  &quot;medium&quot;,
+                  &quot;high&quot;
+                ]
+              },
+              &quot;policyProfile&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              },
+              &quot;evaluationProfile&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              }
+            },
+            &quot;required&quot;: [
+              &quot;classification&quot;,
+              &quot;risk&quot;,
+              &quot;policyProfile&quot;,
+              &quot;evaluationProfile&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;deployment&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;profile&quot;: {
+                &quot;enum&quot;: [
+                  &quot;local&quot;,
+                  &quot;shared-experiment&quot;,
+                  &quot;production&quot;
+                ]
+              },
+              &quot;environmentRef&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              }
+            },
+            &quot;required&quot;: [
+              &quot;profile&quot;,
+              &quot;environmentRef&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;contracts&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;inputSchema&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;format&quot;: &quot;uri&quot;
+              },
+              &quot;outputSchema&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;format&quot;: &quot;uri&quot;
+              }
+            },
+            &quot;required&quot;: [
+              &quot;inputSchema&quot;,
+              &quot;outputSchema&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          }
+        },
+        &quot;required&quot;: [
+          &quot;apiVersion&quot;,
+          &quot;kind&quot;,
+          &quot;metadata&quot;,
+          &quot;source&quot;,
+          &quot;runtime&quot;,
+          &quot;capabilities&quot;,
+          &quot;identity&quot;,
+          &quot;governance&quot;,
+          &quot;deployment&quot;,
+          &quot;contracts&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;allOf&quot;: [
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;type&quot;: {
+                      &quot;const&quot;: &quot;rag&quot;
+                    }
+                  }
+                }
+              }
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;knowledge&quot;: {
+                      &quot;minItems&quot;: 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;type&quot;: {
+                      &quot;const&quot;: &quot;tool&quot;
+                    }
+                  }
+                }
+              }
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;tools&quot;: {
+                      &quot;minItems&quot;: 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;type&quot;: {
+                      &quot;const&quot;: &quot;multi-agent&quot;
+                    }
+                  }
+                }
+              }
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;agents&quot;: {
+                      &quot;minItems&quot;: 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;capabilities&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;type&quot;: {
+                      &quot;const&quot;: &quot;workflow&quot;
+                    }
+                  }
+                }
+              }
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;runtime&quot;: {
+                  &quot;properties&quot;: {
+                    &quot;executionMode&quot;: {
+                      &quot;const&quot;: &quot;durable&quot;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        &quot;title&quot;: &quot;agent-manifest&quot;
+      },
+      &quot;invocation&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;input&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;type&quot;: {
+                &quot;const&quot;: &quot;message&quot;
+              },
+              &quot;content&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;type&quot;,
+              &quot;content&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;context&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;tenantId&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+              },
+              &quot;dataClassification&quot;: {
+                &quot;enum&quot;: [
+                  &quot;public&quot;,
+                  &quot;internal&quot;,
+                  &quot;confidential&quot;,
+                  &quot;restricted&quot;
+                ]
+              }
+            },
+            &quot;required&quot;: [
+              &quot;tenantId&quot;,
+              &quot;dataClassification&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;execution&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;mode&quot;: {
+                &quot;enum&quot;: [
+                  &quot;sync&quot;,
+                  &quot;async&quot;,
+                  &quot;durable&quot;
+                ]
+              },
+              &quot;timeoutMs&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;mode&quot;,
+              &quot;timeoutMs&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          }
+        },
+        &quot;required&quot;: [
+          &quot;input&quot;,
+          &quot;context&quot;,
+          &quot;execution&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;invocation&quot;
+      },
+      &quot;result&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;agentVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;status&quot;: {
+            &quot;const&quot;: &quot;succeeded&quot;
+          },
+          &quot;output&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;type&quot;: {
+                &quot;const&quot;: &quot;message&quot;
+              },
+              &quot;content&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;type&quot;,
+              &quot;content&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          },
+          &quot;routeDecisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;usage&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;inputTokens&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 0
+              },
+              &quot;outputTokens&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 0
+              }
+            },
+            &quot;required&quot;: [
+              &quot;inputTokens&quot;,
+              &quot;outputTokens&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;agentVersion&quot;,
+          &quot;status&quot;,
+          &quot;output&quot;,
+          &quot;traceparent&quot;,
+          &quot;routeDecisionId&quot;,
+          &quot;usage&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;result&quot;
+      },
+      &quot;runtime&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;agentId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;agentVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;request&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/invocation&quot;
+          },
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;policy&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/policy&quot;
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;agentId&quot;,
+          &quot;agentVersion&quot;,
+          &quot;request&quot;,
+          &quot;identity&quot;,
+          &quot;policy&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;runtime&quot;
+      },
+      &quot;tool-descriptor&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;toolId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;version&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;protocol&quot;: {
+            &quot;enum&quot;: [
+              &quot;rest-openapi&quot;,
+              &quot;mcp&quot;,
+              &quot;custom&quot;
+            ]
+          },
+          &quot;resource&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;effect&quot;: {
+            &quot;enum&quot;: [
+              &quot;read&quot;,
+              &quot;write&quot;
+            ]
+          },
+          &quot;inputSchema&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uri&quot;
+          },
+          &quot;outputSchema&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uri&quot;
+          },
+          &quot;allowedScopes&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          }
+        },
+        &quot;required&quot;: [
+          &quot;toolId&quot;,
+          &quot;version&quot;,
+          &quot;protocol&quot;,
+          &quot;resource&quot;,
+          &quot;effect&quot;,
+          &quot;inputSchema&quot;,
+          &quot;outputSchema&quot;,
+          &quot;allowedScopes&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;tool-descriptor&quot;
+      },
+      &quot;tool-invoke&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;toolId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;version&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;arguments&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;query&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;query&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;policy&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/policy&quot;
+          },
+          &quot;idempotencyKey&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          },
+          &quot;approvalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;toolId&quot;,
+          &quot;version&quot;,
+          &quot;arguments&quot;,
+          &quot;identity&quot;,
+          &quot;policy&quot;,
+          &quot;idempotencyKey&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;tool-invoke&quot;
+      },
+      &quot;tool-result&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;toolId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;status&quot;: {
+            &quot;enum&quot;: [
+              &quot;succeeded&quot;,
+              &quot;unknown_outcome&quot;
+            ]
+          },
+          &quot;output&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;content&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;minLength&quot;: 1
+              }
+            },
+            &quot;required&quot;: [
+              &quot;content&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;toolId&quot;,
+          &quot;status&quot;,
+          &quot;output&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;tool-result&quot;
+      },
+      &quot;credential-request&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;toolId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;toolVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;resource&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;scopes&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          },
+          &quot;policyDecisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;approvalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;identity&quot;,
+          &quot;toolId&quot;,
+          &quot;toolVersion&quot;,
+          &quot;resource&quot;,
+          &quot;scopes&quot;,
+          &quot;policyDecisionId&quot;,
+          &quot;invocationId&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;credential-request&quot;
+      },
+      &quot;credential-lease&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;credentialRef&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^lease-[a-f0-9]{32}$&quot;
+          },
+          &quot;audience&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;scopes&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true,
+            &quot;minItems&quot;: 1
+          },
+          &quot;expiresAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;
+          },
+          &quot;nonExportable&quot;: {
+            &quot;const&quot;: true
+          }
+        },
+        &quot;required&quot;: [
+          &quot;credentialRef&quot;,
+          &quot;audience&quot;,
+          &quot;scopes&quot;,
+          &quot;expiresAt&quot;,
+          &quot;nonExportable&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;credential-lease&quot;
+      },
+      &quot;approval&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;approvalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;tenantId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;subjectDigest&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^sha256:[a-f0-9]{64}$&quot;
+          },
+          &quot;policyVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;reviewer&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;decision&quot;: {
+            &quot;enum&quot;: [
+              &quot;approved&quot;,
+              &quot;rejected&quot;,
+              &quot;revoked&quot;
+            ]
+          },
+          &quot;expiresAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;approvalId&quot;,
+          &quot;tenantId&quot;,
+          &quot;invocationId&quot;,
+          &quot;subjectDigest&quot;,
+          &quot;policyVersion&quot;,
+          &quot;reviewer&quot;,
+          &quot;decision&quot;,
+          &quot;expiresAt&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;approval&quot;
+      },
+      &quot;execution&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;revision&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0
+          },
+          &quot;state&quot;: {
+            &quot;enum&quot;: [
+              &quot;accepted&quot;,
+              &quot;running&quot;,
+              &quot;waiting_approval&quot;,
+              &quot;cancel_requested&quot;,
+              &quot;cancelled&quot;,
+              &quot;succeeded&quot;,
+              &quot;failed&quot;,
+              &quot;rejected&quot;,
+              &quot;expired&quot;,
+              &quot;unknown_outcome&quot;
+            ]
+          },
+          &quot;checkpointRef&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;pendingEffectId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;policyVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;revision&quot;,
+          &quot;state&quot;,
+          &quot;policyVersion&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;execution&quot;
+      },
+      &quot;event&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;sequence&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1
+          },
+          &quot;at&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;
+          },
+          &quot;type&quot;: {
+            &quot;enum&quot;: [
+              &quot;accepted&quot;,
+              &quot;started&quot;,
+              &quot;checkpointed&quot;,
+              &quot;approval_requested&quot;,
+              &quot;approval_decided&quot;,
+              &quot;cancel_requested&quot;,
+              &quot;completed&quot;,
+              &quot;failed&quot;
+            ]
+          },
+          &quot;state&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/execution&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;invocationId&quot;,
+          &quot;sequence&quot;,
+          &quot;at&quot;,
+          &quot;type&quot;,
+          &quot;state&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;event&quot;
+      },
+      &quot;retrieval-request&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;query&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;knowledgeId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;policy&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/policy&quot;
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          },
+          &quot;limit&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1
+          }
+        },
+        &quot;required&quot;: [
+          &quot;query&quot;,
+          &quot;knowledgeId&quot;,
+          &quot;identity&quot;,
+          &quot;policy&quot;,
+          &quot;traceparent&quot;,
+          &quot;limit&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;retrieval-request&quot;
+      },
+      &quot;retrieval&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;documents&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;properties&quot;: {
+                &quot;documentId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;content&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;minLength&quot;: 1
+                },
+                &quot;citation&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;format&quot;: &quot;uri&quot;
+                },
+                &quot;classification&quot;: {
+                  &quot;enum&quot;: [
+                    &quot;public&quot;,
+                    &quot;internal&quot;,
+                    &quot;confidential&quot;,
+                    &quot;restricted&quot;
+                  ]
+                },
+                &quot;tenantId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                },
+                &quot;allowedPrincipals&quot;: {
+                  &quot;type&quot;: &quot;array&quot;,
+                  &quot;items&quot;: {
+                    &quot;type&quot;: &quot;string&quot;,
+                    &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+                  }
+                }
+              },
+              &quot;required&quot;: [
+                &quot;documentId&quot;,
+                &quot;content&quot;,
+                &quot;citation&quot;,
+                &quot;classification&quot;,
+                &quot;tenantId&quot;,
+                &quot;allowedPrincipals&quot;
+              ],
+              &quot;additionalProperties&quot;: false
+            }
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;documents&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;retrieval&quot;
+      },
+      &quot;cross-agent&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;parentInvocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;invocationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;callerAgentId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;targetAgentId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;targetAgentVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;policy&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/policy&quot;
+          },
+          &quot;request&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/invocation&quot;
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          },
+          &quot;visitedAgents&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+            },
+            &quot;uniqueItems&quot;: true
+          },
+          &quot;depth&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1
+          },
+          &quot;maxDepth&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1
+          },
+          &quot;budgetRemaining&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1
+          }
+        },
+        &quot;required&quot;: [
+          &quot;parentInvocationId&quot;,
+          &quot;invocationId&quot;,
+          &quot;callerAgentId&quot;,
+          &quot;targetAgentId&quot;,
+          &quot;targetAgentVersion&quot;,
+          &quot;identity&quot;,
+          &quot;policy&quot;,
+          &quot;request&quot;,
+          &quot;traceparent&quot;,
+          &quot;visitedAgents&quot;,
+          &quot;depth&quot;,
+          &quot;maxDepth&quot;,
+          &quot;budgetRemaining&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;cross-agent&quot;
+      },
+      &quot;evaluation&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;evaluationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;datasetVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;agentVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;manifestDigest&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^sha256:[a-f0-9]{64}$&quot;
+          },
+          &quot;policyVersion&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9]+\\.[0-9]+\\.[0-9]+$&quot;
+          },
+          &quot;metric&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;score&quot;: {
+            &quot;type&quot;: &quot;number&quot;
+          },
+          &quot;threshold&quot;: {
+            &quot;type&quot;: &quot;number&quot;
+          },
+          &quot;passed&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          },
+          &quot;traceId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-f0-9]{32}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;evaluationId&quot;,
+          &quot;datasetVersion&quot;,
+          &quot;agentVersion&quot;,
+          &quot;manifestDigest&quot;,
+          &quot;policyVersion&quot;,
+          &quot;metric&quot;,
+          &quot;score&quot;,
+          &quot;threshold&quot;,
+          &quot;passed&quot;,
+          &quot;traceId&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;evaluation&quot;
+      },
+      &quot;model-request&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;capability&quot;: {
+            &quot;enum&quot;: [
+              &quot;chat&quot;,
+              &quot;embedding&quot;
+            ]
+          },
+          &quot;messages&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;items&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;properties&quot;: {
+                &quot;role&quot;: {
+                  &quot;enum&quot;: [
+                    &quot;system&quot;,
+                    &quot;user&quot;,
+                    &quot;assistant&quot;
+                  ]
+                },
+                &quot;content&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;minLength&quot;: 1
+                }
+              },
+              &quot;required&quot;: [
+                &quot;role&quot;,
+                &quot;content&quot;
+              ],
+              &quot;additionalProperties&quot;: false
+            },
+            &quot;minItems&quot;: 1
+          },
+          &quot;identity&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/identity&quot;
+          },
+          &quot;policy&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/policy&quot;
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;capability&quot;,
+          &quot;messages&quot;,
+          &quot;identity&quot;,
+          &quot;policy&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;model-request&quot;
+      },
+      &quot;model-result&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;content&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          },
+          &quot;provider&quot;: {
+            &quot;enum&quot;: [
+              &quot;external&quot;,
+              &quot;self-hosted&quot;
+            ]
+          },
+          &quot;routeDecisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9.-]{1,63}$&quot;
+          },
+          &quot;usage&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;inputTokens&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 0
+              },
+              &quot;outputTokens&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 0
+              }
+            },
+            &quot;required&quot;: [
+              &quot;inputTokens&quot;,
+              &quot;outputTokens&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          },
+          &quot;traceparent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;content&quot;,
+          &quot;provider&quot;,
+          &quot;routeDecisionId&quot;,
+          &quot;usage&quot;,
+          &quot;traceparent&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;title&quot;: &quot;model-result&quot;
+      },
+      &quot;tool-input&quot;: {
+        &quot;title&quot;: &quot;tool-input&quot;,
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;query&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          }
+        },
+        &quot;required&quot;: [
+          &quot;query&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;tool-output&quot;: {
+        &quot;title&quot;: &quot;tool-output&quot;,
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;content&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1
+          }
+        },
+        &quot;required&quot;: [
+          &quot;content&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      }
+    }
+  }
+}
+</code></pre><p class="file-link">원본 파일: <a href="../contracts/tool-gateway.openapi.json">contracts/tool-gateway.openapi.json</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

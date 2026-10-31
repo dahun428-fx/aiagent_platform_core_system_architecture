@@ -1,0 +1,24 @@
+{
+  "tenantId": "tenant-demo",
+  "agentId": "agent-demo",
+  "workloadId": "runtime-demo",
+  "mode": "delegated",
+  "principalId": "user-demo",
+  "scopes": [
+    "tools.read",
+    "agents.invoke",
+    "models.invoke"
+  ],
+  "delegation": [
+    {
+      "actor": "runtime-demo",
+      "subject": "user-demo",
+      "audience": "tool-gateway",
+      "scopes": [
+        "tools.read",
+        "agents.invoke",
+        "models.invoke"
+      ]
+    }
+  ]
+}

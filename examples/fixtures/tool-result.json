@@ -1,0 +1,9 @@
+{
+  "invocationId": "inv-demo",
+  "toolId": "tool-search",
+  "status": "succeeded",
+  "output": {
+    "content": "tool:hello"
+  },
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+}

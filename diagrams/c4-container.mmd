@@ -1,0 +1,20 @@
+flowchart TB
+  %% C4 · Containers — Shared Control Plane / Distributed Execution Plane
+  ag["Agent Gateway<br/>Northbound auth · resolve"]
+  cp["Shared Control Plane<br/>Registry · Policy · Eval · OTel"]
+  identity["Agent Identity<br/>Credential Broker / delegation"]
+  rt["Agent Runtime<br/>Framework adapter · state"]
+  mg["Model Gateway<br/>Route / classification"]
+  tg["Agent Tools<br/>Tool Registry · Tool Gateway · adapters"]
+  kg["Knowledge Backend<br/>ACL retrieval / interchangeable"]
+  model["External / Self-hosted Model<br/>Endpoint adapter · TBD"]
+  down["Enterprise Tool Endpoint<br/>Approved resource · TBD"]
+  ag -->|"invoke"| rt
+  ag -->|"resolve / policy"| cp
+  rt -->|"model"| mg
+  rt -->|"retrieve"| kg
+  rt -->|"tool invoke"| tg
+  tg -->|"bounded lease"| identity
+  mg -->|"approved route"| model
+  tg -->|"credential-bound call"| down
+

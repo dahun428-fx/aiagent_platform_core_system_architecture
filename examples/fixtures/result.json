@@ -1,0 +1,15 @@
+{
+  "invocationId": "inv-demo",
+  "agentVersion": "0.1.0",
+  "status": "succeeded",
+  "output": {
+    "type": "message",
+    "content": "mock:hello"
+  },
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01",
+  "routeDecisionId": "route-self-hosted",
+  "usage": {
+    "inputTokens": 1,
+    "outputTokens": 1
+  }
+}

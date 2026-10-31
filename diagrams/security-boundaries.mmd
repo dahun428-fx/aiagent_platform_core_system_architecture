@@ -1,0 +1,16 @@
+flowchart TB
+  %% Security Trust Boundaries — 검증된 신원 / controlled egress / 고신뢰 credential mediation
+  client["Untrusted Client<br/>body tenant is assertion only"]
+  ingress["Boundary 1 · Agent Gateway<br/>Token → authoritative identity"]
+  runtime["Boundary 2 · Runtime<br/>Untrusted prompts / tool outputs"]
+  tools["Boundary 3 · Tool Gateway<br/>Registry / schema / policy"]
+  broker["Boundary 4 · Broker / STS<br/>Workload-bound short lease"]
+  external["Boundary 5 · Downstream<br/>Model / tool / knowledge"]
+  audit["Audit / Policy Authority<br/>Allowlist metadata · no bearer"]
+  client -->|"Authenticate / compare tenant"| ingress
+  ingress -->|"Signed context / workload auth"| runtime
+  runtime -->|"Logical tool ID only"| tools
+  tools -->|"audience + scope intersection"| broker
+  tools -->|"Adapter injects credential"| external
+  broker -->|"Issuance / policy evidence"| audit
+

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>보안 경계와 위협 모델 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html" aria-current="page">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content" tabindex="-1"><h1>보안 경계와 위협 모델</h1>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>경계 / 위협</th>
+<th>필수 통제</th>
+<th>검증 증거</th>
+<th>잔여 구현</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client→Agent Gateway: identity/tenant 위조</td>
+<td>검증 token에서 신원 파생, body 비교, deny by default</td>
+<td>spoof/missing auth tests</td>
+<td>실제 JWKS·issuer·audience·revocation TBD</td>
+</tr>
+<tr>
+<td>Runtime→Tools: confused deputy·prompt injection</td>
+<td>논리 tool ID, scope 교집합, output 비신뢰, 정책 재검증</td>
+<td>scope/tenant/write denial</td>
+<td>adapter egress allowlist TBD</td>
+</tr>
+<tr>
+<td>Tools→Broker: credential 유출</td>
+<td>audience 제한, expiry·binding, 비노출 handle</td>
+<td>lease binding/expiry tests</td>
+<td>STS·mTLS·KMS TBD</td>
+</tr>
+<tr>
+<td>Registry/Control Plane: 공급망 오염</td>
+<td>immutable digest, owner review, signed artifact, provenance</td>
+<td>Manifest schema + promotion gate</td>
+<td>서명 인프라 TBD</td>
+</tr>
+<tr>
+<td>RAG→model: ACL 누출</td>
+<td>검색 시 ACL·분류 filter, citation 후에도 output 검사</td>
+<td>retrieval tenant/ACL tests</td>
+<td>회사 검색 backend TBD</td>
+</tr>
+<tr>
+<td>Model Gateway→external: 분류 우회</td>
+<td>confidential/restricted 외부 route deny, 안전 route 없으면 실패</td>
+<td>routing tests</td>
+<td>지역·국경 정책 TBD</td>
+</tr>
+<tr>
+<td>Agent→Agent: 권한 확산·cycle</td>
+<td>scope 축소, audience 재검증, depth/budget/cycle 제어</td>
+<td>cross-agent tests</td>
+<td>adapter/A2A version TBD</td>
+</tr>
+<tr>
+<td>Retry/resume: 승인 replay·중복 write</td>
+<td>digest/expiry/policy 확인, request key 충돌, unknown outcome</td>
+<td>replay/idempotency tests</td>
+<td>persistent effect ledger TBD</td>
+</tr>
+<tr>
+<td>Trace/audit: 정보 유출</td>
+<td>allowlist metadata, token/PII redaction, 접근통제</td>
+<td>redaction tests</td>
+<td>exporter·retention TBD</td>
+</tr>
+<tr>
+<td>제어-plane 장애</td>
+<td>신규 권한/승격 fail closed, 캐시된 권한은 승인된 TTL 범위</td>
+<td>mock fail-closed tests</td>
+<td>장애·복구 drill TBD</td>
+</tr>
+</tbody>
+</table></div>
+<h2>배포 전 기준</h2>
+<p>TLS·workload 인증·network policy·secret rotation·audit tamper resistance는 MUST다.
+모든 tenant scoped lookup에는 tenant 조건이 포함되어야 한다. invocation ID만으로 poll/cancel/events를 허용하지 않는다.
+raw prompt/output 로깅은 기본 비활성화한다. 민감정보 평가·삭제·보존 절차는 회사 정책 TBD다.
+CORS·rate limiting·body size·timeout·egress quotas는 위험별 policy로 적용한다. 수치는 TBD.
+Python 예제는 합성 bearer가 고정 매핑된 로컬 mock이며 JWT 검증 제품이 아니다.</p><p class="file-link">원본 파일: <a href="../docs/security.md">docs/security.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

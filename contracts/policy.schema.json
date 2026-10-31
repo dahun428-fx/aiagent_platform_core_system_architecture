@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "properties": {
+    "decisionId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "policyVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "tenantId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "classification": {
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ]
+    },
+    "allowed": {
+      "type": "boolean"
+    },
+    "allowedScopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "allowedResources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "decisionId",
+    "policyVersion",
+    "tenantId",
+    "classification",
+    "allowed",
+    "allowedScopes",
+    "allowedResources",
+    "expiresAt"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/policy.schema.json",
+  "title": "policy"
+}

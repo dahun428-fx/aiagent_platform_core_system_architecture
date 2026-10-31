@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "message"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        },
+        "dataClassification": {
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "restricted"
+          ]
+        }
+      },
+      "required": [
+        "tenantId",
+        "dataClassification"
+      ],
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "sync",
+            "async",
+            "durable"
+          ]
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "mode",
+        "timeoutMs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "input",
+    "context",
+    "execution"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/invocation.schema.json",
+  "title": "invocation"
+}

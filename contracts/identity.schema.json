@@ -1,0 +1,118 @@
+{
+  "type": "object",
+  "properties": {
+    "tenantId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "workloadId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "mode": {
+      "enum": [
+        "delegated",
+        "independent"
+      ]
+    },
+    "principalId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "delegation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "actor": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "audience": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          }
+        },
+        "required": [
+          "actor",
+          "subject",
+          "audience",
+          "scopes"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 16
+    }
+  },
+  "required": [
+    "tenantId",
+    "agentId",
+    "workloadId",
+    "mode",
+    "scopes",
+    "delegation"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "delegated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "principalId"
+        ],
+        "properties": {
+          "delegation": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "delegation": {
+            "maxItems": 0
+          }
+        },
+        "not": {
+          "required": [
+            "principalId"
+          ]
+        }
+      }
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/identity.schema.json",
+  "title": "identity"
+}

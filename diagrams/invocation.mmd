@@ -1,0 +1,17 @@
+sequenceDiagram
+  autonumber
+  participant A0 as Client
+  participant A1 as Agent Gateway
+  participant A2 as Registry / Policy
+  participant A3 as Runtime
+  participant A4 as Model Gateway
+  A0->>A1: Bearer + traceparent + key
+  A1->>A2: Resolve immutable Agent / authorize
+  A2->>A1: Identity / policy decision
+  A1->>A3: Runtime envelope
+  A3->>A4: Capability + classification
+  A4->>A3: Canonical model result / usage
+  A3->>A1: Invocation result + trace
+  A1->>A0: 200 result / 202 state
+  A1->>A2: Audit / evaluation evidence
+

@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "properties": {
+    "invocationId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "toolId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "arguments": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "identity": {
+      "$ref": "https://agent.example.invalid/contracts/identity.schema.json"
+    },
+    "policy": {
+      "$ref": "https://agent.example.invalid/contracts/policy.schema.json"
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "traceparent": {
+      "type": "string",
+      "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
+    },
+    "approvalId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    }
+  },
+  "required": [
+    "invocationId",
+    "toolId",
+    "version",
+    "arguments",
+    "identity",
+    "policy",
+    "idempotencyKey",
+    "traceparent"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/tool-invoke.schema.json",
+  "title": "tool-invoke"
+}

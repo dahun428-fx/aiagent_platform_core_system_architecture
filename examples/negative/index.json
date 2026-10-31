@@ -1,0 +1,42 @@
+[
+  {
+    "name": "missing-owner",
+    "schema": "agent-manifest",
+    "file": "examples/negative/missing-owner.json"
+  },
+  {
+    "name": "invalid-version",
+    "schema": "agent-manifest",
+    "file": "examples/negative/invalid-version.json"
+  },
+  {
+    "name": "unsupported-mode",
+    "schema": "agent-manifest",
+    "file": "examples/negative/unsupported-mode.json"
+  },
+  {
+    "name": "malformed-uri",
+    "schema": "agent-manifest",
+    "file": "examples/negative/malformed-uri.json"
+  },
+  {
+    "name": "unexpected-secret",
+    "schema": "agent-manifest",
+    "file": "examples/negative/unexpected-secret.json"
+  },
+  {
+    "name": "empty-tools",
+    "schema": "agent-manifest",
+    "file": "examples/negative/empty-tools.json"
+  },
+  {
+    "name": "mutable-revision",
+    "schema": "agent-manifest",
+    "file": "examples/negative/mutable-revision.json"
+  },
+  {
+    "name": "invalid-classification",
+    "schema": "agent-manifest",
+    "file": "examples/negative/invalid-classification.json"
+  }
+]

@@ -1,0 +1,15 @@
+flowchart TB
+  %% Local-First MVP Flow — 불변 source/artifact와 평가 증거로 승격 · 중앙 source upload 비강제
+  git["Local Agent / Git<br/>Source remains developer-owned"]
+  ci["Contract / CI Gates<br/>Manifest · API · security · eval"]
+  reg["Registry<br/>Immutable digest + environment"]
+  gw["Agent Gateway<br/>Auth · tenant · idempotency"]
+  rt["Runtime → Model Gateway<br/>Trace-correlated invocation"]
+  eval["Evaluate / Promote<br/>Risk approval → approved target"]
+  git -->|"validate"| ci
+  ci -->|"register evidence"| reg
+  reg -->|"resolve immutable version"| gw
+  gw -->|"execute"| rt
+  rt -->|"trace / result"| eval
+  eval -->|"promotion evidence"| reg
+

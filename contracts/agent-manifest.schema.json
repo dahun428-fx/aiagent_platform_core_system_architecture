@@ -1,0 +1,365 @@
+{
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "const": "agent.platform/v1alpha1"
+    },
+    "kind": {
+      "const": "Agent"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "team": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "team"
+          ],
+          "additionalProperties": false
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "version",
+        "owner"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "artifactDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "repository",
+        "revision",
+        "artifactDigest"
+      ],
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "framework": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adapter": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        },
+        "entrypoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executionMode": {
+          "enum": [
+            "sync",
+            "async",
+            "durable"
+          ]
+        }
+      },
+      "required": [
+        "framework",
+        "adapter",
+        "entrypoint",
+        "executionMode"
+      ],
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "rag",
+            "tool",
+            "workflow",
+            "multi-agent"
+          ]
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "uniqueItems": true
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "uniqueItems": true
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "type",
+        "tools",
+        "knowledge",
+        "agents"
+      ],
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "delegated",
+            "independent"
+          ]
+        },
+        "requiredScopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "mode",
+        "requiredScopes"
+      ],
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "restricted"
+          ]
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "policyProfile": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        },
+        "evaluationProfile": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        }
+      },
+      "required": [
+        "classification",
+        "risk",
+        "policyProfile",
+        "evaluationProfile"
+      ],
+      "additionalProperties": false
+    },
+    "deployment": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "enum": [
+            "local",
+            "shared-experiment",
+            "production"
+          ]
+        },
+        "environmentRef": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+        }
+      },
+      "required": [
+        "profile",
+        "environmentRef"
+      ],
+      "additionalProperties": false
+    },
+    "contracts": {
+      "type": "object",
+      "properties": {
+        "inputSchema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "outputSchema": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "inputSchema",
+        "outputSchema"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "source",
+    "runtime",
+    "capabilities",
+    "identity",
+    "governance",
+    "deployment",
+    "contracts"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "type": {
+                "const": "rag"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "knowledge": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "type": {
+                "const": "tool"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "tools": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "type": {
+                "const": "multi-agent"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "agents": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capabilities": {
+            "properties": {
+              "type": {
+                "const": "workflow"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "runtime": {
+            "properties": {
+              "executionMode": {
+                "const": "durable"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/agent-manifest.schema.json",
+  "title": "agent-manifest"
+}

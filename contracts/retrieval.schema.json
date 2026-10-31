@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "properties": {
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "citation": {
+            "type": "string",
+            "format": "uri"
+          },
+          "classification": {
+            "enum": [
+              "public",
+              "internal",
+              "confidential",
+              "restricted"
+            ]
+          },
+          "tenantId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+          },
+          "allowedPrincipals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+            }
+          }
+        },
+        "required": [
+          "documentId",
+          "content",
+          "citation",
+          "classification",
+          "tenantId",
+          "allowedPrincipals"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "traceparent": {
+      "type": "string",
+      "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
+    }
+  },
+  "required": [
+    "documents",
+    "traceparent"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent.example.invalid/contracts/retrieval.schema.json",
+  "title": "retrieval"
+}

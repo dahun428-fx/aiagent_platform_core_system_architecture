@@ -1,0 +1,12 @@
+{
+  "invocationId": "inv-demo",
+  "sequence": 1,
+  "at": "2026-10-30T00:00:00Z",
+  "type": "accepted",
+  "state": {
+    "invocationId": "inv-demo",
+    "revision": 0,
+    "state": "accepted",
+    "policyVersion": "0.1.0"
+  }
+}

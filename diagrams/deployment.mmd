@@ -1,0 +1,13 @@
+flowchart TB
+  %% Hybrid Deployment Profiles — 모든 실제 제품·주소·수량·SLO = TBD
+  control["Shared Control Plane<br/>Registry · Identity · Policy · Eval"]
+  local["Local Profile<br/>Developer-owned Git / CLI"]
+  experiment["Shared Experiment Profile<br/>Registered workstation / cloud TBD"]
+  prod["Production Profile<br/>Approved hybrid target TBD"]
+  egress["Model / Tool / Knowledge<br/>Policy-governed endpoints TBD"]
+  local -->|"Optional experiment metadata"| control
+  experiment -->|"Workload auth / policy"| control
+  prod -->|"Promotion evidence required"| control
+  prod -->|"Classification / egress policy"| egress
+  experiment -->|"Test policy"| egress
+

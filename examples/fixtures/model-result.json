@@ -1,0 +1,10 @@
+{
+  "content": "mock:hello",
+  "provider": "self-hosted",
+  "routeDecisionId": "route-self-hosted",
+  "usage": {
+    "inputTokens": 1,
+    "outputTokens": 1
+  },
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+}

@@ -1,0 +1,321 @@
+# Verification Review of “Enterprise AI Agent Platform: Actionable Implementation Plan and Production Deliverables”
+
+## Executive Summary
+
+The Deep Research report is **architecturally sound and largely faithful to the 30-question baseline, but it should not yet be treated as the approved implementation baseline without revision**. Its strongest areas are the Shared Control Plane / Distributed Execution Plane topology, Local-First and CLI-First development model, contract-first approach, separation of Agent Gateway and Model Gateway, explicit exclusion of Backend.AI, vendor-neutral model serving, and the proposed standards-package structure. The report also correctly identifies OpenAPI, JSON Schema Draft 2020-12, OpenTelemetry/W3C Trace Context, OAuth/OIDC, and Contract-as-Code as appropriate foundations. fileciteturn0file0 OpenAPI 3.2.1 is indeed the current published OAS version as of October 30, 2026, while 3.1.2 remains a reasonable compatibility fallback if enterprise tooling has not caught up. citeturn340454search0turn340454search33
+
+The most important correction is **Q30 provenance**. The report states that Q30 “was not separately answered in the visible sequence” and therefore treats option B as operative by inference. That is factually wrong relative to the completed requirements process: Q30 was explicitly answered as **“B. Requirements baseline review → full package production.”** This should be corrected in both the requirements matrix and ADR-030. fileciteturn0file0
+
+The second major gap is architectural decomposition around tools and credentials. The report shows a `Tool Gateway`, but it does not formally place it under the original logical `Agent Tools` capability, nor does it define a first-class `Credential Broker` under `Agent Identity`. The approved mapping should be:
+
+- **Agent Runtime** — execution/orchestration consumer of identity, model, tool, knowledge, state and policy services.
+- **Agent Gateway** — northbound ingress for clients/applications invoking Agents.
+- **Agent Tools** — logical capability domain containing Tool Registry, Tool Gateway, protocol adapters and tool policy/audit functions.
+- **Tool Gateway** — controlled egress/invocation mediation from Runtime toward REST/OpenAPI/MCP tools.
+- **Agent Identity** — logical identity/security capability domain for user identity, Agent/workload identity, delegation and credential mediation.
+- **Credential Broker** — service within Agent Identity that exchanges or obtains short-lived, audience-constrained credentials for approved downstream resources; it should not hand long-lived secrets to the LLM or Runtime.
+- **Model Gateway** — separate model-routing boundary.
+
+OAuth Token Exchange explicitly defines exchanging one security token for another in delegated or impersonation-style scenarios, making RFC 8693 a useful standards basis for the Credential Broker abstraction; OAuth Security BCP RFC 9700 should govern the associated security posture. citeturn340454search3turn340454search1 OIDC should be used for user authentication semantics, not confused with authorization to downstream tools. citeturn970015search2
+
+The third issue is **deliverable maturity**. The report is a detailed implementation plan, but the “implementation-ready standards package” described in Q27 has not actually been produced yet. The report enumerates files such as `agent-manifest.schema.json`, `agent-gateway.openapi.yaml`, `model-gateway.openapi.yaml`, Python examples, TypeScript clients and contract tests, but these remain proposed artifacts rather than validated repository contents. fileciteturn0file0 The correct approval state is therefore **“Approve architecture direction; revise baseline; then produce and validate the actual package.”**
+
+Overall recommendation: **Approve with mandatory revisions**, with Q30 correction, Tool Gateway/Credential Broker placement, explicit trust boundaries, normative ADR completion, and generation of executable contracts as P0 actions.
+
+## Report Section Index and Baseline Mapping
+
+The report is well structured enough to serve as the source document for a formal v0.1 baseline. Its substantive sections can be indexed as follows. fileciteturn0file0
+
+| Review area | Report section / artifact | Assessment |
+|---|---|---|
+| Requirements matrix | **Requirements Baseline** | Complete Q1–Q30 table; Q30 provenance needs correction |
+| ADR inventory | ADR column in baseline + proposed `adr/ADR-001...030` repository layout | Decisions indexed, but ADR bodies do not yet exist |
+| MVP roadmap | **MVP Scope, Roadmap, Deliverables, Effort and Risks** | Strong phased vertical-slice approach |
+| Contract definitions | **Technical Specifications to Draft Immediately** | Good initial Manifest, Agent Gateway and Model Gateway contract design |
+| Test strategy | **Contract tests required in CI** | Strong initial conformance list |
+| Reference implementations | **Reference Implementations and CI/Verification** | Python and TypeScript plan present; code not yet delivered |
+| TBD register | **Prioritized TBD register** | Good prioritization; Credential Broker design should be added |
+| Deliverable inventory | **Production standards package** and repository tree | Comprehensive, but currently aspirational |
+| Kickoff | **Kickoff plan for the first one to two weeks** | Actionable, although revised component/security work should precede coding |
+
+### Decision-by-decision verification
+
+The table below compares the confirmed baseline with the statements captured in the report. Excerpts are intentionally short and are drawn from the attached report. fileciteturn0file0
+
+| Decision ID | Baseline decision | Report statement excerpt | Status | Recommended correction |
+|---|---|---|---|---|
+| Q1 | Enterprise-wide shared AI Agent Platform | “Enterprise-wide shared AI Agent Platform” | OK | None |
+| Q2 | Technical audience: architects, Agent/backend developers, DevOps/SRE, security/governance | “Architects, Agent/backend developers, DevOps/SRE, security/governance” | OK | None |
+| Q3 | Hybrid Cloud; current stack unspecified | “Hybrid Cloud; current stack TBD” | OK | Retain vendor-neutral deployment profiles |
+| Q4 | External commercial LLMs + self-hosted OSS models | “External commercial LLM + self-hosted open-source models” | OK | None |
+| Q5 | RAG, tool-using, workflow and multi-Agent supported from initial platform baseline | “RAG, tool-using, workflow automation, multi-Agent from initial baseline” | OK | Clarify initial **contract support** versus feature parity |
+| Q6 | Common Runtime contract + framework adapters | “Common Runtime Contract + framework adapters” | OK | Add formal Runtime Adapter interface |
+| Q7 | Logical tenant isolation + selective physical separation | “Logical isolation plus selective physical separation” | OK | Define tenant context schema and isolation control points |
+| Q8 | User identity + Agent identity; delegated and independent execution | “User identity + Agent identity” | OK | Add Credential Broker and delegation contract |
+| Q9 | REST/OpenAPI + MCP + custom tool adapters | “REST/OpenAPI + MCP + custom adapters” | OK | Place Tool Gateway explicitly under Agent Tools |
+| Q10 | Integrated observability + automated evaluation + quality gates | “Integrated observability + automated evaluation + quality gates” | OK | Define evaluation-result/event schemas |
+| Q11 | Self-service lifecycle; automated gates; human approval for higher risk | “human approval for higher risk” | OK | Add approval-state/event contract and audit requirements |
+| Q12 | Agent Gateway and Model Gateway separated; dynamic policy routing | “Agent Gateway and Model Gateway separate” | OK | Keep Agent, Model and Tool Gateways distinct |
+| Q13 | Classification-driven access and Hybrid Cloud data movement | “Classification-based access and data-movement policy” | OK | Add classification/egress policy schema |
+| Q14 | Durable execution + HITL + checkpoints/retry/idempotency/policy control | “Durable execution + HITL + policy controls” | OK | Keep as follow-up implementation phase, but define contract hooks in v1 |
+| Q15 | Vendor-neutral model serving; Backend.AI excluded; heterogeneous resources | “Backend.AI excluded” | OK | Add explicit `Backend.AI: Out of Scope` statement to ADR-015 |
+| Q16 | Environment/risk-based phased NFR/SLO | “Environment- and business-risk-based phased SLO” | OK | Numeric SLOs remain TBD |
+| Q17 | Shared Control Plane + Distributed Execution Plane | “Shared Control Plane + Distributed Execution Plane” | OK | Define registered vs production-approved environment state |
+| Q18 | Local-First/CLI-First; no mandatory source upload or Agent Studio | “Local-First/CLI-First” and “not by mandatory source upload” | OK | Add explicit MUST NOT require central source upload |
+| Q19 | Common RAG contract + interchangeable knowledge backend | “Common RAG contract + interchangeable knowledge backend” | OK | Produce retrieval contract/schema in Phase 1/2 rather than prose only |
+| Q20 | Common Agent communication contract; A2A optional | “A2A optional” | OK | Define canonical cross-Agent envelope before selecting A2A |
+| Q21 | Local experiments + shared experiment/evaluation registry | “Local experimentation + shared experiment/evaluation registry” | OK | Distinguish optional registration from mandatory production evidence |
+| Q22 | Local-First vertical MVP → phased expansion | “Local-First vertical MVP → phased expansion” | OK | None |
+| Q23 | Modular static HTML technical standards portal | “Modular static HTML technical standards portal” | OK | Ensure no required CDN/runtime network dependency |
+| Q24 | Language-neutral contracts + Python reference + TypeScript examples | “Python reference + TypeScript core examples” | OK | None |
+| Q25 | C4 hierarchy + sequences + deployment/security boundaries + MVP flow | “C4 hierarchy + key sequences + deployment/security boundaries” | OK | Add Tool/Credential sequence and trust-boundary diagram |
+| Q26 | Contract-as-Code + automated conformance/version management | “Contract-as-Code + automated validation + versioning” | OK | Define compatibility policy per contract |
+| Q27 | Implementation-startable standards package | “Implementation-ready standards package” | OK* | Decision is recorded correctly, but package itself is **not yet produced** |
+| Q28 | Git source + static HTML + offline ZIP | “Git source + static HTML + offline ZIP” | OK* | Deliverable is specified but not yet built/tested |
+| Q29 | Korean-first normative docs; English technical terms; MUST/SHOULD/MAY; ADRs | “Korean-first docs + English technical terms + MUST/SHOULD/MAY + ADRs” | OK | Final portal should follow this; this English review is intentionally exempt |
+| Q30 | **B: baseline review → full package production**, explicitly answered | “Q30 was not separately answered…” | **Mismatch** | Replace provenance note; mark **Decided**, not inferred/recommended |
+
+\* “OK” means the report records the decision accurately; it does **not** mean the corresponding implementation artifact already exists.
+
+No baseline decision is absent from the requirements matrix. The only direct recording error is Q30. Several decisions, however, are **under-specified operationally**, particularly Q8/Q9 around credentials and tools, Q11 around approval workflow, Q14 around durable execution contracts, Q19 around retrieval contracts, and Q20 around cross-Agent invocation. fileciteturn0file0
+
+## ADR and Component Architecture Validation
+
+### ADR completeness and consistency
+
+The report proposes a one-to-one mapping of Q1–Q30 to ADR-001–ADR-030, which is useful for traceability, but these are currently **ADR identifiers rather than completed ADRs**. The repository tree shows proposed Markdown files, while the report provides only short decision/rationale entries. fileciteturn0file0 A production baseline should treat an ADR as complete only after it contains at least **Status, Context, Decision, Alternatives Considered, Consequences, Constraints, Related Contracts, Security Impact, and Supersession/Migration rules**.
+
+A one-ADR-per-question scheme is acceptable initially, but several decisions are coupled and should cross-reference rather than duplicate one another. Recommended dependency clusters are:
+
+| ADR cluster | Required consistency |
+|---|---|
+| ADR-006 Runtime + ADR-017 topology + ADR-018 Local-First | Runtime contract must work in distributed environments without central IDE/runtime dependence |
+| ADR-008 Identity + ADR-009 Tools + ADR-013 data governance | Tool invocation must carry principal, Agent identity, tenant, scopes/classification and policy decision context |
+| ADR-012 gateways + ADR-015 model serving | Agent Gateway, Model Gateway and Tool Gateway remain logically separate even when co-deployed |
+| ADR-011 lifecycle + ADR-014 durable/HITL + ADR-026 conformance | Risk gates and human approvals must survive retries/resume and be auditably versioned |
+| ADR-019 RAG + ADR-013 classification | ACL/data filtering must occur before retrieved content reaches model context |
+| ADR-020 cross-Agent + ADR-008 identity | Delegation must not blindly propagate caller privileges to another Agent |
+| ADR-027/028/029/030 package governance | Final artifacts, language, release packaging and baseline-first process must agree |
+
+**ADR-030 requires immediate correction** from “Recommended / treated as baseline” to **“Decided”**, because Q30 was explicitly answered.
+
+### Recommended component placement
+
+```mermaid
+flowchart LR
+    Client[Users / Business Apps]
+    AG[Agent Gateway<br/>Northbound invocation boundary]
+
+    subgraph RuntimeDomain["Agent Runtime"]
+      RT[Runtime / Framework Adapter]
+      WF[Workflow / Durable Execution]
+      STATE[State / Checkpoints]
+    end
+
+    subgraph ToolsDomain["Agent Tools"]
+      TG[Tool Gateway]
+      TR[Tool Registry]
+      TA[REST / OpenAPI / MCP Adapters]
+    end
+
+    subgraph IdentityDomain["Agent Identity"]
+      AI[User + Agent / Workload Identity]
+      CB[Credential Broker]
+      AUTHZ[Delegation / Authorization Context]
+    end
+
+    MG[Model Gateway]
+    KG[Knowledge / RAG]
+    CP[Shared Control Plane<br/>Registry / Policy / Eval / Observability]
+    TOOL[Enterprise / SaaS / MCP Tools]
+    IDP[Enterprise IdP / Authorization Server]
+    SECRET[Secrets / Key Service]
+
+    Client --> AG
+    AG --> RT
+    AG --> CP
+
+    RT --> MG
+    RT --> TG
+    RT --> KG
+    RT --> CP
+
+    TG --> TR
+    TG --> TA
+    TG --> CB
+    TA --> TOOL
+
+    CB --> AI
+    CB --> IDP
+    CB --> SECRET
+    AI --> AUTHZ
+
+    TG -. policy + audit .-> CP
+    CB -. identity + audit .-> CP
+```
+
+This placement preserves the original logical architecture while avoiding the undesirable design in which Runtime owns long-lived credentials. OAuth Token Exchange provides a standardized mechanism that can support delegated credential exchange; OIDC supplies user authentication claims; OAuth Security BCP recommends modern security controls, including stronger client authentication methods where appropriate. citeturn340454search3turn970015search2turn340454search1
+
+### Interface and contract implications
+
+| Component | Report update location | Minimum contract implication | Trust/security boundary |
+|---|---|---|---|
+| **Agent Runtime** | Architecture + Runtime component page | `RuntimeInvocation`, canonical result/error, execution context, trace context | Runs Agent code; should receive policy context but not unnecessary downstream secrets |
+| **Agent Gateway** | Existing Agent Gateway OpenAPI | OAuth/OIDC authentication, Agent resolution, invoke/status/cancel/events | External/northbound trust boundary; authoritative caller identity derived from validated token |
+| **Agent Tools** | Add component section | Tool descriptor, logical IDs, schemas, policy profile | Logical domain; not necessarily one process |
+| **Tool Gateway** | Add beneath Agent Tools | Tool discovery/invoke contract, REST/OpenAPI/MCP adapters, timeout/idempotency/audit | Egress mediation boundary; validate inputs/results and enforce authorization |
+| **Agent Identity** | Add component section | principal, Agent/workload ID, delegation chain, tenant, scopes/attributes | Identity authority/context boundary |
+| **Credential Broker** | Add beneath Agent Identity | `CredentialRequest`, audience/resource, scope, delegation mode, short TTL, non-exportability policy | High-trust security component; Runtime/LLM should not receive long-lived service secrets |
+| **Model Gateway** | Existing Model Gateway OpenAPI | logical model capability, routing context, route-decision ID | Model/data-egress policy boundary |
+
+For MCP, the Tool Gateway should act as a policy-aware client/proxy rather than treating MCP as a trusted execution channel. Current MCP tooling explicitly exposes tools with input/output schemas and requires clients/servers to apply access controls, validation, audit and trust decisions; official SDK guidance treats an HTTP MCP server as an OAuth resource server and enforces authorization at the HTTP boundary. citeturn970015search1turn278092search3turn278092search4 This aligns well with Q9 and Q13: **MCP is a tool protocol, not a replacement for enterprise authorization policy.**
+
+Recommended Credential Broker semantics are:
+
+`Runtime → Tool Gateway → Credential Broker → IdP/Secrets Service → short-lived resource credential → Tool Gateway/Adapter → target`
+
+rather than:
+
+`Runtime → fetch static secret → LLM/tool code → target`.
+
+The Broker should bind credentials to the intended resource/audience and minimum scopes where the enterprise IdP supports it. RFC 8693 provides token-exchange semantics for requesting a token in another security context, while RFC 9700 supplies current OAuth security guidance. citeturn340454search3turn340454search1
+
+## MVP Scope and Implementation Readiness
+
+The report defines the right MVP shape: one production-shaped vertical path from a developer-owned Git repository through Manifest validation, CI, Registry, Agent Gateway, Runtime adapter, Model Gateway, tracing/evaluation and promotion to an approved target. fileciteturn0file0 That is strongly aligned with Q18, Q22 and Q26.
+
+The package is nevertheless **not yet “implementation-startable” in the strict Q27 sense**, because key normative files are still described rather than delivered. The minimum readiness threshold should be:
+
+| Artifact / capability | Report status | Required before implementation-startable |
+|---|---|---|
+| Requirements baseline | Present in report | Correct Q30; version/tag baseline |
+| ADRs | IDs/proposed paths only | Create actual ADR files with normative decisions |
+| Agent Manifest | Fields + YAML example | Produce `agent-manifest.schema.json` with positive/negative fixtures |
+| Agent Gateway | API surface described | Produce validated OpenAPI document |
+| Model Gateway | API surface described | Produce validated OpenAPI document |
+| Runtime Adapter | Conceptual | Publish interface/schema and Python implementation |
+| Identity context | Proposed shared schema | Define user/Agent/delegation representation |
+| Credential Broker | Missing | Define component, API and policy contract |
+| Tool Gateway | Architectural node only | Define tool descriptor/invoke/MCP adapter contract |
+| RAG | Planned | Define at least minimal retrieval request/result contract |
+| Evaluation | Conceptual profile/result | Produce result schema and one deterministic CI fixture |
+| Python | Directory/code sketch | Deliver runnable vertical slice and tests |
+| TypeScript | Example client fragment | Deliver buildable/type-checked client |
+| Contract tests | Test list | Implement executable tests |
+| Security tests | Test list | Implement authz/tenant/data-policy negative cases |
+| Offline portal | Proposed | Build and verify without required external assets |
+| Release package | Proposed | Generate versioned ZIP + manifest/checksums |
+
+JSON Schema Draft 2020-12 remains a sound choice for standalone Manifest/common schemas. Its official specification defines the 2020-12 dialect and vocabulary model. citeturn340454search9turn340454search31 OpenAPI 3.2.1 is the current OAS release, but the report is right to treat version selection as a tooling-compatibility decision because 3.2.1 was published only on September 10, 2026; 3.1.2 is still a published specification that can be pinned if required by enterprise tooling. citeturn340454search0turn340454search33
+
+The MVP should **not** block on numeric SLOs, a final GPU scheduler, A2A adoption, Developer Portal, tuning system, or specific CI/IdP products. Those are correctly kept TBD or later-phase items. fileciteturn0file0 It **should** block on an approved authentication pattern, a first real Agent, initial production execution target, enterprise data-class mapping and executable contract artifacts.
+
+### Approval recommendation
+
+| Area | Recommendation | Priority | Rationale |
+|---|---|---:|---|
+| Q1–Q29 requirements recording | **Approve** | Low | Decisions accurately captured |
+| Q30 | **Revise** | **High** | Explicit answer was misrecorded as inferred |
+| Shared Control / Distributed Execution topology | **Approve** | Low | Consistent with baseline |
+| Local-First / CLI-First developer model | **Approve** | Low | Correctly preserves existing development workflow |
+| Agent Gateway / Model Gateway separation | **Approve** | Low | Clear and internally consistent |
+| Agent Runtime responsibilities | **Approve with revision** | Medium | Add formal adapter/execution contract |
+| Agent Tools / Tool Gateway | **Revise** | **High** | Logical ownership and API are under-specified |
+| Agent Identity / Credential Broker | **Revise** | **High** | Credential Broker absent; delegation boundary incomplete |
+| MCP integration | **Approve with revision** | Medium | Add enterprise auth/policy proxy pattern |
+| RAG contract | **Revise** | Medium | Decision is present but executable contract absent |
+| Durable/HITL | **Approve for phased delivery** | Medium | Correctly deferred operationally; v1 hooks still needed |
+| ADR set | **Revise** | **High** | Index exists; normative ADR bodies do not |
+| Contracts | **Revise** | **High** | Designs exist but machine-readable files not produced |
+| Reference code/tests | **Revise** | **High** | Planned rather than runnable |
+| Static/offline documentation | **Approve design; revise delivery** | Medium | Distribution model correct; package not built |
+| IdP product / CI product / numeric SLOs | **Needs Decision** | Medium | Correctly unspecified and should remain TBD until enterprise inputs exist |
+| Overall baseline | **Approve after mandatory corrections** | **High** | Direction is ready; execution artifacts and security decomposition are not |
+
+## Action Plan and Eight-Week Timeline
+
+The next work should convert this report from an architecture plan into a **versioned, executable standards package** rather than expanding the prose further.
+
+| Action | Owner | Effort | Priority | Suggested CI check |
+|---|---|---|---|---|
+| Correct Q30 and freeze baseline v0.1 | Architect + Docs Owner | Small | P0 | Baseline/ADR cross-reference checker |
+| Create ADR-001…030 bodies and dependency links | Architect | Medium | P0 | ADR required-section lint; no orphan ADR IDs |
+| Add Agent Tools/Tool Gateway architecture page | Architect + Dev Lead | Small | P0 | Diagram/link validation |
+| Add Agent Identity/Credential Broker architecture and threat model | Security Lead + Architect | Medium | P0 | Security contract/static policy tests |
+| Define identity/delegation/credential schemas | Security Lead + Dev Lead | Medium | P0 | JSON Schema positive/negative fixtures |
+| Draft Agent Manifest JSON Schema | Dev Lead | Medium | P0 | Draft 2020-12 meta-validation and fixture tests |
+| Produce Agent Gateway OpenAPI | Dev Lead + Security Lead | Medium | P0 | OAS lint, examples, auth declaration, compatibility diff |
+| Produce Model Gateway OpenAPI | Dev Lead + Architect | Medium | P0 | OAS lint + routing-policy fixtures |
+| Produce Tool Gateway/MCP adapter contract | Dev Lead + Security Lead | Medium | P0 | Tool schema validation; forbidden-scope/tenant tests |
+| Define minimal Retrieval/RAG contract | Architect + Dev Lead | Small | P1 | ACL/classification fixtures |
+| Build Python vertical slice | Dev Lead | Large | P1 | pytest, schema/API contract tests, trace tests |
+| Build TypeScript invocation client | Dev Lead | Medium | P1 | typecheck, unit/contract tests |
+| Add evaluation smoke gate | Dev Lead + Architect | Small | P1 | deterministic quality regression check |
+| Build static HTML portal | Docs Owner | Medium | P1 | broken links, asset/CDN scan, HTML validation |
+| Package offline release | Docs Owner + Dev Lead | Small | P1 | clean-machine unzip/build/browser smoke test |
+| Select first production Agent and execution target | Architect + Security Lead | Medium | P0 | deployment-profile conformance |
+| Resolve IdP/CI/data-class mappings | Security Lead + Architect | Medium | P0 | environment configuration checks |
+
+A useful CI minimum is: schema meta-validation → Manifest fixtures → OpenAPI lint/examples → backward-compatibility diff → auth/security contract checks → Python/TypeScript tests → trace-context propagation → evaluation gate → documentation links/offline-assets scan → release manifest/checksum generation. This is consistent with the report’s Contract-as-Code intent. fileciteturn0file0
+
+```mermaid
+gantt
+    title AI Agent Platform Standards Package — Next 8 Weeks
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %d
+
+    section Baseline and Architecture
+    Correct Q30 and freeze baseline        :crit, b1, 2026-11-02, 3d
+    Complete ADR set                       :crit, b2, after b1, 8d
+    Tool Gateway / Credential Broker design:crit, b3, 2026-11-02, 10d
+
+    section Contracts
+    Manifest and common schemas            :crit, c1, 2026-11-09, 10d
+    Agent Gateway OpenAPI                  :crit, c2, 2026-11-09, 10d
+    Model Gateway OpenAPI                  :c3, 2026-11-16, 8d
+    Tool Gateway and RAG contracts         :c4, 2026-11-16, 10d
+
+    section Reference Implementation
+    Python vertical slice                  :crit, r1, 2026-11-23, 15d
+    TypeScript client                      :r2, 2026-11-30, 8d
+    Security and evaluation tests          :r3, 2026-11-30, 12d
+
+    section Documentation and Release
+    Static HTML portal                     :d1, 2026-11-23, 20d
+    Offline packaging and CI hardening     :crit, d2, 2026-12-14, 8d
+    Architecture/security release review   :milestone, d3, 2026-12-23, 1d
+```
+
+The dates above are a proposed sequencing plan beginning the first working week after October 30, 2026, not a contractual schedule.
+
+## Prioritized Standards and Source References
+
+The report’s standards choices are generally strong. The following primary/official references should be linked directly from the technical portal.
+
+| Priority | Source | Why it belongs in the standard |
+|---|---|---|
+| P0 | [OpenAPI Specification 3.2.1](https://spec.openapis.org/oas/v3.2.1.html) citeturn340454search0 | Canonical HTTP API contract specification; current published OAS |
+| P0 | [OpenAPI Specification 3.1.2](https://spec.openapis.org/oas/v3.1.2.html) citeturn340454search33 | Compatibility fallback if 3.2.1 toolchain support is incomplete |
+| P0 | [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/) citeturn340454search9 | Agent Manifest and shared data-contract dialect |
+| P0 | [OAuth 2.0 Security Best Current Practice — RFC 9700](https://www.rfc-editor.org/rfc/rfc9700.html) citeturn340454search1 | Baseline security guidance for OAuth deployments |
+| P0 | [OAuth 2.0 Token Exchange — RFC 8693](https://www.rfc-editor.org/rfc/rfc8693.html) citeturn340454search3 | Strong standards basis for Credential Broker delegation/exchange patterns |
+| P0 | [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) citeturn970015search2 | User authentication and identity claims |
+| P0 | [MCP official specification repository — Tools](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/draft/server/tools.mdx) citeturn970015search1 | Tool discovery/invocation schemas, trust and validation semantics |
+| P0 | [MCP official Python SDK — Authorization](https://py.sdk.modelcontextprotocol.io/run/authorization/) citeturn278092search3 | Practical OAuth resource-server pattern for protected MCP endpoints |
+| P1 | [MCP official TypeScript SDK — Authorization](https://ts.sdk.modelcontextprotocol.io/v2/serving/authorization) citeturn278092search4 | Equivalent authorization pattern for TypeScript integrations |
+| P1 | [MCP Specification Changelog](https://modelcontextprotocol.io/specification/draft/changelog) citeturn278092search1 | Important because MCP continues to evolve; protocol version must be pinned |
+| Internal | ADR-001…ADR-030 | The report defines these identifiers, but **no standalone ADR files were attached**, so there are currently no internal ADR links to cite. fileciteturn0file0 |
+
+The final technical portal should pin the MCP protocol version used by conforming adapters rather than simply saying “support MCP.” The protocol has continued to change, including authorization and transport behavior, so version negotiation and adapter compatibility need to be explicit. citeturn278092search1turn278092search3
+
+### Final approval position
+
+The Deep Research report should be classified as **“Baseline Review: Approved with Required Revisions.”** It is sufficiently coherent to become the foundation for the full standards package, but the following items should be corrected before tagging the baseline:
+
+**P0:** correct Q30; formalize `Agent Tools → Tool Gateway`; formalize `Agent Identity → Credential Broker`; define the Credential Broker/delegation trust boundary; complete ADR bodies; produce machine-readable Manifest, Agent Gateway and Model Gateway contracts.
+
+**P1:** add Tool Gateway/MCP and RAG contracts; runnable Python/TypeScript references; executable contract/security/evaluation tests; static/offline HTML build.
+
+**TBD, not blockers for the architecture baseline:** exact IdP product, exact CI product, specific policy engine, specific secrets manager, numeric production SLOs, future internal GPU scheduler, A2A adoption details and optional Developer Portal.
+
+With those changes, the package can legitimately transition from **“well-researched implementation plan”** to **“implementation-startable enterprise technical standard.”**

@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "archive": "enterprise-ai-agent-platform-v0.1.zip",
+  "files": 247,
+  "bytes": 759857,
+  "sha256": "121a224d3db4ab75ad2d7f47f6ba04154a24caed256c27ddb4cdda7e64a394ed",
+  "checks": [
+    "zip CRC",
+    "every archived file SHA256",
+    "expected entry count",
+    "all archive HTML local links"
+  ],
+  "checkedHtmlLinks": 2251,
+  "note": "This report is external to ZIP to avoid self-referential archive hashes."
+}

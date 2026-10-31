@@ -1,0 +1,14 @@
+{
+  "input": {
+    "type": "message",
+    "content": "hello"
+  },
+  "context": {
+    "tenantId": "tenant-demo",
+    "dataClassification": "internal"
+  },
+  "execution": {
+    "mode": "sync",
+    "timeoutMs": 5000
+  }
+}
