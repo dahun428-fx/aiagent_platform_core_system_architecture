@@ -3,34 +3,34 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>아키텍처 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html" aria-current="page">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
-<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
-<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content" tabindex="-1"><h1>아키텍처</h1>
-<h2>구조</h2>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html" aria-current="page">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="아키텍처">아키텍처</h1>
+<h2 id="구조">구조</h2>
 <p>전사 Client/App은 Agent Gateway로 들어온다. Gateway는 인증·agent resolution·tenant authorization·idempotency를 책임진다.
 Runtime은 orchestration consumer이며 Identity·Model·Tools·Knowledge·State·Policy를 소비한다.
 Model Gateway는 모델 capability·분류·지역·비용/가용성 정책으로 endpoint를 선택한다.
 Tool Gateway는 Agent Tools에 속하며 REST/OpenAPI/MCP egress를 중재한다.
 Credential Broker는 Agent Identity에 속하며 승인된 Tool Gateway adapter에만 단기 credential을 전달하거나 비노출 handle을 발급한다.</p>
-<h2>Shared Control Plane</h2>
+<h2 id="shared-control-plane">Shared Control Plane</h2>
 <p>Registry(Agent/Tool/Model/Environment), Policy, Identity mediation, Evaluation, Observability metadata, Promotion을 제공한다.
 Registry는 source 자체가 아닌 불변 Git revision·artifact digest·Manifest·평가 증거를 저장해야 한다(MUST).
 등록(registered), 시험 가능(eligible), production 승인(production-approved), 격리(quarantined)를 구분한다.
 보안·정책 권한은 Runtime이 임의 변경할 수 없다(MUST NOT).</p>
-<h2>Distributed Execution Plane</h2>
+<h2 id="distributed-execution-plane">Distributed Execution Plane</h2>
 <p>개발자 로컬, 워크스테이션/Mac mini 계열 자원, 사내·클라우드 실행 target은 회사 환경 TBD로 취급한다.
 동일 Runtime 계약을 적용하되 registered만으로 production traffic을 받지 않는다.
 물리 배치는 논리 분리를 합칠 수 있다. identity/egress trust boundary는 합쳐도 보존해야 한다(MUST).</p>
-<h2>C4 계층과 시퀀스</h2>
+<h2 id="c4-계층과-시퀀스">C4 계층과 시퀀스</h2>
 <p><a href="../diagrams/c4-context.mmd">Context</a>, <a href="../diagrams/c4-container.mmd">Container</a>, <a href="../diagrams/c4-component.mmd">Runtime Component</a>.
 <a href="../diagrams/invocation.mmd">Invocation</a>, <a href="../diagrams/model-routing.mmd">Model routing</a>, <a href="../diagrams/tool-credential.mmd">Tool/Credential</a>.
 <a href="../diagrams/security-boundaries.mmd">Security boundaries</a>, <a href="../diagrams/deployment.mmd">Deployment</a>, <a href="../diagrams/mvp.mmd">MVP</a>.
 포털은 각 그림의 로컬 SVG와 Mermaid 원문을 함께 제공한다.</p>
-<h2>데이터 책임</h2>
+<h2 id="데이터-책임">데이터 책임</h2>
 <ul>
 <li>tenant는 검증된 identity에서 파생한다. body의 tenant assertion은 비교용이며 권한의 근거가 아니다.</li>
 <li>정책과 위임은 grant가 아니라 검증할 evidence다. 사용자 입력에 principal/roles를 넣어 승격할 수 없다.</li>
 <li>검색 결과·tool output·model output은 비신뢰 데이터다. prompt instruction으로 권한을 획득할 수 없다.</li>
 <li>Gateway→Runtime→Model/Tool/RAG→하위 Agent에 traceparent를 전달한다. baggage에 PII·token을 넣지 않는다.</li>
-</ul><p class="file-link">원본 파일: <a href="../docs/architecture.md">docs/architecture.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+</ul><p class="file-link">원본 파일: <a href="../docs/architecture.md">docs/architecture.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#구조">구조</a><a href="#shared-control-plane">Shared Control Plane</a><a href="#distributed-execution-plane">Distributed Execution Plane</a><a href="#c4-계층과-시퀀스">C4 계층과 시퀀스</a><a href="#데이터-책임">데이터 책임</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

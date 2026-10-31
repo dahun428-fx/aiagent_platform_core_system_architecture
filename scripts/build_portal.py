@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
 import markdown
+from markdown.extensions.toc import TocExtension, slugify_unicode
 
 ROOT = Path(__file__).resolve().parents[1]
 P = ROOT / "portal"
@@ -24,8 +25,8 @@ navigation = [
 ]
 
 
-def layout(title, body, current="", source=None):
-    nav = '<a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a>'
+def layout(title, body, current="", source=None, toc=""):
+    nav = '<a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a>'
     for group, entries in navigation:
         nav += "<h2>" + group + "</h2>"
         for p, label in entries:
@@ -40,9 +41,9 @@ def layout(title, body, current="", source=None):
 <title>{html.escape(title)} · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
 <body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색">{nav}</nav></aside>
-<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
-<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content" tabindex="-1">{body}{source_link}</main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>"""
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content{" has-toc" if toc else ""}" tabindex="-1"><article class="doc">{body}{source_link}</article>{toc}</main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>"""
 
 
 def rewrite_links(body, source):
@@ -73,16 +74,20 @@ for source in sources:
     if source.suffix == ".json" or relative.startswith("sources/") and source.name != "README.md":
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
     else:
-        body = markdown.markdown(text, extensions=["tables", "fenced_code"])
+        body = markdown.markdown(text, extensions=["tables", "fenced_code", TocExtension(slugify=slugify_unicode, toc_depth="2")])
         body = rewrite_links(body, source)
         body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
     out = mapping[source.resolve()]
-    files["portal/" + out] = layout(title, body, out, relative)
+    toc = ""
+    sections = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body)
+    if len(sections) >= 3:
+        toc = '<nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2>' + "".join(f'<a href="#{i}">{re.sub(r"<[^>]+>", "", t)}</a>' for i, t in sections) + "</nav>"
+    files["portal/" + out] = layout(title, body, out, relative, toc)
     index.append({"title": title, "href": out, "text": text})
 
-home = """<p class="eyebrow">IMPLEMENTATION STANDARD · 0.1</p>
-<h1>전사 AI Agent Platform<br>구현을 시작하는 공통 기준</h1>
+home = """<h1>전사 AI Agent Platform<br>구현을 시작하는 공통 기준</h1>
 <p class="lead">확정된 30개 결정에서 실행 가능한 계약과 참조 예제까지.<br>Local-First 개발과 전사 거버넌스를 같은 구조 안에 연결합니다.</p>
+<p class="meta">Implementation Standard 0.1 · 2026-10-30</p>
 <div class="notice"><strong>Q30 기록 정정 반영</strong><br>“B. 요구사항 기준선 검토 → 전체 패키지 제작”을 명시적 확정 결정으로 기록했습니다. Tool Gateway는 Agent Tools, Credential Broker는 Agent Identity에 속합니다.</div>
 <h2>표준 읽기</h2><ol class="index-list">"""
 entries = [
@@ -91,9 +96,9 @@ entries = [
     ("catalog.html", "계약과 참조 예제", "OpenAPI · JSON Schema · 4종 Agent · Python / TypeScript"),
     ("docs/verification.md", "검증과 구현 인계", "실행 결과 · Contract Tests · TBD · 배포 패키지")
 ]
-for n, (p, title, detail) in enumerate(entries, 1):
+for p, title, detail in entries:
     href = p if p.endswith(".html") else link(p)
-    home += f'<li><span class="number">0{n}</span><div><a href="{href}">{title}</a><p>{detail}</p></div></li>'
+    home += f'<li><div><a href="{href}">{title}</a><p>{detail}</p></div></li>'
 home += '</ol><h2>공통 제어, 분산 실행</h2><a href="diagrams.html"><img class="diagram" src="../diagrams/c4-container.svg" alt="C4 Container: Shared Control Plane과 Distributed Execution Plane"></a><p>회사 환경·제품·운영 수치는 TBD입니다. 이 패키지는 기술 표준과 로컬 mock 예제를 제공하며, production 배포 전 회사 통합과 운영 검증이 필요합니다.</p>'
 files["portal/index.html"] = layout("구현 착수 기술 표준", home)
 catalog = "<h1>계약 · Fixture · ADR</h1><p>Machine-readable 원본과 읽기용 페이지를 함께 제공합니다. 예제는 합성 데이터입니다.</p>"

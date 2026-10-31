@@ -3,15 +3,15 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>제공 범위와 구현 한계 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html" aria-current="page">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
-<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
-<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content" tabindex="-1"><h1>제공 범위와 구현 한계</h1>
-<h2>이 패키지가 제공하는 것</h2>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html" aria-current="page">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="제공-범위와-구현-한계">제공 범위와 구현 한계</h1>
+<h2 id="이-패키지가-제공하는-것">이 패키지가 제공하는 것</h2>
 <p>요구사항 v0.1, 30개 규범 ADR, 아키텍처 원문/시각화, 기능별 machine-readable 계약,
 4종 Agent Manifest와 양성/음성 fixture, 실행 가능한 Python 로컬 HTTP mock,
 TypeScript client/typecheck, 계약/보안/통합 smoke tests, 모듈형 오프라인 HTML과 검증/ZIP 도구를 제공한다.</p>
-<h2>실제 실행과 설계의 경계</h2>
+<h2 id="실제-실행과-설계의-경계">실제 실행과 설계의 경계</h2>
 <p>Python mock은 Agent Gateway→Runtime→Model Gateway mock 및 Tool Gateway→Broker mock의 동기 흐름을 실행한다.
 RAG ACL filtering·cross-Agent envelope validation·approval verifier는 deterministic helper로 검증한다.
 실제 외부 상용/자체호스팅 모델, REST/MCP tool server, IdP/STS, workflow engine, vector DB, OTel collector에는 연결하지 않는다.
@@ -20,8 +20,8 @@ HTTP API 문서는 목표 인터페이스다. mock은 Agent invoke / health만 �
 메모리 idempotency는 재시작/다중 worker에 안전하지 않다.
 mock lease는 외부 credential이 아니며 실전 cryptography·federation·persistency를 제공하지 않는다.
 프로덕션 TLS, quota, audit store, queue, retry ledger, approval service, artifact signature는 회사 결정 후 구현해야 한다.</p>
-<h2>검증 주장</h2>
+<h2 id="검증-주장">검증 주장</h2>
 <p>verification/results.json의 각 검사는 실행된 도구·exit code·출력을 기록한다.
 표준 검증은 machine-readable 문법·fixture·예제·명시된 거부 동작의 범위이며 production 보안 인증이 아니다.
 브라우저 오프라인 검증과 ZIP 무결성은 별도 결과에 기록한다.
-의존성은 requirements-dev.txt/package.json으로 고정하며 최초 설치에는 인터넷이 필요하다.</p><p class="file-link">원본 파일: <a href="../docs/release-scope.md">docs/release-scope.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+의존성은 requirements-dev.txt/package.json으로 고정하며 최초 설치에는 인터넷이 필요하다.</p><p class="file-link">원본 파일: <a href="../docs/release-scope.md">docs/release-scope.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#이-패키지가-제공하는-것">이 패키지가 제공하는 것</a><a href="#실제-실행과-설계의-경계">실제 실행과 설계의 경계</a><a href="#검증-주장">검증 주장</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

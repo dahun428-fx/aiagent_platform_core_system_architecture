@@ -3,10 +3,10 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>ADR-001: 전사 공통 플랫폼 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
-<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
-<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content" tabindex="-1"><h1>ADR-001: 전사 공통 플랫폼</h1>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="adr-001-전사-공통-플랫폼">ADR-001: 전사 공통 플랫폼</h1>
 <ul>
 <li>Status: Decided</li>
 <li>Baseline: v0.1 / Q1</li>
@@ -14,25 +14,25 @@
 <li>Owner / 회사 승인자: TBD</li>
 <li>Source: <a href="docs--requirements--baseline-v0.1.html">기준선</a>, <a href="sources--README.html">출처</a></li>
 </ul>
-<h2>Context</h2>
+<h2 id="context">Context</h2>
 <p>공통 계약으로 중복 구현을 줄이고 도메인별 실행은 분산한다.</p>
-<h2>Decision</h2>
+<h2 id="decision">Decision</h2>
 <p>플랫폼은 다음 결정을 준수해야 한다(MUST): 전사 공통 AI Agent Platform을 구축한다.</p>
-<h2>Alternatives considered</h2>
+<h2 id="alternatives-considered">Alternatives considered</h2>
 <p>프로젝트별 독립 플랫폼: 공통 기준선과 일치하지 않거나 불필요한 결합을 만든다.
 현재 선택은 제품 선정이 아닌 논리 계약의 확정이다.</p>
-<h2>Consequences</h2>
+<h2 id="consequences">Consequences</h2>
 <p>공통 계약으로 중복 구현을 줄이고 도메인별 실행은 분산한다. 어댑터 적합성 및 변경 비용을 운영 주체가 관리해야 한다(SHOULD).
 구현 완료 여부는 해당 계약 테스트와 통합 증거로 별도 판단해야 한다(MUST).</p>
-<h2>Constraints</h2>
+<h2 id="constraints">Constraints</h2>
 <p>회사 환경·제품·운영 수치는 TBD. 예제 값은 production 기본값이 아니다.
 <a href="docs--release-scope.html">구현 범위</a>를 준수한다(MUST).</p>
-<h2>Related contracts / verification</h2>
+<h2 id="related-contracts-verification">Related contracts / verification</h2>
 <p><a href="docs--architecture.html">관련 산출물</a> · <a href="../tests/test_contracts.py">검증</a>.
 연관 결정: <a href="adr--ADR-008.html">Identity</a>, <a href="adr--ADR-009.html">Tools</a>, <a href="adr--ADR-013.html">Data</a>, <a href="adr--ADR-026.html">Conformance</a>.</p>
-<h2>Security impact</h2>
+<h2 id="security-impact">Security impact</h2>
 <p>tenant·principal·Agent/workload·정책 버전을 경계에서 검증하고 최소 권한을 유지해야 한다(MUST).
 감사 로그에는 토큰·secret·원문 개인정보를 기록해서는 안 된다(MUST NOT).</p>
-<h2>Supersession / migration</h2>
+<h2 id="supersession-migration">Supersession / migration</h2>
 <p>이 결정을 대체할 때 새 ADR에서 ADR-001와 영향받는 계약 버전을 명시해야 한다(MUST).
-breaking change는 병행 버전·소비자 전환·rollback 증거 없이는 배포하지 않는다.</p><p class="file-link">원본 파일: <a href="../adr/ADR-001.md">adr/ADR-001.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+breaking change는 병행 버전·소비자 전환·rollback 증거 없이는 배포하지 않는다.</p><p class="file-link">원본 파일: <a href="../adr/ADR-001.md">adr/ADR-001.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#context">Context</a><a href="#decision">Decision</a><a href="#alternatives-considered">Alternatives considered</a><a href="#consequences">Consequences</a><a href="#constraints">Constraints</a><a href="#related-contracts-verification">Related contracts / verification</a><a href="#security-impact">Security impact</a><a href="#supersession-migration">Supersession / migration</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

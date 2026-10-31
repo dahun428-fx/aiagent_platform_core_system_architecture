@@ -3,10 +3,10 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>전사 AI Agent Platform Implementation Plan · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">AGENT PLATFORM<small>TECHNICAL STANDARD / v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
-<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">BASELINE 0.1</span>
-<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content" tabindex="-1"><h1>전사 AI Agent Platform Implementation Plan</h1>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>시작</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="전사-ai-agent-platform-implementation-plan">전사 AI Agent Platform Implementation Plan</h1>
 <blockquote>
 <p>실행 방식: 현재 세션에서 순차 구현한다. 기존 확정 질문과 두 보고서를 기준으로 하며 새 회사 제품·수치를 선정하지 않는다.</p>
 </blockquote>
@@ -14,14 +14,14 @@
 <strong>Architecture:</strong> 공통 Control Plane과 분산 Execution Plane. Agent Tools 아래 Tool Gateway, Agent Identity 아래 Credential Broker.
 <strong>Tech Stack:</strong> JSON Schema 2020-12, OpenAPI 3.1.2 JSON, Python, TypeScript, HTML/CSS/JS.
 <strong>Spec:</strong> requirements/baseline-v0.1.md 및 원문 보고서 sources/.</p>
-<h2>제약과 검토 초점</h2>
+<h2 id="제약과-검토-초점">제약과 검토 초점</h2>
 <ul>
 <li>회사 환경, 제품, SLO·용량·비용·보존 기간은 TBD.</li>
 <li>Q30은 Decided이며 원본 Q&amp;A 대화 본문은 참조 시스템에서 반환되지 않아 두 보고서의 공통 기준선을 사용한다.</li>
 <li>위조 tenant/권한, 과도한 credential audience, 승인 재사용, idempotency 충돌, 오프라인 링크를 중점 검증한다.</li>
 <li>실제 IdP·secret store·durable engine·exporter 통합은 회사 결정 후 구현한다. 참조 구현을 production 보안 구현으로 오인하지 않게 한다.</li>
 </ul>
-<h2>순차 작업</h2>
+<h2 id="순차-작업">순차 작업</h2>
 <ul>
 <li>[x] 1. sources 보존, Q30 정정, baseline 30행과 ADR 30건 생성. Q→ADR→파일 링크 점검.</li>
 <li>[x] 2. C4·배포·MVP·호출·모델·도구/credential·보안 경계 제작. 논리 책임과 trust boundary 교차 점검.</li>
@@ -30,5 +30,5 @@
 <li>[x] 5. 정적 페이지·검색·SVG 렌더링 제작. file:// 링크와 브라우저 오프라인 동작 검증.</li>
 <li>[x] 6. 계약 호환성·전체 검증·SHA256·ZIP 생성 및 압축 해제 내용 검증. 실제 결과와 제한 사항 기록.</li>
 </ul>
-<h2>검증 명령</h2>
-<p>설치 및 실행은 README의 명령을 사용한다. 모든 테스트와 타입 검사가 성공한 경우에만 release 검증 결과를 성공으로 기록한다.</p><p class="file-link">원본 파일: <a href="../docs/implementation-plan.md">docs/implementation-plan.md</a></p></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<h2 id="검증-명령">검증 명령</h2>
+<p>설치 및 실행은 README의 명령을 사용한다. 모든 테스트와 타입 검사가 성공한 경우에만 release 검증 결과를 성공으로 기록한다.</p><p class="file-link">원본 파일: <a href="../docs/implementation-plan.md">docs/implementation-plan.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#제약과-검토-초점">제약과 검토 초점</a><a href="#순차-작업">순차 작업</a><a href="#검증-명령">검증 명령</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
