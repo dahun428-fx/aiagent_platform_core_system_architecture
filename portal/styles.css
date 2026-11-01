@@ -218,3 +218,16 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
   .toc a { display: block; padding: 6px 12px; border-radius: var(--radius); font-size: 14px; line-height: 1.45; color: var(--ink-2); text-decoration: none; }
   .toc a:hover { background: var(--surface); color: var(--ink); }
 }
+
+/* Onboarding home */
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 8px; }
+.button {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 12px 22px;
+  border-radius: var(--radius); background: var(--accent); color: var(--ground);
+  font-weight: 700; text-decoration: none; transition: background-color .15s var(--ease), color .15s var(--ease);
+}
+.button:hover { background: var(--ink); color: var(--ground); }
+.button.secondary { background: var(--surface); color: var(--ink); }
+.button.secondary:hover { background: var(--surface-2); color: var(--ink); }
+.index-list .time { margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.content .doc > blockquote:first-of-type { background: var(--accent-wash); font-size: 15px; }

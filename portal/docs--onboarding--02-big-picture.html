@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>한 장으로 보는 전체 구조 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html" aria-current="page">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><h2>기준선</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="한-장으로-보는-전체-구조">한 장으로 보는 전체 구조</h1>
+<blockquote>
+<p>온보딩 안내서입니다. 규범은 <a href="docs--architecture.html">아키텍처</a> 원문이 기준입니다.</p>
+</blockquote>
+<h2 id="두-개의-평면-통제는-모으고-실행은-흩는다">두 개의 평면: 통제는 모으고, 실행은 흩는다</h2>
+<p>이 플랫폼에서 가장 먼저 잡아야 할 그림은 <strong>Shared Control Plane</strong>과 <strong>Distributed Execution Plane</strong>의 구분입니다.</p>
+<ul>
+<li><strong>Shared Control Plane(공통 제어 평면)</strong>: 회사 전체가 하나를 함께 씁니다. 어떤 Agent가 있는지(Registry), 누가 무엇을 해도 되는지(Policy, Identity), 품질이 어떤지(Evaluation), 무슨 일이 있었는지(Observability), production에 올려도 되는지(Promotion)를 관리합니다.</li>
+<li><strong>Distributed Execution Plane(분산 실행 평면)</strong>: Agent가 실제로 도는 곳입니다. 개발자 PC, 워크스테이션이나 Mac mini 같은 장비, 사내 서버, 클라우드가 모두 해당합니다. 장소는 달라도 <strong>같은 Runtime 계약</strong>을 따릅니다.</li>
+</ul>
+<p>비유하면 항공 관제와 비슷합니다. 비행기(Agent)는 각 공항(실행 환경)에서 뜨고 내리지만, 비행 허가와 항로 규칙과 기록은 관제(Control Plane)가 맡습니다. 관제탑이 비행기를 직접 조종하지는 않습니다.</p>
+<p>여기서 중요한 규칙이 하나 있습니다. 실행 환경이 <strong>등록(registered)</strong>됐다고 해서 곧바로 <strong>production 승인(production-approved)</strong>이 되는 것은 아닙니다. 개발자 PC도 등록은 할 수 있지만 실제 업무 트래픽을 받으려면 별도의 승인 증거가 필요합니다.</p>
+<h2 id="구성요소-한눈에-보기">구성요소 한눈에 보기</h2>
+<p><img alt="C4 Container: Shared Control Plane과 Distributed Execution Plane" src="../diagrams/c4-container.svg" /></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>구성요소</th>
+<th>한 줄 설명</th>
+<th>비유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agent Gateway</strong></td>
+<td>사용자나 업무 앱이 Agent를 부를 때 들어오는 정문. 인증, 어떤 Agent인지 찾기, 테넌트 권한 확인, 중복 요청 방지를 맡습니다.</td>
+<td>건물 출입 게이트</td>
+</tr>
+<tr>
+<td><strong>Agent Runtime</strong></td>
+<td>Agent를 실제로 실행하는 곳. 프레임워크별 adapter로 Agent를 부르고, 모델·도구·지식·상태·정책 서비스를 소비합니다.</td>
+<td>작업장</td>
+</tr>
+<tr>
+<td><strong>Model Gateway</strong></td>
+<td>모델 호출의 관문. "일반 대화 모델" 같은 논리 이름을 받아 데이터 분류·지역·비용·가용성 정책에 맞는 실제 endpoint로 보냅니다.</td>
+<td>데이터 반출 검사대</td>
+</tr>
+<tr>
+<td><strong>Agent Tools</strong></td>
+<td>도구 연동 영역 전체. Tool Registry, Tool Gateway, REST/OpenAPI/MCP adapter, 도구 정책과 감사를 포함합니다.</td>
+<td>공구 창고와 대여 창구</td>
+</tr>
+<tr>
+<td><strong>Tool Gateway</strong></td>
+<td>Agent Tools 안의 관문. Agent가 사내·외부 도구를 부를 때 반드시 거치며, 승인된 endpoint로만 보내고 입출력을 검사합니다.</td>
+<td>대여 창구</td>
+</tr>
+<tr>
+<td><strong>Agent Identity</strong></td>
+<td>신원 영역 전체. 사용자 신원, Agent(workload) 신원, 위임 관계, 자격증명 중개를 다룹니다.</td>
+<td>인사·보안팀</td>
+</tr>
+<tr>
+<td><strong>Credential Broker</strong></td>
+<td>Agent Identity 안의 고신뢰 서비스. 도구 호출에 필요한 <strong>짧게 살고 범위가 좁은</strong> 자격증명을 발급합니다. Runtime이나 LLM은 그 자격증명을 볼 수 없습니다.</td>
+<td>일회용 출입증 발급처</td>
+</tr>
+<tr>
+<td><strong>Knowledge(RAG) Backend</strong></td>
+<td>검색 증강(RAG)에 쓰는 지식 저장소. 공통 RAG 계약만 지키면 어떤 검색 엔진·벡터 DB든 바꿔 낄 수 있습니다.</td>
+<td>사내 도서관</td>
+</tr>
+<tr>
+<td><strong>Shared Control Plane</strong></td>
+<td>Registry(Agent·Tool·Model·Environment), Policy, Identity 중개, Evaluation, Observability, Promotion.</td>
+<td>관제탑</td>
+</tr>
+</tbody>
+</table></div>
+<p>두 가지 소속 관계는 꼭 기억하세요. 검증 과정에서 정정된 부분입니다.</p>
+<ul>
+<li><strong>Tool Gateway는 Agent Tools에 속합니다.</strong></li>
+<li><strong>Credential Broker는 Agent Identity에 속합니다.</strong></li>
+</ul>
+<p>이것은 논리적인 소속입니다. 반드시 별도 서버로 배포하라는 뜻은 아닙니다. 물리적으로 합쳐 배포해도 되지만, 신원과 데이터 반출(egress)의 신뢰 경계는 합쳐도 지켜야 합니다(MUST).</p>
+<h2 id="왜-gateway가-세-개나-있나">왜 Gateway가 세 개나 있나</h2>
+<p>처음 보면 Gateway가 많아 보입니다. 각각 지키는 경계가 다릅니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Gateway</th>
+<th>지키는 방향</th>
+<th>막는 것</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Gateway</td>
+<td>바깥 → Agent (들어오는 길)</td>
+<td>신원 위조, 권한 없는 테넌트 접근, 같은 요청의 중복 실행</td>
+</tr>
+<tr>
+<td>Model Gateway</td>
+<td>Agent → 모델 (나가는 길)</td>
+<td>기밀 데이터의 외부 모델 전송, 특정 모델 공급사 종속</td>
+</tr>
+<tr>
+<td>Tool Gateway</td>
+<td>Agent → 도구 (나가는 길)</td>
+<td>허가 안 된 시스템 호출, 자격증명 유출, 위조된 도구 결과</td>
+</tr>
+</tbody>
+</table></div>
+<p>Agent Gateway와 Model Gateway를 나눈 이유는 <a href="adr--ADR-012.html">ADR-012</a>에 있습니다. 호출을 통제하는 일과 모델 공급사를 추상화하는 일은 책임이 다르기 때문입니다.</p>
+<h2 id="용어-쉽게-풀기">용어 쉽게 풀기</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>용어</th>
+<th>쉬운 뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manifest</td>
+<td>Agent의 신분증. 이름, 버전, 소스 위치, 필요한 도구와 지식, 데이터 등급, 배포 프로파일을 적은 JSON 파일</td>
+</tr>
+<tr>
+<td>Tenant</td>
+<td>데이터와 권한이 분리되는 단위(예: 사업부). 기본은 논리 격리이고, 위험도에 따라 물리 분리도 합니다</td>
+</tr>
+<tr>
+<td>Delegated / Independent</td>
+<td>사용자를 대신해 일하는 모드 / Agent 자신의 권한으로만 일하는 모드</td>
+</tr>
+<tr>
+<td>Trace (traceparent)</td>
+<td>요청 하나에 붙는 추적 번호. Gateway → Runtime → 모델·도구까지 그대로 전달해서 한 줄로 추적합니다</td>
+</tr>
+<tr>
+<td>HITL</td>
+<td>Human-in-the-loop. 위험한 작업 전에 사람의 승인을 받는 단계</td>
+</tr>
+<tr>
+<td>Durable 실행</td>
+<td>프로세스가 재시작돼도 상태를 이어서 실행할 수 있는 방식</td>
+</tr>
+<tr>
+<td>TBD</td>
+<td>회사가 아직 정하지 않은 항목. 예제의 숫자를 기본값으로 쓰면 안 됩니다</td>
+</tr>
+</tbody>
+</table></div>
+<p>전체 정의는 <a href="docs--glossary.html">용어와 규범</a>에 있습니다.</p>
+<h2 id="더-읽을거리">더 읽을거리</h2>
+<ul>
+<li>공통 제어·분산 실행 결정: <a href="adr--ADR-017.html">ADR-017</a></li>
+<li>신원과 Credential Broker: <a href="docs--identity-and-credentials.html">Agent Identity</a></li>
+<li>도구와 Tool Gateway: <a href="docs--agent-tools.html">Agent Tools</a></li>
+<li>모든 도식: <a href="docs--architecture.html">아키텍처 도식</a></li>
+</ul>
+<p>이전: <a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a> · 다음: <a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a></p><p class="file-link">원본 파일: <a href="../docs/onboarding/02-big-picture.md">docs/onboarding/02-big-picture.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#두-개의-평면-통제는-모으고-실행은-흩는다">두 개의 평면: 통제는 모으고, 실행은 흩는다</a><a href="#구성요소-한눈에-보기">구성요소 한눈에 보기</a><a href="#왜-gateway가-세-개나-있나">왜 Gateway가 세 개나 있나</a><a href="#용어-쉽게-풀기">용어 쉽게 풀기</a><a href="#더-읽을거리">더 읽을거리</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

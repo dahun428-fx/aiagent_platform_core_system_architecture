@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>30분 실습: 로컬에서 직접 돌려 보기 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html" aria-current="page">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><h2>기준선</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="30분-실습-로컬에서-직접-돌려-보기">30분 실습: 로컬에서 직접 돌려 보기</h1>
+<blockquote>
+<p>온보딩 안내서입니다. 모든 명령은 이 저장소의 로컬 mock만 사용합니다. 회사 IdP, 실제 비밀값, 외부 모델에는 접속하지 않습니다.</p>
+</blockquote>
+<p>앞에서 읽은 흐름을 직접 확인해 봅니다. 준비물은 Python 3.11 이상입니다. TypeScript 실습까지 하려면 Node.js 22 이상도 필요합니다.</p>
+<h2 id="준비-5분">준비 (5분)</h2>
+<p>저장소 루트에서 가상환경을 만들고 개발 의존성을 설치합니다. 이 단계만 인터넷이 필요합니다.</p>
+<pre><code class="language-sh">python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+</code></pre>
+<p>Windows에서는 <code>.venv/bin/python</code> 대신 <code>.venv\Scripts\python</code>을 쓰고, 한글 출력이 깨지면 <code>set PYTHONUTF8=1</code>을 먼저 실행하세요.</p>
+<h2 id="실습-1-manifest-검증하기-5분">실습 1. Manifest 검증하기 (5분)</h2>
+<p>정상 Manifest 네 개를 검증합니다.</p>
+<pre><code class="language-sh">.venv/bin/python scripts/agentctl.py validate examples/manifests/*.json
+</code></pre>
+<p>모두 <code>"valid": true</code>가 나옵니다. 이번에는 일부러 틀린 Manifest를 넣어 봅니다.</p>
+<pre><code class="language-sh">.venv/bin/python scripts/agentctl.py validate examples/negative/unexpected-secret.json
+</code></pre>
+<pre><code class="language-json">[
+  {
+    &quot;file&quot;: &quot;examples/negative/unexpected-secret.json&quot;,
+    &quot;valid&quot;: false,
+    &quot;error&quot;: &quot;Invalid or unreadable Agent Manifest&quot;
+  }
+]
+</code></pre>
+<p>이 파일은 정상 Manifest의 <code>identity</code>에 <code>"secret": "should-never-be-here"</code> 한 줄만 추가한 것입니다. 스키마가 정의되지 않은 필드를 허용하지 않기 때문에 비밀값이 Manifest에 섞여 들어갈 수 없습니다.</p>
+<p>해 볼 것: <code>examples/manifests/tool.json</code>을 복사해서 <code>source.revision</code>을 <code>main</code>으로 바꾸고 검증해 보세요. 브랜치 이름처럼 바뀌는 값은 불변 버전이 아니라서 거부됩니다.</p>
+<h2 id="실습-2-agent-호출하기-10분">실습 2. Agent 호출하기 (10분)</h2>
+<p>터미널을 두 개 엽니다. 첫 번째 터미널에서 로컬 mock 플랫폼을 띄웁니다.</p>
+<pre><code class="language-sh">.venv/bin/python examples/python/platform_ref.py
+</code></pre>
+<pre><code class="language-text">Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
+</code></pre>
+<p>이 mock은 Agent Gateway → Runtime → Model Gateway의 동기 흐름과 Tool Gateway → Credential Broker 흐름을 흉내 냅니다. loopback(127.0.0.1)에만 열리고, 정해진 합성 토큰 <code>mock-user</code>만 받습니다.</p>
+<p>두 번째 터미널에서 Python 클라이언트로 Agent를 부릅니다.</p>
+<pre><code class="language-sh">.venv/bin/python examples/python/client.py
+</code></pre>
+<pre><code class="language-json">{
+  &quot;invocationId&quot;: &quot;inv-79b4fa3420244ae4bccb3b4a3473dea6&quot;,
+  &quot;agentVersion&quot;: &quot;0.1.0&quot;,
+  &quot;status&quot;: &quot;succeeded&quot;,
+  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;mock:hello&quot;},
+  &quot;traceparent&quot;: &quot;00-1b0f13dcfd2f426a87937b2bb6d7f852-ac2cb29d6d8f4c46-01&quot;,
+  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
+  &quot;usage&quot;: {&quot;inputTokens&quot;: 1, &quot;outputTokens&quot;: 1}
+}
+</code></pre>
+<p>결과를 <a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a>와 맞춰 읽어 보세요.</p>
+<ul>
+<li><code>invocationId</code>: Gateway가 붙인 호출 ID</li>
+<li><code>agentVersion</code>: Registry에서 찾은 불변 버전</li>
+<li><code>traceparent</code>: 요청 전체를 잇는 추적 정보</li>
+<li><code>routeDecisionId</code>: Model Gateway가 고른 경로. 여기서는 자체 호스팅 경로로 갔습니다</li>
+</ul>
+<p><code>examples/python/client.py</code>를 열어 보면 요청에 <code>Authorization: Bearer mock-user</code>와 <code>Idempotency-Key</code> 헤더가 들어 있습니다.</p>
+<h2 id="실습-3-일부러-실패시켜-보기-5분">실습 3. 일부러 실패시켜 보기 (5분)</h2>
+<p>토큰 없이 부르면 어떻게 될까요? 두 번째 터미널에서 실행합니다.</p>
+<pre><code class="language-sh">curl -i -X POST http://127.0.0.1:8765/v1/agents/agent-demo/invocations \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;hello&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;internal&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:5000}}'
+</code></pre>
+<pre><code class="language-text">HTTP/1.0 401 Unauthorized
+Content-Type: application/problem+json
+
+{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;UNAUTHENTICATED&quot;, &quot;status&quot;: 401, &quot;detail&quot;: &quot;Mock token required&quot;, &quot;code&quot;: &quot;UNAUTHENTICATED&quot;, &quot;traceId&quot;: &quot;…&quot;}
+</code></pre>
+<p>RFC 9457 Problem Details 형식의 오류가 돌아옵니다. 기본은 거부라는 원칙을 눈으로 확인한 것입니다.</p>
+<p>이번에는 같은 <code>Idempotency-Key</code>로 내용만 바꿔 두 번 보내 봅니다. 첫 번째는 <code>content</code>가 <code>hello</code>, 두 번째는 <code>bye</code>입니다.</p>
+<pre><code class="language-sh">curl -X POST http://127.0.0.1:8765/v1/agents/agent-demo/invocations \
+  -H &quot;Content-Type: application/json&quot; -H &quot;Authorization: Bearer mock-user&quot; -H &quot;Idempotency-Key: k1&quot; \
+  -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;hello&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;internal&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:5000}}'
+curl -X POST http://127.0.0.1:8765/v1/agents/agent-demo/invocations \
+  -H &quot;Content-Type: application/json&quot; -H &quot;Authorization: Bearer mock-user&quot; -H &quot;Idempotency-Key: k1&quot; \
+  -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;bye&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;internal&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:5000}}'
+</code></pre>
+<p>첫 번째는 성공하고, 두 번째는 409로 거부됩니다.</p>
+<pre><code class="language-text">{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;CONFLICT&quot;, &quot;status&quot;: 409, &quot;detail&quot;: &quot;Idempotency key reused for different request&quot;, &quot;code&quot;: &quot;CONFLICT&quot;, &quot;traceId&quot;: &quot;…&quot;}
+</code></pre>
+<p>같은 키로 같은 요청을 다시 보내면 저장된 결과를 돌려주고, 다른 요청을 보내면 거부합니다. 네트워크 문제로 재전송해도 Agent가 두 번 실행되지 않게 하는 장치입니다.</p>
+<h2 id="실습-4-typescript-클라이언트-선택-5분">실습 4. TypeScript 클라이언트 (선택, 5분)</h2>
+<pre><code class="language-sh">npm install
+npm run build:client
+node examples/typescript/dist/demo.js
+</code></pre>
+<p>같은 Agent를 TypeScript로 부릅니다. 계약이 언어 중립이라 클라이언트 언어가 달라도 결과 모양은 같습니다(<a href="adr--ADR-024.html">ADR-024</a>).</p>
+<h2 id="실습-5-전체-테스트-돌리기-선택">실습 5. 전체 테스트 돌리기 (선택)</h2>
+<pre><code class="language-sh">.venv/bin/python -m unittest discover -s tests -v
+</code></pre>
+<p>스키마, API, 권한, idempotency, 승인, 모델 정책, 평가, 포털 정합성 테스트가 돕니다. 테스트 이름을 훑어보면 이 플랫폼이 무엇을 지키려는지 목록으로 볼 수 있습니다.</p>
+<h2 id="이-mock이-하지-않는-것">이 mock이 하지 않는 것</h2>
+<p>실습 결과를 production 동작으로 오해하지 않도록 정리합니다.</p>
+<ul>
+<li>실제 JWT 검증, 회사 IdP·STS 연동을 하지 않습니다. 토큰은 고정된 합성 값입니다.</li>
+<li>실제 외부·자체 호스팅 모델, REST/MCP 도구 서버, 벡터 DB에 연결하지 않습니다.</li>
+<li>idempotency는 메모리에만 저장해서 재시작하면 사라집니다.</li>
+<li>Agent invoke와 health 외의 API는 501을 돌려줍니다.</li>
+</ul>
+<p>자세한 범위는 <a href="docs--release-scope.html">제공 범위와 한계</a>에 있습니다.</p>
+<p>이전: <a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a> · 다음: <a href="docs--onboarding--08-reading-the-spec.html">규격 문서 읽는 법과 자주 묻는 질문</a></p><p class="file-link">원본 파일: <a href="../docs/onboarding/07-hands-on.md">docs/onboarding/07-hands-on.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#준비-5분">준비 (5분)</a><a href="#실습-1-manifest-검증하기-5분">실습 1. Manifest 검증하기 (5분)</a><a href="#실습-2-agent-호출하기-10분">실습 2. Agent 호출하기 (10분)</a><a href="#실습-3-일부러-실패시켜-보기-5분">실습 3. 일부러 실패시켜 보기 (5분)</a><a href="#실습-4-typescript-클라이언트-선택-5분">실습 4. TypeScript 클라이언트 (선택, 5분)</a><a href="#실습-5-전체-테스트-돌리기-선택">실습 5. 전체 테스트 돌리기 (선택)</a><a href="#이-mock이-하지-않는-것">이 mock이 하지 않는 것</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

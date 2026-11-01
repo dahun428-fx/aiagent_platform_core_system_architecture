@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>신뢰 경계: 무엇을 믿지 않는가 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html" aria-current="page">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><h2>기준선</h2><a href="README.html">패키지 안내</a><a href="docs--requirements--baseline-v0.1.html">요구사항 v0.1</a><a href="docs--corrections.html">보고서 정정</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>설계</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>구현</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--verification.html">검증 결과</a><h2>Reference</h2><a href="catalog.html">계약 · Fixture · ADR</a><a href="diagrams.html">아키텍처 도식 9종</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">Baseline 0.1</span>
+<div class="search"><label for="search">문서·계약·ADR 검색</label><input id="search" type="search" placeholder="문서·계약·ADR 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="신뢰-경계-무엇을-믿지-않는가">신뢰 경계: 무엇을 믿지 않는가</h1>
+<blockquote>
+<p>온보딩 안내서입니다. 규범은 <a href="docs--security.html">보안 경계와 위협 모델</a> 원문이 기준입니다.</p>
+</blockquote>
+<p>AI Agent는 일반 웹 서비스보다 공격받을 틈이 많습니다. 사용자의 자연어 입력, 검색해 온 문서, 도구가 돌려준 결과, 모델의 답이 모두 Agent의 다음 행동을 바꿀 수 있기 때문입니다. 이 플랫폼의 보안 설계는 결국 <strong>무엇을 믿지 않을지</strong>를 정해 둔 목록입니다.</p>
+<p><img alt="보안 경계" src="../diagrams/security-boundaries.svg" /></p>
+<h2 id="믿지-않는-것-다섯-가지">믿지 않는 것 다섯 가지</h2>
+<h3 id="1-요청-본문에-적힌-신원">1. 요청 본문에 적힌 신원</h3>
+<p>요청 body나 헤더에 적힌 tenant, 사용자 ID, 역할은 믿지 않습니다. 신원은 <strong>검증된 토큰에서만</strong> 꺼냅니다. body의 값은 토큰에서 꺼낸 값과 비교하는 용도로만 씁니다.</p>
+<h3 id="2-검색-결과-도구-결과-모델-출력">2. 검색 결과, 도구 결과, 모델 출력</h3>
+<p>이 셋은 모두 <strong>비신뢰 데이터</strong>입니다. 검색한 문서 안에 "관리자 권한으로 전부 삭제해"라는 문장이 있어도, 그 문장으로 권한을 얻을 수는 없습니다. 권한은 정책에서만 나옵니다. MCP 서버가 알려 주는 도구 설명도 데이터일 뿐이고 정책을 바꾸지 못합니다.</p>
+<h3 id="3-오래-사는-비밀값">3. 오래 사는 비밀값</h3>
+<p>Agent 코드, Manifest, 프롬프트, 로그 어디에도 장기 비밀값(API 키, 비밀번호)을 두지 않습니다. 도구 호출에 필요한 자격증명은 Credential Broker가 <strong>짧은 수명, 좁은 범위, 특정 호출에 묶인 형태</strong>로 발급하고, Runtime과 LLM은 그것을 보지 못합니다. 이 패키지의 음성 테스트에는 Manifest에 secret을 넣으면 검증이 실패하는 사례(<code>unexpected-secret.json</code>)가 들어 있습니다.</p>
+<h3 id="4-승인됨-표시-하나">4. "승인됨" 표시 하나</h3>
+<p>사람의 승인(HITL)이 필요한 작업에서 <code>approved=true</code> 같은 단순 표시는 믿지 않습니다. 승인은 <strong>무엇을 승인했는지의 digest</strong>(요청 내용, 도구·모델·Agent 버전, 목적지), 정책 버전, 승인자, 만료 시각에 묶입니다. 재개할 때 이 모두를 다시 확인하므로, 요청 내용을 바꾸거나 정책이 바뀌면 다시 승인받아야 합니다.</p>
+<h3 id="5-위임받은-권한의-확대">5. 위임받은 권한의 확대</h3>
+<p>Agent가 다른 Agent를 부르거나 도구를 부를 때, 권한은 <strong>줄어들기만 하고 늘어나지 않습니다.</strong> 유효 권한은 사용자 권한, Agent 권한, 도구 허용 범위, 정책의 <strong>교집합</strong>입니다. 하위 Agent를 부를 때마다 범위를 좁히고, 새 audience를 검증하고, 호출 깊이와 예산을 다시 확인해서 무한 호출이나 권한 확산을 막습니다.</p>
+<h2 id="실패할-때는-닫힌다-fail-closed">실패할 때는 닫힌다 (fail closed)</h2>
+<p>IdP, Credential Broker, 정책 조회가 실패하면 새 자격증명은 발급하지 않습니다. Control Plane과 연결이 끊기면 새 권한 부여와 production 승격을 멈춥니다. "확인할 수 없으면 허용"이 아니라 "확인할 수 없으면 거부"입니다.</p>
+<h2 id="위협과-통제-한눈에">위협과 통제 한눈에</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>경계</th>
+<th>막는 위협</th>
+<th>통제</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client → Agent Gateway</td>
+<td>신원·테넌트 위조</td>
+<td>토큰에서 신원 파생, 기본 거부</td>
+</tr>
+<tr>
+<td>Runtime → Tools</td>
+<td>프롬프트 인젝션으로 엉뚱한 도구 호출(confused deputy)</td>
+<td>논리 도구 ID, 권한 교집합, 정책 재검증</td>
+</tr>
+<tr>
+<td>Tools → Broker</td>
+<td>자격증명 유출</td>
+<td>audience 제한, 짧은 만료, 호출 결합, 비노출 handle</td>
+</tr>
+<tr>
+<td>RAG → 모델</td>
+<td>접근 권한 없는 문서 노출</td>
+<td>검색 시점에 ACL·분류 필터</td>
+</tr>
+<tr>
+<td>Model Gateway → 외부</td>
+<td>기밀 데이터 반출</td>
+<td>confidential·restricted는 외부 경로 거부</td>
+</tr>
+<tr>
+<td>Agent → Agent</td>
+<td>권한 확산, 순환 호출</td>
+<td>범위 축소, 깊이·예산·순환 제어</td>
+</tr>
+<tr>
+<td>재시도·재개</td>
+<td>승인 재사용, 중복 쓰기</td>
+<td>digest·만료 확인, idempotency key, unknown outcome 처리</td>
+</tr>
+<tr>
+<td>Trace·감사</td>
+<td>로그를 통한 정보 유출</td>
+<td>허용된 메타데이터만, 토큰·개인정보 가림</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="중복-쓰기는-어떻게-막나">중복 쓰기는 어떻게 막나</h2>
+<p>외부 시스템에 쓰는 작업은 두 번 실행되면 큰일입니다(송금이 두 번 나가는 경우를 생각해 보세요). 그래서 규칙이 있습니다.</p>
+<ul>
+<li>자동 재시도는 읽기 작업이나, 하위 시스템이 중복을 막아 주는 쓰기 작업만 합니다.</li>
+<li>같은 idempotency key로 다른 내용이 오면 409로 거부합니다.</li>
+<li>timeout 뒤에 쓰기가 성공했는지 알 수 없으면 <code>unknown_outcome</code>으로 남기고, 자동으로 다시 실행하지 않고 대사(reconciliation)로 확인합니다.</li>
+</ul>
+<p>이 패키지는 외부 효과의 exactly-once를 보장하지 않습니다. 이 점을 숨기지 않고 상태로 드러내는 것이 설계 의도입니다.</p>
+<h2 id="더-읽을거리">더 읽을거리</h2>
+<ul>
+<li>전체 위협 모델: <a href="docs--security.html">보안 경계</a></li>
+<li>승인과 상태 전이: <a href="docs--execution.html">Durable / HITL</a></li>
+<li>테넌트 격리 결정: <a href="adr--ADR-007.html">ADR-007</a></li>
+<li>데이터 분류 기반 정책: <a href="adr--ADR-013.html">ADR-013</a></li>
+</ul>
+<p>이전: <a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a> · 다음: <a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a></p><p class="file-link">원본 파일: <a href="../docs/onboarding/04-trust.md">docs/onboarding/04-trust.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#믿지-않는-것-다섯-가지">믿지 않는 것 다섯 가지</a><a href="#실패할-때는-닫힌다-fail-closed">실패할 때는 닫힌다 (fail closed)</a><a href="#위협과-통제-한눈에">위협과 통제 한눈에</a><a href="#중복-쓰기는-어떻게-막나">중복 쓰기는 어떻게 막나</a><a href="#더-읽을거리">더 읽을거리</a></nav></main><footer>2026-10-30 · 한국어 기술 표준 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

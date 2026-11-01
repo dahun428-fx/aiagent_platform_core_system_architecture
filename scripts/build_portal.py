@@ -15,11 +15,24 @@ mapping = {p.resolve(): p.relative_to(ROOT).as_posix().replace("/", "--").replac
 
 
 def link(p):
+    if p.endswith(".html"):
+        return p
     return mapping.get((ROOT / p).resolve(), "../" + p)
 
 
+onboarding = [
+    ("docs/onboarding/01-why.md", "왜 이 플랫폼이 필요한가", "5분", "팀마다 따로 풀던 신원·데이터·비밀값·추적 문제를 공통 경계에서 해결합니다"),
+    ("docs/onboarding/02-big-picture.md", "한 장으로 보는 전체 구조", "10분", "통제는 모으고 실행은 흩는 두 평면과 구성요소 아홉 개"),
+    ("docs/onboarding/03-one-request.md", "요청 하나 따라가기", "15분", "Agent Gateway에서 모델·도구 호출과 기록까지 한 요청의 길"),
+    ("docs/onboarding/04-trust.md", "신뢰 경계: 무엇을 믿지 않는가", "10분", "요청 본문, 도구 결과, 비밀값, 승인 표시를 믿지 않는 이유"),
+    ("docs/onboarding/05-agents-and-manifest.md", "네 종류 Agent와 Manifest", "10분", "RAG·Tool·Workflow·Multi-Agent와 Agent의 신분증"),
+    ("docs/onboarding/06-lifecycle.md", "내 Agent가 production까지 가는 길", "10분", "로컬 실험에서 승인까지 일곱 단계와 필요한 증거"),
+    ("docs/onboarding/07-hands-on.md", "30분 실습", "30분", "로컬 mock으로 Manifest 검증, 호출, 거부를 직접 확인"),
+    ("docs/onboarding/08-reading-the-spec.md", "규격 읽는 법과 자주 묻는 질문", "10분", "MUST·TBD·버전 표시 읽는 법과 흔한 오해"),
+]
 navigation = [
-    ("시작", [("README.md", "패키지 안내"), ("docs/requirements/baseline-v0.1.md", "요구사항 v0.1"), ("docs/corrections.md", "보고서 정정"), ("docs/release-scope.md", "제공 범위와 한계")]),
+    ("온보딩", [("index.html", "시작하기")] + [(p, t) for p, t, _, _ in onboarding]),
+    ("기준선", [("README.md", "패키지 안내"), ("docs/requirements/baseline-v0.1.md", "요구사항 v0.1"), ("docs/corrections.md", "보고서 정정"), ("docs/release-scope.md", "제공 범위와 한계")]),
     ("설계", [("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/execution.md", "Durable / HITL")]),
     ("구현", [("docs/operating-model.md", "운영·평가"), ("docs/deployment.md", "배포 프로파일"), ("docs/versioning.md", "계약 변경"), ("docs/tbd-register.md", "TBD 등록부"), ("docs/verification.md", "검증 결과")])
 ]
@@ -48,7 +61,7 @@ def layout(title, body, current="", source=None, toc=""):
 
 def rewrite_links(body, source):
     def replace(m):
-        target = html.unescape(m.group(1))
+        target = html.unescape(m.group(2))
         parts = urlsplit(target)
         if parts.scheme or target.startswith("#"):
             return m.group(0)
@@ -61,8 +74,8 @@ def rewrite_links(body, source):
                 href = "../" + resolved.relative_to(ROOT).as_posix()
             except ValueError:
                 href = "#"
-        return 'href="' + html.escape(href) + '"'
-    return re.sub(r'href="([^"]+)"', replace, body)
+        return m.group(1) + '="' + html.escape(href) + '"'
+    return re.sub(r'\b(href|src)="([^"]+)"', replace, body)
 
 
 files = {}
@@ -85,22 +98,24 @@ for source in sources:
     files["portal/" + out] = layout(title, body, out, relative, toc)
     index.append({"title": title, "href": out, "text": text})
 
-home = """<h1>전사 AI Agent Platform<br>구현을 시작하는 공통 기준</h1>
-<p class="lead">확정된 30개 결정에서 실행 가능한 계약과 참조 예제까지.<br>Local-First 개발과 전사 거버넌스를 같은 구조 안에 연결합니다.</p>
-<p class="meta">Implementation Standard 0.1 · 2026-10-30</p>
-<div class="notice"><strong>Q30 기록 정정 반영</strong><br>“B. 요구사항 기준선 검토 → 전체 패키지 제작”을 명시적 확정 결정으로 기록했습니다. Tool Gateway는 Agent Tools, Credential Broker는 Agent Identity에 속합니다.</div>
-<h2>표준 읽기</h2><ol class="index-list">"""
-entries = [
+home = """<h1>AI Agent Platform 온보딩</h1>
+<p class="lead">전사 공통 AI Agent Platform을 처음 만나는 개발자를 위한 안내서입니다.<br>위에서부터 순서대로 읽으면 약 1시간 40분 안에 전체 그림을 잡고, 로컬에서 직접 돌려 볼 수 있습니다.</p>
+<p class="actions"><a class="button" href="docs--onboarding--01-why.html">처음부터 읽기</a><a class="button secondary" href="docs--onboarding--07-hands-on.html">바로 실습하기</a></p>
+<div class="notice"><strong>핵심 한 문장</strong><br>개발자는 지금 쓰는 도구와 프레임워크를 그대로 쓰고, 신원·정책·관측·평가·배포 통제는 플랫폼의 공통 경계에서 적용합니다.</div>
+<h2>읽는 순서</h2><ol class="index-list path">"""
+for p, title, minutes, detail in onboarding:
+    home += f'<li><div><a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">{minutes}</p></div></li>'
+home += '</ol><h2>공통 제어, 분산 실행</h2><a href="diagrams.html"><img class="diagram" src="../diagrams/c4-container.svg" alt="C4 Container: Shared Control Plane과 Distributed Execution Plane"></a><p>구성요소별 설명은 <a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a>에 있습니다.</p>'
+home += """<h2>규격을 바로 찾는 분께</h2><p>온보딩을 마쳤거나 특정 규칙을 찾는다면 원문 규격으로 바로 가세요. 규범(MUST·SHOULD)은 원문이 기준입니다.</p><ul>"""
+for p, title, detail in [
     ("docs/requirements/baseline-v0.1.md", "요구사항 기준선", "Q1–30 · ADR 추적 · 출처와 정정"),
     ("docs/architecture.md", "구조와 신뢰 경계", "C4 · 호출 흐름 · Agent Tools · Agent Identity"),
     ("catalog.html", "계약과 참조 예제", "OpenAPI · JSON Schema · 4종 Agent · Python / TypeScript"),
-    ("docs/verification.md", "검증과 구현 인계", "실행 결과 · Contract Tests · TBD · 배포 패키지")
-]
-for p, title, detail in entries:
-    href = p if p.endswith(".html") else link(p)
-    home += f'<li><div><a href="{href}">{title}</a><p>{detail}</p></div></li>'
-home += '</ol><h2>공통 제어, 분산 실행</h2><a href="diagrams.html"><img class="diagram" src="../diagrams/c4-container.svg" alt="C4 Container: Shared Control Plane과 Distributed Execution Plane"></a><p>회사 환경·제품·운영 수치는 TBD입니다. 이 패키지는 기술 표준과 로컬 mock 예제를 제공하며, production 배포 전 회사 통합과 운영 검증이 필요합니다.</p>'
-files["portal/index.html"] = layout("구현 착수 기술 표준", home)
+    ("docs/verification.md", "검증과 구현 인계", "실행 결과 · Contract Tests · TBD · 배포 패키지"),
+]:
+    home += f'<li><a href="{link(p)}">{title}</a> · {detail}</li>'
+home += '</ul><div class="notice"><strong>Q30 기록 정정 반영</strong><br>“B. 요구사항 기준선 검토 → 전체 패키지 제작”을 명시적 확정 결정으로 기록했습니다. Tool Gateway는 Agent Tools, Credential Broker는 Agent Identity에 속합니다.</div><p>회사 환경·제품·운영 수치는 TBD입니다. 이 패키지는 기술 표준과 로컬 mock 예제를 제공하며, production 배포 전 회사 통합과 운영 검증이 필요합니다.</p>'
+files["portal/index.html"] = layout("온보딩 시작하기", home, "index.html")
 catalog = "<h1>계약 · Fixture · ADR</h1><p>Machine-readable 원본과 읽기용 페이지를 함께 제공합니다. 예제는 합성 데이터입니다.</p>"
 for prefix, label in [("contracts/", "API / JSON Schema"), ("examples/manifests/", "4종 Agent Manifest"), ("adr/", "Architecture Decision Records"), ("sources/", "Deep Research 출처")]:
     catalog += "<h2>" + label + "</h2><ul>"
