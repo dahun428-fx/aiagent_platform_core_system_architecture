@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>요청 하나 따라가기 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html" aria-current="page">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="요청-하나-따라가기">요청 하나 따라가기</h1>
+<blockquote>
+<p>온보딩 안내서입니다. 규범은 <a href="docs--architecture.html">아키텍처</a>, <a href="docs--agent-tools.html">Agent Tools</a>, <a href="docs--identity-and-credentials.html">Agent Identity</a> 정의 문서가 기준입니다.</p>
+</blockquote>
+<div class="terms">
+<p><span class="label">핵심 용어</span> <a href="docs--onboarding--09-glossary.html#term-idempotency">Idempotency-Key</a> <a href="docs--onboarding--09-glossary.html#term-identity-context">identity context</a> <a href="docs--onboarding--09-glossary.html#term-lease">Lease</a> <a href="docs--onboarding--09-glossary.html#term-route-decision">routeDecisionId</a> <a href="docs--onboarding--09-glossary.html#term-trace">traceparent</a> <a href="docs--onboarding--09-glossary.html#term-problem">Problem Details</a></p>
+</div>
+<div class="goals">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 이 페이지에서 배울 것</strong></p>
+<ul>
+<li>요청 하나가 플랫폼을 지나가는 다섯 단계</li>
+<li>각 단계에서 무엇을 검사하고 무엇을 믿지 않는지</li>
+<li>Agent가 도구를 부를 때 자격증명이 LLM에 닿지 않는 이유</li>
+</ul>
+</div>
+<h2 id="들어가며">들어가며</h2>
+<div class="opener">
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 질문</span> "청구서 INV-2048 요약해 줘" 한마디가 답이 되기까지 어떤 일이 일어날까요?</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 관찰</span> 이 Agent는 사내 ERP에서 청구서를 조회하고(도구), 모델로 요약합니다. 데이터는 기밀(<code>confidential</code>)입니다. 사용자 확인, 도구 권한, 데이터 반출이 한 요청 안에 모두 걸려 있습니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 해결책</span> 각 관문이 <strong>자기 경계에서 한 가지씩</strong> 책임지게 나눕니다. 그래서 어느 한 곳이 뚫려도 나머지가 막습니다.</p>
+</div>
+<h2 id="전체-흐름">전체 흐름</h2>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>1. 들어오기</b><span>Agent Gateway<br>인증 · 찾기 · 권한 · 중복</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>2. 실행</b><span>Agent Runtime<br>adapter로 Agent 호출</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>3. 도구</b><span>Tool Gateway + Broker<br>짧은 자격증명</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><b>4. 모델</b><span>Model Gateway<br>분류에 맞는 경로</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>5. 기록</b><span>Observability<br>trace는 끝까지</span></li>
+</ol>
+
+<h2 id="1단계-정문을-통과한다">1단계. 정문을 통과한다</h2>
+<p>앱은 Agent Gateway에 HTTP 요청을 보냅니다.</p>
+<pre><code class="language-text">POST /v1/agents/{agentId}/invocations
+Authorization: Bearer &lt;회사 IdP가 발급한 access token&gt;
+traceparent: 00-&lt;trace-id&gt;-&lt;span-id&gt;-01
+Idempotency-Key: &lt;같은 요청 재전송을 알아보는 키&gt;
+</code></pre>
+<pre><code class="language-json">{
+  &quot;input&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;청구서 INV-2048 요약해 줘&quot;},
+  &quot;context&quot;: {&quot;tenantId&quot;: &quot;finance&quot;, &quot;dataClassification&quot;: &quot;confidential&quot;},
+  &quot;execution&quot;: {&quot;mode&quot;: &quot;sync&quot;, &quot;timeoutMs&quot;: 30000}
+}
+</code></pre>
+<div class="cards">
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>인증</b><p>토큰의 발급자, 대상(audience), 서명, 만료를 검증합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Agent 찾기</b><p>Registry에서 Git revision과 artifact digest가 고정된 <b>불변 버전</b>을 찾습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>테넌트 권한</b><p>이 사용자가 이 테넌트의 이 Agent를 불러도 되는지 확인합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>중복 방지</b><p>같은 키로 다른 내용이 오면 거부하고, 같은 요청이면 저장된 결과를 돌려줍니다.</p></div>
+</div>
+
+<div class="compare">
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 믿지 않는 것</strong></p>
+<p>body의 <code>tenantId</code>, <code>"role": "admin"</code> 같은 값. 요청 본문에 적는다고 권한이 생기지 않습니다.</p>
+</div>
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 믿는 것</strong></p>
+<p>검증된 토큰에서 꺼낸 신원과 테넌트. body의 값은 토큰 값과 <strong>비교하는 용도로만</strong> 씁니다.</p>
+</div>
+</div>
+<h2 id="2단계-agent가-실행된다">2단계. Agent가 실행된다</h2>
+<p>Gateway는 Runtime에 실행을 맡기면서 Agent 버전, <strong>검증된 신원 정보(identity context)</strong>, <strong>정책 정보(policy context)</strong>를 함께 넘깁니다.</p>
+<p>Runtime은 Manifest에 적힌 framework adapter로 Agent 코드를 부릅니다. LangGraph로 만든 Agent든 직접 짠 Agent든 Runtime에는 같은 계약으로 보입니다. 그래서 프레임워크를 바꿔도 플랫폼 쪽은 바뀌지 않습니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 핵심 포인트</strong> Runtime은 보안·정책 권한을 스스로 바꿀 수 없습니다(MUST NOT). 받은 권한 안에서만 일합니다.</p>
+</div>
+<h2 id="3단계-도구를-부른다">3단계. 도구를 부른다</h2>
+<p>Agent가 ERP에서 청구서를 조회해야 합니다. 이 플랫폼에서 가장 신경 쓴 부분입니다. 각 구간이 <strong>무엇을 손에 쥐고 있는지</strong> 보세요.</p>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>Runtime</b><span>도구 ID · 버전 · 인자만<br><strong>토큰 없음</strong></span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Tool Gateway</b><span>승인된 endpoint 확인<br>입력 스키마 · 정책 · 승인</span></li>
+<li class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16.5 6.5l2.5 2.5M14 9l2 2"/></svg><b>Credential Broker</b><span>정책 증거 재확인 후<br>이 호출에만 묶인 lease</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>Tool adapter</b><span>신뢰 경계 안에서만<br>lease를 실제 자격증명으로</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg><b>ERP</b><span>결과를 스키마·분류 검사 후<br>Runtime에 돌려줌</span></li>
+</ol>
+
+<ol>
+<li>Runtime은 Tool Gateway에 <strong>도구 ID와 버전, 인자</strong>만 보냅니다. URL이나 토큰은 보내지 않고, 보낼 수도 없습니다.</li>
+<li>Tool Gateway는 Tool Registry에서 <strong>승인된 endpoint</strong>를 찾고, 입력 스키마와 정책을 검사합니다. 쓰기(write) 작업이면 유효한 승인도 확인합니다.</li>
+<li>Credential Broker에 요청하는 범위는 <strong>사용자 권한 ∩ Agent 권한 ∩ 도구 허용 범위 ∩ 정책</strong>을 넘을 수 없습니다.</li>
+<li>Broker는 토큰 원문이 아니라 <strong>짧게 살고 이 호출에만 묶인 불투명한 lease</strong>를 줍니다.</li>
+<li>결과는 출력 스키마와 데이터 분류를 검사하고, 감사 기록과 민감정보 가림을 거쳐 돌아옵니다. 결과에는 토큰도 lease도 들어가지 않습니다.</li>
+</ol>
+<div class="compare">
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 이렇게 하지 않습니다</strong></p>
+<pre><code class="language-text">Runtime → 저장된 API 키 조회 → LLM·도구 코드 → ERP
+</code></pre>
+<p>LLM이 키를 보는 순간, 프롬프트 인젝션 한 줄로 유출될 수 있습니다.</p>
+</div>
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 이렇게 합니다</strong></p>
+<pre><code class="language-text">Runtime → Tool Gateway → Credential Broker
+→ 짧은 lease → adapter → ERP
+</code></pre>
+<p>LLM은 자격증명을 본 적이 없으니 유출할 것도 없습니다.</p>
+</div>
+</div>
+<p>정식 순서도입니다.</p>
+<p><img alt="Tool 호출과 Credential 발급 순서" src="../diagrams/tool-credential.svg" /></p>
+<h2 id="4단계-모델을-부른다">4단계. 모델을 부른다</h2>
+<p>Agent는 특정 공급사의 모델을 직접 부르지 않고, Model Gateway에 <strong>논리 모델 이름</strong>과 <strong>정책 정보</strong>를 보냅니다.</p>
+<div class="lanes">
+<div class="lane"><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg> <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>Model Gateway<small>정책이 허용하면</small></span></div><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg> 외부 또는 자체 호스팅 모델</div></div>
+<div class="lane"><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>Model Gateway<small>외부 경로 거부</small></span></div><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg> 자체 호스팅 모델만</div></div>
+<div class="lane"><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 안전한 경로 없음</div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>Model Gateway<small>우회하지 않음</small></span></div><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 요청 실패</div></div>
+</div>
+
+<p>이 예시의 데이터는 <code>confidential</code>이라 사내 모델로 갑니다. 응답에는 어떤 경로로 갔는지 기록하는 <code>routeDecisionId</code>가 붙습니다.</p>
+<p><img alt="모델 routing 순서" src="../diagrams/model-routing.svg" /></p>
+<h2 id="5단계-기록하고-돌려준다">5단계. 기록하고 돌려준다</h2>
+<p>처음 요청에 붙어 온 <code>traceparent</code>는 Gateway → Runtime → Tool Gateway → Model Gateway까지 그대로 전달됩니다. 나중에 이 요청 하나가 어디를 거쳤는지 한 줄로 볼 수 있습니다.</p>
+<div class="compare">
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 기록하는 것</strong></p>
+<p>테넌트 별칭, 호출 ID, adapter, 정책 결정, 오류 종류</p>
+</div>
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 기록하지 않는 것</strong></p>
+<p>프롬프트 원문, 토큰, 검색된 개인정보 원문</p>
+</div>
+</div>
+<p>최종 응답은 이런 모양입니다. 이 패키지의 로컬 mock을 실제로 실행한 결과입니다.</p>
+<pre><code class="language-json">{
+  &quot;invocationId&quot;: &quot;inv-79b4fa3420244ae4bccb3b4a3473dea6&quot;,
+  &quot;agentVersion&quot;: &quot;0.1.0&quot;,
+  &quot;status&quot;: &quot;succeeded&quot;,
+  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;mock:hello&quot;},
+  &quot;traceparent&quot;: &quot;00-1b0f13dcfd2f426a87937b2bb6d7f852-ac2cb29d6d8f4c46-01&quot;,
+  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
+  &quot;usage&quot;: {&quot;inputTokens&quot;: 1, &quot;outputTokens&quot;: 1}
+}
+</code></pre>
+<p>오류는 RFC 9457 Problem Details(<code>application/problem+json</code>) 형식으로 돌아옵니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 스스로 점검</strong></p>
+<details>
+<summary>Q1. 요청 body에 다른 팀의 tenantId를 넣으면 그 팀 데이터에 접근할 수 있나요?</summary>
+<p>아닙니다. 테넌트는 검증된 토큰에서 꺼내고, body의 값은 비교용입니다. 서로 다르면 거부됩니다.</p>
+</details>
+<details>
+<summary>Q2. Runtime이 Tool Gateway에 보내는 것은 무엇인가요?</summary>
+<p>도구 ID, 버전, 인자입니다. URL과 토큰은 보내지 않습니다. 실제 endpoint와 자격증명은 Tool Gateway와 Credential Broker가 정합니다.</p>
+</details>
+<details>
+<summary>Q3. confidential 데이터인데 사내 모델이 모두 내려가 있으면 어떻게 되나요?</summary>
+<p>요청이 실패합니다. 안전한 경로가 없을 때 외부 모델로 우회하지 않습니다.</p>
+</details>
+</div>
+<div class="summary">
+<p><strong>정리</strong></p>
+<ul>
+<li>들어오기 → 실행 → 도구 → 모델 → 기록, 다섯 단계마다 담당 관문이 한 가지씩 책임집니다.</li>
+<li>신원은 토큰에서만 꺼내고, 자격증명은 Runtime과 LLM에 노출하지 않습니다.</li>
+<li>데이터 분류가 모델 경로를 정하고, 안전한 경로가 없으면 실패합니다.</li>
+</ul>
+</div>
+<nav class="pager"><a href="docs--onboarding--02-big-picture.html"><small>이전</small><b>한 장으로 보는 전체 구조</b></a><a class="next" href="docs--onboarding--04-trust.html"><small>다음</small><b>신뢰 경계: 무엇을 믿지 않는가</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/03-one-request.md">docs/onboarding/03-one-request.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#들어가며">들어가며</a><a href="#전체-흐름">전체 흐름</a><a href="#1단계-정문을-통과한다">1단계. 정문을 통과한다</a><a href="#2단계-agent가-실행된다">2단계. Agent가 실행된다</a><a href="#3단계-도구를-부른다">3단계. 도구를 부른다</a><a href="#4단계-모델을-부른다">4단계. 모델을 부른다</a><a href="#5단계-기록하고-돌려준다">5단계. 기록하고 돌려준다</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>규격 문서 읽는 법과 자주 묻는 질문 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html" aria-current="page">규격 읽는 법과 자주 묻는 질문</a><a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="규격-문서-읽는-법과-자주-묻는-질문">규격 문서 읽는 법과 자주 묻는 질문</h1>
+<blockquote>
+<p>온보딩 안내서의 마지막 페이지입니다. 여기부터는 정의 문서를 직접 읽게 됩니다.</p>
+</blockquote>
+<div class="terms">
+<p><span class="label">핵심 용어</span> <a href="docs--onboarding--09-glossary.html#term-must">MUST / SHOULD / MAY</a> <a href="docs--onboarding--09-glossary.html#term-tbd">TBD</a> <a href="docs--onboarding--09-glossary.html#term-version">계약 버전</a> <a href="docs--onboarding--09-glossary.html#term-mcp">MCP</a></p>
+</div>
+<div class="goals">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 이 페이지에서 배울 것</strong></p>
+<ul>
+<li>규격 문장에 붙는 표시 네 가지 읽는 법</li>
+<li>버전이 세 개로 나뉘는 이유</li>
+<li>궁금한 것이 생겼을 때 열어 볼 정의 문서</li>
+<li>처음 온 개발자가 자주 묻는 질문 일곱 가지</li>
+</ul>
+</div>
+<h2 id="규격-문서의-표시">규격 문서의 표시</h2>
+<div class="cards">
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>규범 수준</b><p><code>MUST</code> 필수 · <code>MUST NOT</code> 금지 · <code>SHOULD</code> 사유를 문서화하면 예외 가능 · <code>MAY</code> 선택</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg><b>미정</b><p><code>TBD</code> 회사 환경에 맞춰 정해야 하는 제품이나 수치</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>적용 단계</b><p><code>MVP</code> · <code>Follow-up</code> · <code>Optional</code> 언제 구현하는가</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>계약 버전</b><p>예: <code>agent.platform/v1alpha1</code>, <code>/v1</code> 어떤 버전의 계약인가</p></div>
+</div>
+
+<div class="compare">
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 흔한 오해</strong></p>
+<p>"MUST가 붙었으니 특정 제품을 써야 한다."</p>
+</div>
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 바른 해석</strong></p>
+<p>"production Agent 호출은 반드시 인증해야 한다(MUST)"여도, 어떤 IdP를 쓸지는 여전히 TBD일 수 있습니다. MUST는 <strong>지켜야 할 성질</strong>이지 제품 선택이 아닙니다.</p>
+</div>
+</div>
+<h2 id="버전이-세-개인-이유">버전이 세 개인 이유</h2>
+<div class="cards">
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg><b>패키지 버전</b><p><code>0.1.0</code> 문서·예제·도구 묶음의 버전</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Manifest 계약 버전</b><p><code>agent.platform/v1alpha1</code> Manifest 형식의 버전</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>HTTP API 경로 버전</b><p><code>/v1</code> Gateway API의 버전</p></div>
+</div>
+
+<p>셋은 따로 움직입니다. 패키지 문서를 고쳐도 계약 버전은 그대로일 수 있습니다. 계약을 바꿀 때는 diff 검토, 변경 사유 기록, 마이그레이션 안내, 새 released snapshot 승인이 필요하고, 테스트가 이전 snapshot과 다른지 검사합니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 주의</strong> snapshot만 덮어써서 테스트를 통과시키면 안 됩니다(MUST NOT).</p>
+</div>
+<h2 id="무엇이-어디에-정의되어-있나">무엇이 어디에 정의되어 있나</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>알고 싶은 것</th>
+<th>정의 문서</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg> 구성요소의 책임과 신뢰 경계</td>
+<td><a href="docs--architecture.html">아키텍처</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg> 도구 호출, MCP, 재시도 규칙</td>
+<td><a href="docs--agent-tools.html">Agent Tools</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg> 사용자·Agent 신원, 위임, 자격증명</td>
+<td><a href="docs--identity-and-credentials.html">Agent Identity</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg> 위협과 통제</td>
+<td><a href="docs--security.html">보안 경계</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 실행 상태, 승인, durable</td>
+<td><a href="docs--execution.html">Durable / HITL</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 역할, 수명주기, 평가와 관측</td>
+<td><a href="docs--operating-model.html">운영·평가</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg> 실행 환경과 승격</td>
+<td><a href="docs--deployment.html">배포 프로파일</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg> 계약 버전과 호환성</td>
+<td><a href="docs--versioning.html">계약 변경</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg> CI 연결</td>
+<td><a href="docs--ci-integration.html">CI 통합</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg> 용어</td>
+<td><a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a></td>
+</tr>
+<tr>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg> API와 스키마 원본</td>
+<td>포털 메뉴의 "계약 · 예제"</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="자주-묻는-질문">자주 묻는 질문</h2>
+<div class="check">
+<details>
+<summary>내 Agent를 플랫폼에 올리려면 소스를 어디에 업로드하나요?</summary>
+<p>업로드하지 않습니다. 소스는 팀 저장소에 두고, Registry에는 불변 revision, artifact digest, Manifest, 평가 증거를 등록합니다.</p>
+</details>
+<details>
+<summary>LangGraph를 쓰고 있는데 바꿔야 하나요?</summary>
+<p>아닙니다. 공통 Runtime 계약과 framework adapter로 연결합니다. Manifest의 <code>runtime.framework</code>와 <code>runtime.adapter</code>에 적으면 됩니다.</p>
+</details>
+<details>
+<summary>외부 모델을 코드에서 바로 불러도 되나요?</summary>
+<p>production에서는 특정 공급사에 직접 묶지 않고 Model Gateway를 거쳐야 합니다. 그래야 데이터 분류에 따라 외부 전송을 막고, 공급사를 바꿔도 Agent 코드를 고칠 필요가 없습니다. 처음부터 Model Gateway 계약에 맞춰 개발해 두면 승격할 때 고칠 것이 줄어듭니다.</p>
+</details>
+<details>
+<summary>MCP 서버를 Agent가 직접 붙어 쓰면 안 되나요?</summary>
+<p>기본 패턴은 Tool Gateway의 adapter가 MCP client를 소유하는 enterprise proxy입니다. MCP는 도구 프로토콜일 뿐 회사 권한 정책을 대신하지 않습니다. <code>tools/list</code>에는 허용된 도구만 보이고, <code>tools/call</code>도 같은 권한·입출력·감사 규칙을 따릅니다.</p>
+</details>
+<details>
+<summary>도구 API 키는 어디에 넣나요?</summary>
+<p>Agent 코드, Manifest, 환경 변수 어디에도 넣지 않습니다. Credential Broker가 호출마다 짧은 수명의 자격증명을 발급하고, Tool Gateway의 adapter 안에서만 씁니다.</p>
+</details>
+<details>
+<summary>개발용 Mac mini를 등록했는데 바로 서비스에 쓰면 되나요?</summary>
+<p>안 됩니다. 등록(registered)과 production 승인(production-approved)은 다릅니다. production에는 보안, 평가, 복구, 위험별 SLO 증거가 필요합니다.</p>
+</details>
+<details>
+<summary>예제에 TTL이나 포트 같은 숫자가 있는데 그대로 쓰면 되나요?</summary>
+<p>안 됩니다. 예제의 주소, TTL, 깊이, 평가 점수는 합성 값입니다. 회사 수치는 <a href="docs--tbd-register.html">TBD 등록부</a>에서 정해집니다.</p>
+</details>
+<details>
+<summary>이 패키지로 바로 production을 운영할 수 있나요?</summary>
+<p>아닙니다. 이 패키지는 구현을 시작하기 위한 기술 표준입니다. 회사 IdP, 정책 엔진, 비밀 관리, 실행 환경을 연결하고 운영 검증을 거쳐야 합니다. 시작 순서는 <a href="docs--ci-integration.html">CI 통합</a>에 있습니다.</p>
+</details>
+</div>
+<div class="summary">
+<p><strong>온보딩을 마쳤다면</strong></p>
+<ul>
+<li>회사가 정해야 할 것: <a href="docs--tbd-register.html">TBD 등록부</a></li>
+<li>이 패키지의 범위: <a href="docs--release-scope.html">제공 범위와 한계</a></li>
+<li>헷갈리는 용어: <a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a></li>
+</ul>
+</div>
+<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>30분 실습</b></a><a class="next" href="docs--onboarding--09-glossary.html"><small>다음</small><b>핵심 용어 사전</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/08-reading-the-spec.md">docs/onboarding/08-reading-the-spec.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#규격-문서의-표시">규격 문서의 표시</a><a href="#버전이-세-개인-이유">버전이 세 개인 이유</a><a href="#무엇이-어디에-정의되어-있나">무엇이 어디에 정의되어 있나</a><a href="#자주-묻는-질문">자주 묻는 질문</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

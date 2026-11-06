@@ -3,6 +3,8 @@
 구현 착수를 위한 기술 표준 패키지. [오프라인 포털](portal/index.html)을 브라우저에서 열면 전체 문서·계약·ADR을 탐색할 수 있다.
 
 ## 시작
+처음이라면 [온보딩 안내서](docs/onboarding/01-why.md)부터 순서대로 읽는다. 포털 첫 화면도 같은 순서로 안내한다.
+
 1. docs/requirements/baseline-v0.1.md와 docs/corrections.md에서 기준선을 확인한다.
 2. docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md로 책임·신뢰 경계를 확인한다.
 3. contracts/의 OpenAPI 3.1.2 JSON과 JSON Schema 2020-12를 소비한다.

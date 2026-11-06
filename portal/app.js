@@ -21,6 +21,14 @@
       }
     });
     input.addEventListener("keydown", e => { if (e.key === "Escape") { results.hidden = true; input.blur(); } });
+    document.addEventListener("keydown", e => {
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+    document.addEventListener("click", e => { if (!e.target.closest(".search")) results.hidden = true; });
+    input.addEventListener("focus", () => { if (input.value.trim()) results.hidden = false; });
   }
   const button = document.getElementById("menu");
   const sidebar = document.getElementById("sidebar");
