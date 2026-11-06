@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범(MUST/SHOULD)은 링크된 기술 표준 문서가 기준이며, 이 가이드와 다를 경우 기술 표준 문서를 따릅니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [AI Agent](09-glossary.md#term-agent) [신뢰 경계](09-glossary.md#term-boundary) [기술 계약](09-glossary.md#term-contract) [TBD](09-glossary.md#term-tbd)
+<span class="label">주요 용어</span> [AI Agent](09-glossary.md#term-agent) [신뢰 경계](09-glossary.md#term-boundary) [기술 계약](09-glossary.md#term-contract) [TBD](09-glossary.md#term-tbd) [인증 / 인가](09-glossary.md#term-authn) [시크릿 / 자격증명](09-glossary.md#term-secret)
 </div>
 
 <div class="goals" markdown="1">
@@ -27,9 +27,9 @@
 ## 팀별 개발 시 반복되는 과제
 
 <div class="cards">
-<div class="card">{{icon:user}}<b>인증·인가</b><p>호출 주체 확인과 접근 권한 판단이 팀마다 다르게 구현됩니다.</p></div>
+<div class="card">{{icon:user}}<b>인증·인가</b><p>인증(Authentication, 호출 주체 확인)과 인가(Authorization, 접근 권한 판단)가 팀마다 다르게 구현됩니다.</p></div>
 <div class="card">{{icon:cloud}}<b>데이터 반출 통제</b><p>기밀 데이터가 외부 모델로 전송되지 않는다는 보장이 없습니다.</p></div>
-<div class="card">{{icon:key}}<b>시크릿·자격증명 관리</b><p>ERP·메일·저장소 접근 토큰이 코드나 설정 파일에 남습니다.</p></div>
+<div class="card">{{icon:key}}<b>시크릿·자격증명 관리</b><p>시크릿(Secret)과 ERP·메일·저장소 접근 자격증명(Credential)이 코드나 설정 파일에 남습니다.</p></div>
 <div class="card">{{icon:trace}}<b>실행 추적</b><p>요청이 거친 구성요소와 수행한 작업을 종단 간으로 추적하기 어렵습니다.</p></div>
 <div class="card">{{icon:test}}<b>품질 검증</b><p>업무 적용 여부를 판단할 공통 평가 기준이 없습니다.</p></div>
 <div class="card">{{icon:warn}}<b>영향</b><p>개발 비용이 중복되고, 단일 팀의 보안 결함이 전사 위험으로 확대됩니다.</p></div>
@@ -79,7 +79,7 @@
 <div class="card">{{icon:code}}<b>예제 구현</b><p>4종 Agent Manifest, Python mock, TypeScript 클라이언트, 테스트</p></div>
 </div>
 
-이 패키지는 구현 착수를 위한 기술 표준이며, 회사 IdP나 운영 환경에 연결된 프로덕션 시스템이 아닙니다.
+이 패키지는 구현 착수를 위한 기술 표준이며, 회사 IdP나 실제 실행 환경에 연결된 프로덕션 시스템이 아닙니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
@@ -88,7 +88,7 @@
 아닙니다. 공통 Runtime 계약과 framework adapter로 연결하므로 프레임워크는 각 팀이 선택합니다.
 </details>
 
-<details markdown="1"><summary>Q2. Shared Control Plane이 담당하는 것은 실행입니까, 통제입니까?</summary>
+<details markdown="1"><summary>Q2. 플랫폼의 공통 제어 지점이 담당하는 것은 실행입니까, 통제입니까?</summary>
 통제입니다. 실행은 여러 환경에 분산되며, 인증·인가, 정책, 관측성, 평가, 배포 통제를 공통 지점에서 적용합니다.
 </details>
 </div>

@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [아키텍처](../architecture.md), [Agent Tools](../agent-tools.md), [Agent Identity](../identity-and-credentials.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [멱등성 키](09-glossary.md#term-idempotency) [identity context](09-glossary.md#term-identity-context) [Lease](09-glossary.md#term-lease) [routeDecisionId](09-glossary.md#term-route-decision) [traceparent](09-glossary.md#term-trace) [Problem Details](09-glossary.md#term-problem)
+<span class="label">주요 용어</span> [멱등성 키](09-glossary.md#term-idempotency) [identity context](09-glossary.md#term-identity-context) [Lease](09-glossary.md#term-lease) [routeDecisionId](09-glossary.md#term-route-decision) [traceparent](09-glossary.md#term-trace) [Problem Details](09-glossary.md#term-problem) [Credential Broker](09-glossary.md#term-credential-broker) [테넌트](09-glossary.md#term-tenant) [감사](09-glossary.md#term-audit)
 </div>
 
 <div class="goals" markdown="1">
@@ -95,11 +95,11 @@ Agent가 ERP에서 청구서를 조회하는 단계입니다. 각 구간이 보�
 <li>{{icon:server}}<b>ERP</b><span>출력 스키마·분류 검증 후<br>Runtime에 반환</span></li>
 </ol>
 
-1. Runtime은 Agent Gateway의 도구 경로(Tool Gateway)에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
+1. Runtime은 Agent Gateway의 도구 경로(tool route)에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
 2. 도구 경로는 Agent Tools의 Tool Registry에서 **승인된 endpoint**를 해석하고 입력 스키마와 정책을 검증합니다. 쓰기(write) 작업은 유효한 승인 여부도 확인합니다.
 3. Credential Broker에 요청하는 범위는 **사용자 권한 ∩ Agent 권한 ∩ 도구 허용 범위 ∩ 정책**을 초과할 수 없습니다.
 4. Credential Broker는 토큰 원문 대신 **단기·호출 결합형 불투명 lease**를 발급합니다.
-5. 결과는 출력 스키마와 데이터 분류 검증, Guardrail 검사(간접 인젝션·민감정보), 감사 기록을 거쳐 반환됩니다. 결과에는 토큰과 lease가 포함되지 않습니다.
+5. 결과는 출력 스키마와 데이터 분류 검증, Guardrail 검사(간접 인젝션·민감정보, [신뢰 경계와 Guardrails](04-trust.md)), 감사 기록을 거쳐 반환됩니다. 결과에는 토큰과 lease가 포함되지 않습니다.
 
 <div class="compare" markdown="1">
 <div class="bad" markdown="1">
@@ -130,7 +130,7 @@ LLM은 자격증명에 접근하지 않으므로 유출 경로가 없습니다.
 
 ## 4단계. Agent Gateway 모델 경로를 통한 모델 호출
 
-Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway의 모델 경로(Model Gateway)에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다. 모델 입력과 출력은 Guardrail 검사를 거칩니다. 입력 검사 대상에는 사용자 메시지뿐 아니라 도구 결과와 검색 문서도 포함됩니다.
+Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway의 모델 경로(model route)에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다. 모델 입력과 출력은 Guardrail 검사를 거칩니다. 입력 검사 대상에는 사용자 메시지뿐 아니라 도구 결과와 검색 문서도 포함됩니다.
 
 <div class="lanes">
 <div class="lane"><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
@@ -144,7 +144,7 @@ Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway
 
 ## 5단계. 실행 추적과 응답
 
-요청의 `traceparent`는 Agent Platform APIs → Runtime → Agent Gateway(도구·모델 경로)의 모든 구간에 전파됩니다. 각 구간은 OpenTelemetry GenAI 규격의 span(`invoke_agent`, 모델 추론 span 등)으로 기록되어, 요청 하나의 처리 경로를 종단 간으로 추적할 수 있습니다.
+요청의 `traceparent`는 Agent Platform APIs → Runtime → Agent Gateway(도구·모델 경로) → Knowledge → 하위 Agent의 모든 구간에 전파됩니다. 각 구간은 OpenTelemetry GenAI 규격의 span(`invoke_agent`, 모델 추론 span 등)으로 기록되어, 요청 하나의 처리 경로를 종단 간으로 추적할 수 있습니다.
 
 <div class="compare" markdown="1">
 <div class="good" markdown="1">

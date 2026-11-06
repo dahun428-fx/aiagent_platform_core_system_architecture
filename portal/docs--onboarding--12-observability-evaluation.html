@@ -11,7 +11,7 @@
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--observability.html">Observability</a>, <a href="docs--evaluation.html">Evaluation</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
 <div class="terms">
-<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-observability">관측성</a> <a href="docs--onboarding--09-glossary.html#term-trace">실행 추적 컨텍스트</a> <a href="docs--onboarding--09-glossary.html#term-otel-genai">OTel GenAI</a> <a href="docs--onboarding--09-glossary.html#term-evaluation">평가 3단계</a> <a href="docs--onboarding--09-glossary.html#term-red-teaming">Red teaming</a></p>
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-observability">관측성</a> <a href="docs--onboarding--09-glossary.html#term-trace">실행 추적 컨텍스트</a> <a href="docs--onboarding--09-glossary.html#term-otel-genai">OTel GenAI</a> <a href="docs--onboarding--09-glossary.html#term-evaluation">평가 3단계</a> <a href="docs--onboarding--09-glossary.html#term-red-teaming">Red teaming</a> <a href="docs--onboarding--09-glossary.html#term-audit">감사</a></p>
 </div>
 <div class="goals">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
@@ -92,7 +92,7 @@
 <td><code>gen_ai.provider.name</code>(필수), <code>gen_ai.request.model</code>, 토큰 사용량</td>
 </tr>
 <tr>
-<td>플랫폼 고유</td>
+<td>플랫폼 고유 (SHOULD)</td>
 <td>—</td>
 <td><code>platform.</code> 접두사: tenant 별칭, 정책 결정 ID, routeDecisionId, Guardrail 검사 ID</td>
 </tr>

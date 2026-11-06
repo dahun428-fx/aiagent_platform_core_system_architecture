@@ -21,12 +21,12 @@ RANK = {"public": 0, "internal": 1, "confidential": 2, "restricted": 3}
 
 
 def load(name):
-    return json.loads((ROOT / "examples/fixtures" / (name + ".json")).read_text())
+    return json.loads((ROOT / "examples/fixtures" / (name + ".json")).read_text(encoding="utf-8"))
 
 
 @lru_cache
 def validators():
-    schemas = [json.loads(p.read_text()) for p in (ROOT / "contracts").glob("*.schema.json")]
+    schemas = [json.loads(p.read_text(encoding="utf-8")) for p in (ROOT / "contracts").glob("*.schema.json")]
     registry = Registry().with_resources((s["$id"], Resource.from_contents(s)) for s in schemas)
     return {s["title"]: Draft202012Validator(s, registry=registry, format_checker=FormatChecker()) for s in schemas}
 
@@ -81,6 +81,11 @@ def verify_approval(approval, tenant, invocation, digest, policy_version):
     actual = tuple(approval[k] for k in ("tenantId", "invocationId", "subjectDigest", "policyVersion", "decision"))
     if expected != actual or expiration(approval["expiresAt"]) <= utcnow():
         raise Fault(403, "FORBIDDEN", "Approval is stale or not bound to this request")
+
+
+def effective_classification(declared, authoritative):
+    """The caller's declared classification is an assertion. It may raise, never lower, the server-side value."""
+    return max(declared, authoritative, key=lambda c: RANK[c])
 
 
 def retrieve(documents, identity, policy):
@@ -182,7 +187,9 @@ class ToolGateway:
             raise Fault(403, "FORBIDDEN", "Write tools require an external approval service; not implemented in mock")
         key = (identity["tenantId"], identity.get("principalId", identity["workloadId"]),
                identity["agentId"], request["toolId"], request["version"], request["idempotencyKey"])
-        digest = canonical_digest(request)
+        # Same business effect = same arguments against the same approved resource. Trace and policy evidence are
+        # re-validated on every attempt (authorize above) and must not turn a legitimate retry into a conflict.
+        digest = canonical_digest({"arguments": request["arguments"], "resource": self.descriptor["resource"]})
         with self.lock:
             if key in self.memo:
                 old_digest, old_result = self.memo[key]
@@ -229,6 +236,8 @@ class Platform:
         self.broker = CredentialBroker(self.record)
         self.tools = ToolGateway(self.broker, self.record)
         self.policy_available = True
+        # Classification of the data this Agent handles, decided server-side (policy/data source), not by the caller.
+        self.data_classification = None
         self.memo = {}
         self.lock = threading.Lock()
 
@@ -257,7 +266,8 @@ class Platform:
             traceparent = "00-" + uuid.uuid4().hex + "-" + uuid.uuid4().hex[:16] + "-01"
         if not TRACE.fullmatch(traceparent):
             raise Fault(422, "VALIDATION_ERROR", "Invalid traceparent")
-        policy["classification"] = body["context"]["dataClassification"]
+        authoritative = self.data_classification or policy["classification"]
+        policy["classification"] = effective_classification(body["context"]["dataClassification"], authoritative)
         authorize(identity, policy, "agents.invoke")
         # Memory-only, single-process idempotency. Real deployments need a persistent atomic effect ledger.
         cache_key = (identity["tenantId"], identity["principalId"], agent_id, "0.1.0", key)

@@ -18,7 +18,7 @@
 </thead>
 <tbody>
 <tr>
-<td>Client→Agent Gateway: identity/tenant 위조</td>
+<td>Client→Agent Platform APIs: identity/tenant 위조</td>
 <td>검증 token에서 신원 파생, body 비교, deny by default</td>
 <td>spoof/missing auth tests</td>
 <td>실제 JWKS·issuer·audience·revocation TBD</td>
@@ -48,7 +48,7 @@
 <td>회사 검색 backend TBD</td>
 </tr>
 <tr>
-<td>Model Gateway→external: 분류 우회</td>
+<td>Agent Gateway 모델 경로→external: 분류 우회</td>
 <td>confidential/restricted 외부 route deny, 안전 route 없으면 실패</td>
 <td>routing tests</td>
 <td>지역·국경 정책 TBD</td>
@@ -75,7 +75,7 @@
 <td>입력·출력·도구·검색 결과: 간접 인젝션·민감정보·유해 콘텐츠</td>
 <td>공통 검사 서비스 + 네 집행 지점, 프로덕션은 검사 후 차단</td>
 <td>guardrail 계약 TBD</td>
-<td>검사 제품·정책 TBD-03</td>
+<td>검사 제품 TBD-13, 장애 시 정책 TBD-03</td>
 </tr>
 <tr>
 <td>Memory 오염</td>

@@ -11,7 +11,7 @@
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--core-systems.html">Core Systems</a>와 <a href="docs--architecture.html">아키텍처</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
 <div class="terms">
-<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-core-systems">Core Systems</a> <a href="docs--onboarding--09-glossary.html#term-platform-apis">Agent Platform APIs</a> <a href="docs--onboarding--09-glossary.html#term-agent-gateway">Agent Gateway</a> <a href="docs--onboarding--09-glossary.html#term-factory">Agent Factory</a> <a href="docs--onboarding--09-glossary.html#term-control-plane">Shared Control Plane</a> <a href="docs--onboarding--09-glossary.html#term-execution-plane">Distributed Execution Plane</a></p>
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-core-systems">Core Systems</a> <a href="docs--onboarding--09-glossary.html#term-platform-apis">Agent Platform APIs</a> <a href="docs--onboarding--09-glossary.html#term-agent-gateway">Agent Gateway</a> <a href="docs--onboarding--09-glossary.html#term-factory">Agent Factory</a> <a href="docs--onboarding--09-glossary.html#term-control-plane">Shared Control Plane</a> <a href="docs--onboarding--09-glossary.html#term-execution-plane">Distributed Execution Plane</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-agent-tools">Agent Tools</a> <a href="docs--onboarding--09-glossary.html#term-agent-identity">Agent Identity</a> <a href="docs--onboarding--09-glossary.html#term-credential-broker">Credential Broker</a></p>
 </div>
 <div class="goals">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
@@ -80,7 +80,7 @@
 </div>
 
 <p><img alt="C4 Container 도식" src="../diagrams/c4-container.svg" /></p>
-<p>Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.</p>
+<p>Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면의 <strong>Registry</strong>는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장하는 구성요소이며, 이후 장에서 계속 사용됩니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 등록과 승인의 구분</strong> 실행 환경의 <strong>등록(registered)</strong>은 <strong>프로덕션 승인(production-approved)</strong>과 다릅니다. 업무 트래픽을 처리하려면 별도의 승인 요건을 충족해야 합니다.</p>
 </div>

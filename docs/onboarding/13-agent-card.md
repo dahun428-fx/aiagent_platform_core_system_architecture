@@ -32,7 +32,7 @@
 | 발견(discovery) | A2A 1.0.0 Agent Card | Agent의 기능, 접속 인터페이스, 인증 방식을 알림 |
 | 호출 | 공통 Agent 통신 계약(`cross-agent.schema.json`) | 상위 호출 ID, 축소된 권한 범위, 호출 깊이·예산 전달 |
 
-A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견은 Agent Card로 통일합니다.
+A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를 발행할 때는 Agent Card 형식을 사용합니다.
 
 ## Agent Card 필드 (A2A 1.0.0)
 
@@ -109,7 +109,7 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견은 Agent 
 |---|---|
 | 생성 | Registry가 Manifest와 등록 정보에서 생성합니다. 수동 작성 카드는 받지 않습니다 |
 | 필드 대응 | `metadata.name`·`version` → `name`·`version`, 기능 선언 → `skills`, `identity.requiredScopes` → 보안 요구, 승인된 실행 환경 endpoint → `supportedInterfaces`, `metadata.owner.team` → `provider.organization` |
-| 상태 연동 | production-approved 버전만 발행하고, deprecated·quarantined·retired 전환 시 갱신·회수합니다 |
+| 상태 연동 | `production-approved` 버전만 발행하고, `deprecated`·`quarantined`·`retired` 전환 시 갱신·회수합니다(상태 정의: [Agent 수명주기](06-lifecycle.md)) |
 | 캐시 | `Cache-Control`과 카드 `version` 또는 내용 해시 기반 `ETag`를 제공합니다 |
 | 버전 | A2A 1.0.0을 기준으로 하며 `A2A-Version` 헤더를 사용합니다 |
 | 조회 API | A2A는 레지스트리 API를 표준으로 정하지 않으므로 Agent Platform APIs에 Registry 조회 API를 정의합니다 |

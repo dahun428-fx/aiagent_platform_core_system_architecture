@@ -29,12 +29,38 @@ def run(name, command):
         raise RuntimeError(name + " failed")
 
 
-def files_to_package():
-    excluded = {".venv", "node_modules", "__pycache__", ".git", "dist", ".impeccable"}
-    for path in sorted(ROOT.rglob("*")):
-        relative = path.relative_to(ROOT)
-        if path.is_file() and not any(part in excluded for part in relative.parts) and path.name != "checksums.sha256" and path.suffix != ".pyc":
-            yield path
+# Release outputs are never packaged into themselves.
+GENERATED = {"checksums.sha256", "verification/archive-verification.json"}
+GENERATED_PREFIXES = ("dist/",)
+# Files that must never ship. Packaging fails instead of silently dropping them, so the leak is noticed.
+SENSITIVE_NAMES = {".env", ".npmrc", ".pypirc", "id_rsa", "id_ed25519", "credentials.json"}
+SENSITIVE_SUFFIXES = (".pem", ".key", ".p12", ".pfx", ".jks", ".kdbx")
+JUNK_NAMES = {".DS_Store", "Thumbs.db"}
+
+
+def tracked_files():
+    """Package only what Git tracks, never whatever happens to sit in the working tree."""
+    out = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
+    return [name for name in out.decode("utf-8").split("\0") if name]
+
+
+def select_package_files(names):
+    """Return POSIX relative paths to package, sorted by code point; raise on sensitive files."""
+    sensitive = [n for n in names
+                 if posixpath.basename(n) in SENSITIVE_NAMES or posixpath.basename(n).startswith(".env.")
+                 or n.endswith(SENSITIVE_SUFFIXES)]
+    if sensitive:
+        raise RuntimeError("Sensitive files are tracked and would be packaged: " + ", ".join(sorted(sensitive)))
+    keep = [n for n in names if n not in GENERATED and not n.startswith(GENERATED_PREFIXES)
+            and posixpath.basename(n) not in JUNK_NAMES and not n.endswith(".pyc")]
+    return sorted(keep)
+
+
+def source_commit():
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
+                           capture_output=True, text=True).stdout.strip()
+    return {"commit": head or None, "dirtyTrackedFiles": bool(dirty)}
 
 
 def main():
@@ -56,22 +82,24 @@ def main():
               "runtime": {"python": sys.version, "node": subprocess.run(["node", "--version"], capture_output=True, text=True).stdout.strip(),
                           "jsonschema": importlib.metadata.version("jsonschema"),
                           "openapi-spec-validator": importlib.metadata.version("openapi-spec-validator")},
+              "source": source_commit(),
               "checks": checks,
               "scope": "Standards and local mock validation only; production integrations / numeric company SLOs TBD."}
-    (VERIFY / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    (VERIFY / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     if status != "passed":
         print(json.dumps({"status": status, "failed": [c["check"] for c in checks if c.get("exitCode")]}))
         return 1
     # Freeze file list; exclude the packaging result to avoid a recursive hash.
-    package_files = [p for p in files_to_package() if p.name != "archive-verification.json"]
-    sums = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in package_files}
+    names = select_package_files(tracked_files())
+    package_files = [ROOT / n for n in names]
+    sums = {n: hashlib.sha256((ROOT / n).read_bytes()).hexdigest() for n in names}
     manifest = "".join(f"{digest}  {name}\n" for name, digest in sums.items())
-    (ROOT / "checksums.sha256").write_text(manifest)
+    (ROOT / "checksums.sha256").write_text(manifest, encoding="utf-8", newline="\n")
     target = DIST / "enterprise-ai-agent-platform-v0.1.zip"
     def write_zip():
         with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
             for p in package_files + [ROOT / "checksums.sha256"]:
-                info = zipfile.ZipInfo("enterprise-ai-agent-platform-v0.1/" + str(p.relative_to(ROOT)), date_time=(2026, 10, 30, 0, 0, 0))
+                info = zipfile.ZipInfo("enterprise-ai-agent-platform-v0.1/" + p.relative_to(ROOT).as_posix(), date_time=(2026, 10, 30, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
                 archive.writestr(info, p.read_bytes())
@@ -102,13 +130,13 @@ def main():
                         resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), unquote(parts.path)))
                         assert resolved in names, f"Archive link missing: {name} -> {value}"
                         checked_links += 1
-    evidence = {"status": "passed", "archive": target.name, "files": len(package_files) + 1,
+    evidence = {"status": "passed", "archive": target.name, "source": source_commit(), "files": len(package_files) + 1,
                 "bytes": target.stat().st_size, "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
                 "checks": ["zip CRC", "every archived file SHA256", "expected entry count", "all archive HTML local links"],
                 "checkedHtmlLinks": checked_links,
                 "note": "This report is external to ZIP to avoid self-referential archive hashes."}
-    (VERIFY / "archive-verification.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    (DIST / (target.name + ".sha256")).write_text(evidence["sha256"] + "  " + target.name + "\n")
+    (VERIFY / "archive-verification.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
+    (DIST / (target.name + ".sha256")).write_text(evidence["sha256"] + "  " + target.name + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(evidence))
     return 0
 

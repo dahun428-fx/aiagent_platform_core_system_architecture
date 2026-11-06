@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [보안 경계와 위협 모델](../security.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [신뢰 경계](09-glossary.md#term-boundary) [프롬프트 인젝션](09-glossary.md#term-injection) [권한 교집합](09-glossary.md#term-scope) [fail closed](09-glossary.md#term-fail-closed) [HITL](09-glossary.md#term-hitl) [unknown_outcome](09-glossary.md#term-unknown) [Guardrail](09-glossary.md#term-guardrail)
+<span class="label">주요 용어</span> [신뢰 경계](09-glossary.md#term-boundary) [프롬프트 인젝션](09-glossary.md#term-injection) [권한 교집합](09-glossary.md#term-scope) [fail closed](09-glossary.md#term-fail-closed) [HITL](09-glossary.md#term-hitl) [unknown_outcome](09-glossary.md#term-unknown) [Guardrail](09-glossary.md#term-guardrail) [Credential Broker](09-glossary.md#term-credential-broker) [시크릿 / 자격증명](09-glossary.md#term-secret) [Identity](09-glossary.md#term-identity)
 </div>
 
 <div class="goals" markdown="1">

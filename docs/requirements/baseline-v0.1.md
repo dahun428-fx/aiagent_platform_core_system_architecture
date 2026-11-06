@@ -23,7 +23,7 @@ Q30은 검증 보고서 및 현재 사용자 지시에 따라 명시적 B 선택
 | Q9 | Agent Tools | MUST: REST/OpenAPI, MCP, custom adapter를 지원한다. | [ADR-009](../../adr/ADR-009.md) | [산출물](../../docs/agent-tools.md) · tests/test_contracts.py |
 | Q10 | 관측·평가 | MUST: 통합 관측, 자동 평가, 품질 gate를 적용한다. | [ADR-010](../../adr/ADR-010.md) | [산출물](../../contracts/evaluation.schema.json) · tests/test_contracts.py |
 | Q11 | 셀프서비스 수명주기 | MUST: 자동 gate와 고위험 human approval을 결합한다. | [ADR-011](../../adr/ADR-011.md) | [산출물](../../contracts/approval.schema.json) · tests/test_contracts.py |
-| Q12 | Gateway 분리 | MUST: Agent Gateway와 Model Gateway를 논리적으로 분리하고 정책 라우팅한다. | [ADR-012](../../adr/ADR-012.md) | [산출물](../../docs/architecture.md) · tests/test_contracts.py |
+| Q12 | Gateway 분리 | MUST: Agent Gateway와 Model Gateway를 논리적으로 분리하고 정책 라우팅한다. Core Systems 명칭으로는 Agent Platform APIs(진입)와 Agent Gateway 모델 경로(반출)의 분리다([ADR-031](../../adr/ADR-031.md)). | [ADR-012](../../adr/ADR-012.md) | [산출물](../../docs/architecture.md) · tests/test_contracts.py |
 | Q13 | 데이터 거버넌스 | MUST: 분류 기반 접근·데이터 이동 정책을 적용한다. | [ADR-013](../../adr/ADR-013.md) | [산출물](../../contracts/policy.schema.json) · tests/test_contracts.py |
 | Q14 | Durable/HITL | MUST: checkpoint, retry, idempotency, HITL, policy 제어를 계약화한다. | [ADR-014](../../adr/ADR-014.md) | [산출물](../../docs/execution.md) · tests/test_contracts.py |
 | Q15 | 중립 모델 서빙 | MUST: 벤더 중립 endpoint 계약을 채택한다. Backend.AI는 Out of Scope다. | [ADR-015](../../adr/ADR-015.md) | [산출물](../../docs/deployment.md) · tests/test_contracts.py |
@@ -42,6 +42,18 @@ Q30은 검증 보고서 및 현재 사용자 지시에 따라 명시적 B 선택
 | Q28 | 배포 형식 | MUST: Git에 넣을 수 있는 소스, static HTML, offline ZIP을 제공한다. | [ADR-028](../../adr/ADR-028.md) | [산출물](../../README.md) · tests/test_contracts.py |
 | Q29 | 한국어 표준 문서 | MUST: 한국어 중심, English technical terms, MUST/SHOULD/MAY, ADR을 사용한다. | [ADR-029](../../adr/ADR-029.md) | [산출물](../../docs/glossary.md) · tests/test_contracts.py |
 | Q30 | 기준선 후 전체 제작 | MUST: B. 요구사항 기준선 검토 → 전체 패키지 제작. 명시적으로 답변한 확정 결정이다. | [ADR-030](../../adr/ADR-030.md) | [산출물](../../docs/corrections.md) · tests/test_contracts.py |
+
+## v0.1 보강 결정 (2026-11-06)
+Q1–Q30 이후 Core Systems 정합화를 위해 추가로 확정한 결정이다. 구현 상태는 [Core Systems 구현 상태](../core-systems.md#구현-상태)를 따른다.
+
+| Q | 결정 | 기준선 | ADR | 추적 |
+|---|---|---|---|---|
+| Q31 | Core Systems 명칭과 경계 | MUST: 플랫폼은 AI Platform Applications, Agent Platform APIs, Agent Factory, Agent Runtime, Agent Tools, Agent Identity, Agent Observability, Agent Evaluation, Agent Gateway, Agent Tuning의 10개 Core System으로 구성한다. | [ADR-031](../../adr/ADR-031.md) | [Core Systems](../core-systems.md) |
+| Q32 | Memory | MUST: Memory를 Agent Runtime 하위 구성요소로 둔다. | [ADR-032](../../adr/ADR-032.md) | [Memory](../memory.md) |
+| Q33 | Guardrails | MUST: Guardrail은 공통 검사 서비스와 네 집행 지점(Agent Gateway 모델 경로의 모델 입출력, 도구 경로의 도구 호출·결과, RAG 검색 결과, Agent Runtime의 실행 제어)으로 구성한다. | [ADR-033](../../adr/ADR-033.md) | [Guardrails](../guardrails.md) |
+| Q34 | Observability 규격 | MUST: 실행 추적은 W3C Trace Context로 전파하고, span 이름과 속성은 OpenTelemetry GenAI semantic conventions를 따른다. | [ADR-034](../../adr/ADR-034.md) | [Observability](../observability.md) |
+| Q35 | Evaluation과 Agent Tuning | MUST: Evaluation은 배포 전 평가·실행 추적 분석·운영 모니터링 3단계로 수행하고, 위험도 high Agent는 red teaming을 포함한다. | [ADR-035](../../adr/ADR-035.md) | [Evaluation](../evaluation.md), [Agent Tuning](../agent-tuning.md) |
+| Q36 | Agent Card | MUST: A2A 프로토콜을 채택하거나 Agent를 다른 팀·외부에 노출할 때, Registry가 Manifest와 등록 정보에서 A2A 1.0.0 Agent Card를 생성하고 조직 키로 JWS(JCS 정규화) 서명해 발행한다. | [ADR-036](../../adr/ADR-036.md) | [Agent Card](../agent-card.md) |
 
 ## 승인과 변경
 기준선 변경은 영향받는 Q·ADR·계약·fixture·테스트를 같은 변경 단위로 수정해야 한다(MUST).

@@ -67,7 +67,7 @@ python3 -m venv .venv
 ]
 ```
 
-이 파일은 정상 Manifest의 `identity` 블록에 `"secret": "should-never-be-here"`를 추가한 것입니다. JSON Schema가 정의되지 않은 필드를 허용하지 않으므로, 시크릿이 Manifest에 포함될 수 없습니다.
+이 파일은 정상 Manifest의 `identity` 블록에 `"secret": "should-never-be-here"`를 추가한 것입니다. JSON Schema가 정의되지 않은 필드를 허용하지 않으므로 이 필드는 거부됩니다. 다만 `metadata.labels`처럼 허용된 문자열 필드에 들어간 값은 스키마가 의미를 검사하지 않습니다. 구조 검증과 시크릿 검사는 별개의 통제이므로, 시크릿 스캔과 코드 리뷰를 함께 적용합니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} 추가 확인** `examples/manifests/tool.json`을 복사한 뒤 `source.revision`을 `main`으로 변경하고 검증합니다. 브랜치 이름과 같은 가변 참조는 불변 버전이 아니므로 검증에 실패합니다.
@@ -85,7 +85,7 @@ python3 -m venv .venv
 Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
 ```
 
-이 mock은 Agent Platform APIs(Agent 호출 API) → Runtime → Agent Gateway 모델 경로의 동기 처리 흐름과, Agent Gateway 도구 경로 → Credential Broker 흐름을 모사합니다. 출력과 코드에 나오는 `agent-gateway`, `model-gateway`는 각각 Agent 호출 API와 모델 경로의 component 이름입니다. loopback(127.0.0.1)에만 바인딩되며, 고정된 합성 토큰 `mock-user`만 허용합니다.
+이 mock은 Agent Platform APIs(Agent 호출 API) → Runtime → Agent Gateway 모델 경로의 동기 처리 흐름과, Agent Gateway 도구 경로 → Credential Broker 흐름을 모사합니다. 실행 시 표시되는 `Local synthetic Agent Gateway`와 출력·코드의 `agent-gateway`, `model-gateway`는 legacy 이름이며, 각각 Agent Platform APIs의 Agent 호출 API와 Agent Gateway 모델 경로를 가리킵니다. loopback(127.0.0.1)에만 바인딩되며, 고정된 합성 토큰 `mock-user`만 허용합니다.
 
 두 번째 터미널에서 Python 클라이언트로 Agent를 호출합니다.
 
@@ -173,6 +173,20 @@ node examples/typescript/dist/demo.js
 
 JSON Schema, API, 인가, 멱등성, 승인, 모델 정책, 평가, 포털 정합성 테스트가 실행됩니다. 테스트 목록으로 플랫폼이 검증하는 규칙을 확인할 수 있습니다.
 
+## 문제 해결
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| `OSError: [Errno 48/98] Address already in use` 또는 `WinError 10048` | 8765 포트를 다른 프로세스가 사용 중 | 기존 mock 서버를 종료(Ctrl-C)하거나 해당 프로세스를 종료 |
+| `ModuleNotFoundError: jsonschema` | 가상 환경이 아닌 다른 Python으로 실행 | `.venv/bin/python`(Windows: `.venv\Scripts\python`)으로 실행 |
+| `node: cannot find module .../dist/demo.js` | TypeScript 빌드 누락 | `npm run build:client` 실행 |
+| 브라우저 검사 실패 | Chromium 미설치 | `npx playwright install chromium` |
+| 401 `UNAUTHENTICATED` | `Authorization: Bearer mock-user` 누락 | 헤더 추가 |
+| 409 `CONFLICT` | 같은 `Idempotency-Key`로 다른 요청 전송 | 새 키 사용 |
+| 501 `NOT_IMPLEMENTED` | mock이 구현하지 않은 경로·실행 모드(`async`, `durable`) | `sync` 호출만 사용 |
+| PowerShell에서 `curl` 옵션 오류 | `curl`이 `Invoke-WebRequest` 별칭 | `curl.exe`로 실행 |
+| PowerShell에서 `*.json` 미확장 | 셸 wildcard 차이 | `Get-ChildItem examples/manifests/*.json | % { .venv\Scripts\python scripts/agentctl.py validate $_.FullName }` |
+
 ## mock 제공 범위
 
 <div class="compare" markdown="1">
@@ -215,4 +229,4 @@ JSON Schema, API, 인가, 멱등성, 승인, 모델 정책, 평가, 포털 정�
 - 기본 거부 원칙에 따라 토큰 누락이나 멱등성 키 재사용 요청은 실행되지 않습니다.
 </div>
 
-<nav class="pager"><a href="06-lifecycle.md"><small>이전</small><b>Agent 수명주기와 프로덕션 승인</b></a><a class="next" href="08-reading-the-spec.md"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav>
+<nav class="pager"><a href="06-lifecycle.md"><small>이전</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a><a class="next" href="08-reading-the-spec.md"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav>

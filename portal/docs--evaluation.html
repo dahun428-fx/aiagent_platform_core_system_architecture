@@ -48,7 +48,7 @@
 </ul>
 <h2 id="평가-결과">평가 결과</h2>
 <ul>
-<li>평가 결과는 <code>evaluation.schema.json</code>을 따르며 datasetVersion, agentVersion, manifestDigest, policyVersion, metric, gate, traceId를 포함해야 한다(MUST).</li>
+<li>평가 결과는 <code>evaluation.schema.json</code>을 따르며 datasetVersion, agentVersion, manifestDigest, policyVersion, metric, score, threshold, passed, traceId를 포함해야 한다(MUST).</li>
 <li>평가 결과는 Registry에 Agent 버전과 함께 저장하고, 프로덕션 승인 요건으로 사용한다(<a href="docs--operating-model.html">운영·평가</a>).</li>
 <li>지표 목표, threshold, 평가 데이터셋, 심사 기준은 TBD-12이다.</li>
 <li>이 패키지의 deterministic fixture는 smoke regression이며 업무 품질·안전성·통계적 유의성을 입증하지 않는다.</li>

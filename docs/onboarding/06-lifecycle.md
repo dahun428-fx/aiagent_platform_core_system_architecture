@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [운영·평가](../operating-model.md), [배포 프로파일](../deployment.md), [Durable / HITL](../execution.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [Registered / Production-approved](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Durable 실행](09-glossary.md#term-durable) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning)
+<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [등록 / 승인 / 배포](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Durable 실행](09-glossary.md#term-durable) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning) [프로덕션](09-glossary.md#term-production) [승인 검증 근거](09-glossary.md#term-evidence)
 </div>
 
 <div class="goals" markdown="1">
@@ -98,6 +98,7 @@ workflow Agent는 장시간 실행되거나 중간에 사람의 승인을 대기
 </ol>
 
 - 승인 대기 상태는 `rejected`, `expired`, `cancelled`로 종료될 수도 있습니다.
+- 실행 중 취소를 요청하면 `cancel_requested`가 되고, `cancelled` 또는 이미 확정된 `succeeded`·`failed`로 종료됩니다.
 - 취소는 best effort이며, 이미 발생한 부작용을 롤백하지 않습니다.
 - 재개 시 승인 대상 digest, 테넌트, 정책 버전, 만료, 취소 여부를 모두 재검증합니다.
 

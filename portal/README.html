@@ -11,12 +11,24 @@
 <h2 id="시작">시작</h2>
 <p>처음이라면 <a href="docs--onboarding--01-why.html">개발자 가이드</a>의 학습 경로를 따른다. 포털 첫 화면도 같은 순서로 안내한다.</p>
 <ol>
-<li>docs/requirements/baseline-v0.1.md와 docs/corrections.md에서 기준선을 확인한다.</li>
-<li>docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md로 책임·신뢰 경계를 확인한다.</li>
+<li>docs/core-systems.md에서 10개 Core System과 구현 상태를 확인한다.</li>
+<li>docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md, docs/guardrails.md로 책임·신뢰 경계를 확인한다.</li>
+<li>결정 근거는 docs/requirements/baseline-v0.1.md(Q1–Q36)와 adr/에서 확인한다.</li>
 <li>contracts/의 OpenAPI 3.1.2 JSON과 JSON Schema 2020-12를 소비한다.</li>
 <li>예제를 실행하고 tests/로 계약 적합성을 확인한다.</li>
 <li>docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.</li>
 </ol>
+<h2 id="빠른-시작-최소-경로">빠른 시작 (최소 경로)</h2>
+<p>Python 3.11+만으로 첫 호출과 실패 응답까지 확인한다. 상세 설명과 문제 해결은 <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a>을 따른다.</p>
+<pre><code class="language-sh">git clone https://github.com/dahun428-fx/aiagent_platform_core_system_architecture.git
+cd aiagent_platform_core_system_architecture
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python examples/python/platform_ref.py   # 터미널 1
+.venv/bin/python examples/python/client.py         # 터미널 2: &quot;status&quot;: &quot;succeeded&quot;
+</code></pre>
+<p>검증 환경: macOS·Linux(Python 3.11+), Windows 11(Python 3.12, PowerShell). Windows는 <code>.venv\Scripts\python</code>을 사용한다.</p>
 <h2 id="로컬-검증">로컬 검증</h2>
 <p>Python 3.11+와 Node.js 22+, TypeScript compiler가 필요하다. 최초 개발 의존성 설치에는 네트워크가 필요하다.
 포털 열람에는 설치·서버·인터넷이 필요 없다. 완전 오프라인 재검증용 dependency wheel/npm bundle은 포함하지 않는다.</p>
@@ -51,5 +63,5 @@ Python SDK 호출 예제: <code>python3 examples/python/client.py</code>.
 </ul>
 <p>회사 제품, topology별 주소·수량, NFR·비용·용량·보존 수치는 모두 TBD.
 127.0.0.1:8765, fixture의 TTL·depth·평가값은 합성 예제 값이며 회사 표준 수치가 아니다.</p>
-<p>현재 폴더는 Git 저장소가 아니다. Git에 넣을 수 있는 소스를 제공하며 commit/tag/push는 수행하지 않는다.
-production 구현과 검증의 잔여 범위는 docs/release-scope.md에 명시한다.</p><p class="file-link">원본 파일: <a href="../README.md">README.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#시작">시작</a><a href="#로컬-검증">로컬 검증</a><a href="#구성">구성</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<p>이 저장소의 main이 최신 표준이다. <code>dist/</code>의 ZIP과 <code>checksums.sha256</code>은 <code>scripts/release.py</code>를 실행한 시점의 스냅샷이며, 생성 commit은 <code>verification/results.json</code>과 <code>verification/archive-verification.json</code>의 <code>source.commit</code>에 기록된다. commit이 HEAD와 다르면 ZIP은 과거 스냅샷이다.
+production 구현과 검증의 잔여 범위는 docs/release-scope.md에 명시한다.</p><p class="file-link">원본 파일: <a href="../README.md">README.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#시작">시작</a><a href="#빠른-시작-최소-경로">빠른 시작 (최소 경로)</a><a href="#로컬-검증">로컬 검증</a><a href="#구성">구성</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -9,7 +9,7 @@ AI Agent Platform은 10개 Core System으로 구성한다. 이 문서는 각 Cor
 | 응용 | AI Platform Applications (DevTools, Space) | 개발자·운영자 |
 | API | Agent Platform APIs | External Applications and Solutions |
 | 핵심 | Agent Factory, Agent Runtime, Agent Tools, Agent Identity, Agent Observability, Agent Evaluation | |
-| 관문 | Agent Gateway, Agent Tuning (FastTrack) | External Tools and Models |
+| 관문·개선 | Agent Gateway, Agent Tuning (FastTrack) | External Tools and Models (Agent Gateway 경유) |
 | 실행 인프라 | Distributed Execution Plane: 개발자 로컬, 워크스테이션·Mac mini 계열 자원, 사내·클라우드 실행 환경, 모델 endpoint | |
 
 ## 명칭 대응
@@ -38,10 +38,11 @@ AI Agent Platform은 10개 Core System으로 구성한다. 이 문서는 각 Cor
 
 플랫폼의 모든 외부 기능을 노출하는 단일 API 계층이자 진입 경계(northbound)다.
 
-- 포함 API: Agent 호출(`agent-gateway.openapi.json`), Registry 조회·Agent Card 발행([Agent Card](agent-card.md)), 실행 상태·이벤트, 승인, 평가 결과 조회.
+- 현재 계약(`agent-gateway.openapi.json`): Agent 목록·조회(`listAgents`, `getAgent`), Agent 호출(`invokeAgent`), 실행 상태·취소·이벤트(`getInvocation`, `cancelInvocation`, `listEvents`), 승인 제출(`submitApproval`), health.
+- 후속 계약: Agent Card 조회·검색([Agent Card](agent-card.md)), 평가 결과·실행 추적 조회.
 - 공통 규칙: OAuth 2.0 bearer 인증, 검증된 토큰에서 tenant·principal 파생, RFC 9457 Problem Details, W3C trace context, `/v1` 경로 버전, 멱등성 키.
 - 인증·Agent 해석·테넌트 인가·멱등성 책임은 기존 Agent 호출 API 정의를 그대로 따른다.
-- v0.1 제공 범위: Agent 호출과 health는 mock 구현, 나머지는 계약만 제공한다(501).
+- v0.1 제공 범위: Agent 호출과 health는 mock 구현, 나머지 현재 계약 경로는 계약만 제공한다(mock은 501).
 
 ## 3. Agent Factory
 
@@ -54,7 +55,7 @@ Agent를 만들고, 선언하고, 검증하고, 등록하는 개발 흐름을 �
 
 ## 4. Agent Runtime
 
-Agent를 실행하는 구성요소다. 하위 구성요소는 framework adapter, Durable 실행·상태, Memory다.
+Agent를 실행하는 구성요소다. 하위 구성요소는 framework adapter, Durable 실행·상태, Memory다. Knowledge(RAG) 검색은 Runtime이 소비하는 하위 기능이며 `retrieval.openapi.json`을 따른다. 검색 결과 guardrail(③)의 집행도 이 단계에서 수행한다.
 
 - framework adapter, 실행 상태 전이는 [아키텍처](architecture.md), [Durable / HITL](execution.md)를 따른다.
 - Memory는 [Memory](memory.md)를 따른다.
@@ -83,11 +84,31 @@ Agent가 외부 모델과 도구에 접근하는 관문(egress)이다.
 - **모델 경로**: 논리 모델 이름을 데이터 분류·지역·비용·가용성 정책에 맞는 endpoint로 라우팅한다. 규칙은 기존 Model Gateway 정의(`model-gateway.openapi.json`, [보안 경계](security.md))를 따른다.
 - **도구 경로**: 도구 ID를 Agent Tools의 승인된 endpoint로 해석하고 Credential Broker의 lease로 호출한다. 규칙은 [Agent Tools](agent-tools.md)를 따른다.
 - 모델 입출력·도구 호출·도구 결과 guardrail의 집행 지점이다([Guardrails](guardrails.md)).
-- 토큰 사용량 한도와 비용 귀속(tenant·Agent 단위)을 기록해야 한다(SHOULD). 한도 수치는 TBD-07이다.
+- 토큰 사용량 한도와 비용 귀속(tenant·Agent 단위)을 기록한다(SHOULD). 한도 수치는 TBD-07이다.
 
 ## 10. Agent Tuning (FastTrack)
 
 평가 결과와 실행 추적을 근거로 Agent를 개선하는 영역이다. 규칙은 [Agent Tuning](agent-tuning.md)을 따른다.
+
+## 구현 상태
+
+| 대상 | 문서 | 계약 | 참조 구현(mock) | 검증(테스트) |
+|---|---|---|---|---|
+| Agent Platform APIs | O | O (`agent-gateway.openapi.json`) | 호출·health | 인증·테넌트·멱등성·분류 하향 거부 |
+| Agent Factory | O | O (Manifest 스키마) | `agentctl validate` | 양성·음성 fixture |
+| Agent Runtime | O | O (`runtime`, `execution`) | 동기 실행 | 호출 흐름 |
+| Memory | O | — | — | — (목표 규칙) |
+| Agent Tools · 도구 경로 | O | O (`tool-gateway.openapi.json`, descriptor) | 읽기 도구 | 승인·scope·재시도·write 거부 |
+| Agent Identity · Credential Broker | O | O | lease 발급·소비 | binding·만료·audience |
+| Agent Gateway 모델 경로 | O | O (`model-gateway.openapi.json`) | 분류 기반 라우팅 | fail closed |
+| Guardrails | O | — | — | — (목표 규칙) |
+| Agent Observability | O | trace context | traceparent 전파·감사 | 전파 |
+| Agent Evaluation | O | O (`evaluation.schema.json`) | — | 스키마 |
+| Agent Card | O | — | — | — (목표 규칙) |
+| Agent Tuning | O | — | — | — (목표 규칙) |
+| AI Platform Applications | O | — | DevTools(CLI·mock·TS client) | CLI 검증 |
+
+"목표 규칙"은 v0.1 적합성 검사 대상이 아니며, 계약과 테스트가 추가될 때 적합성 대상으로 전환한다.
 
 ## External 연결
 

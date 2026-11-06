@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [Core Systems](../core-systems.md)와 [아키텍처](../architecture.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Core Systems](09-glossary.md#term-core-systems) [Agent Platform APIs](09-glossary.md#term-platform-apis) [Agent Gateway](09-glossary.md#term-agent-gateway) [Agent Factory](09-glossary.md#term-factory) [Shared Control Plane](09-glossary.md#term-control-plane) [Distributed Execution Plane](09-glossary.md#term-execution-plane)
+<span class="label">주요 용어</span> [Core Systems](09-glossary.md#term-core-systems) [Agent Platform APIs](09-glossary.md#term-platform-apis) [Agent Gateway](09-glossary.md#term-agent-gateway) [Agent Factory](09-glossary.md#term-factory) [Shared Control Plane](09-glossary.md#term-control-plane) [Distributed Execution Plane](09-glossary.md#term-execution-plane) [Registry](09-glossary.md#term-registry) [Agent Tools](09-glossary.md#term-agent-tools) [Agent Identity](09-glossary.md#term-agent-identity) [Credential Broker](09-glossary.md#term-credential-broker)
 </div>
 
 <div class="goals" markdown="1">
@@ -84,7 +84,7 @@
 
 ![C4 Container 도식](../../diagrams/c4-container.svg)
 
-Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.
+Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면의 **Registry**는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장하는 구성요소이며, 이후 장에서 계속 사용됩니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.
 
 <div class="point" markdown="1">
 **{{icon:warn}} 등록과 승인의 구분** 실행 환경의 **등록(registered)**은 **프로덕션 승인(production-approved)**과 다릅니다. 업무 트래픽을 처리하려면 별도의 승인 요건을 충족해야 합니다.

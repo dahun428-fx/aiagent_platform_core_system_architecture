@@ -11,7 +11,7 @@
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--operating-model.html">운영·평가</a>, <a href="docs--deployment.html">배포 프로파일</a>, <a href="docs--execution.html">Durable / HITL</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
 <div class="terms">
-<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-local-first">Local-First</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-approved">Registered / Production-approved</a> <a href="docs--onboarding--09-glossary.html#term-profile">배포 프로파일</a> <a href="docs--onboarding--09-glossary.html#term-durable">Durable 실행</a> <a href="docs--onboarding--09-glossary.html#term-contract-as-code">Contract-as-Code</a> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a></p>
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-local-first">Local-First</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-approved">등록 / 승인 / 배포</a> <a href="docs--onboarding--09-glossary.html#term-profile">배포 프로파일</a> <a href="docs--onboarding--09-glossary.html#term-durable">Durable 실행</a> <a href="docs--onboarding--09-glossary.html#term-contract-as-code">Contract-as-Code</a> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a> <a href="docs--onboarding--09-glossary.html#term-production">프로덕션</a> <a href="docs--onboarding--09-glossary.html#term-evidence">승인 검증 근거</a></p>
 </div>
 <div class="goals">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
@@ -93,6 +93,7 @@
 
 <ul>
 <li>승인 대기 상태는 <code>rejected</code>, <code>expired</code>, <code>cancelled</code>로 종료될 수도 있습니다.</li>
+<li>실행 중 취소를 요청하면 <code>cancel_requested</code>가 되고, <code>cancelled</code> 또는 이미 확정된 <code>succeeded</code>·<code>failed</code>로 종료됩니다.</li>
 <li>취소는 best effort이며, 이미 발생한 부작용을 롤백하지 않습니다.</li>
 <li>재개 시 승인 대상 digest, 테넌트, 정책 버전, 만료, 취소 여부를 모두 재검증합니다.</li>
 </ul>

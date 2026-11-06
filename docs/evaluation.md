@@ -19,7 +19,7 @@ Agent Evaluation은 Agent의 품질과 안전성을 측정하고 승격 판단�
 
 ## 평가 결과
 
-- 평가 결과는 `evaluation.schema.json`을 따르며 datasetVersion, agentVersion, manifestDigest, policyVersion, metric, gate, traceId를 포함해야 한다(MUST).
+- 평가 결과는 `evaluation.schema.json`을 따르며 datasetVersion, agentVersion, manifestDigest, policyVersion, metric, score, threshold, passed, traceId를 포함해야 한다(MUST).
 - 평가 결과는 Registry에 Agent 버전과 함께 저장하고, 프로덕션 승인 요건으로 사용한다([운영·평가](operating-model.md)).
 - 지표 목표, threshold, 평가 데이터셋, 심사 기준은 TBD-12이다.
 - 이 패키지의 deterministic fixture는 smoke regression이며 업무 품질·안전성·통계적 유의성을 입증하지 않는다.

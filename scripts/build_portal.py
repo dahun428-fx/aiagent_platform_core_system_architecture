@@ -153,7 +153,7 @@ files["portal/search-index.js"] = "window.PLATFORM_SEARCH = " + json.dumps(index
 if "--write" in sys.argv:
     for p, content in files.items():
         (ROOT / p).parent.mkdir(parents=True, exist_ok=True)
-        (ROOT / p).write_text(content, encoding="utf-8")
+        (ROOT / p).write_text(content, encoding="utf-8", newline="\n")
     print(f"Built {len(files)} offline portal files")
 else:
     print(json.dumps(files, ensure_ascii=False))

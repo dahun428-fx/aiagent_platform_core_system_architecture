@@ -30,9 +30,9 @@
 </thead>
 <tbody>
 <tr>
-<td>AWS Bedrock AgentCore (<a href="https://aws.amazon.com/pt/bedrock/agentcore/faqs">FAQ</a>, <a href="https://infoq.com/news/2025/07/amazon-bedrock-agentcore-launch">InfoQ 출시 기사</a>)</td>
+<td>AWS Bedrock AgentCore (<a href="https://aws.amazon.com/bedrock/agentcore/faqs/">FAQ</a>, <a href="https://infoq.com/news/2025/07/amazon-bedrock-agentcore-launch">InfoQ 출시 기사</a>)</td>
 <td>Runtime, Gateway(기존 API를 Agent용 도구로 변환), Identity(OAuth 2.0, IdP 연동), Memory(단기·장기), Observability를 개별 구성요소로 제공하며 모델에 종속되지 않음</td>
-<td>Core Systems 구분, Memory를 Runtime 하위 구성요소로 정의, Agent Gateway 도구 경로</td>
+<td>Core Systems 구분, Memory를 실행과 별도 책임으로 분리(플랫폼은 Runtime 하위에 배치), Agent Gateway 도구 경로</td>
 </tr>
 <tr>
 <td>Microsoft Foundry (<a href="https://azure.microsoft.com/en-us/blog/agent-factory-top-5-agent-observability-best-practices-for-reliable-ai/">Agent Factory: observability best practices</a>, <a href="https://techcommunity.microsoft.com/t5/microsoft-foundry-blog/generally-available-evaluations-monitoring-and-tracing-in/ba-p/4502760">평가·모니터링·추적 GA</a>)</td>
@@ -66,7 +66,7 @@
 <tr>
 <td>AI Gateway 비교 자료(2차 자료: <a href="https://konghq.com/performance-comparison/ai-gateway-alternatives">Kong</a>, <a href="https://www.getmaxim.ai/articles/top-5-envoy-ai-gateway-alternatives-for-llm-routing.md">Maxim</a>)</td>
 <td>애플리케이션과 모델 공급사 사이에서 인증, 라우팅, 캐시, 비용 추적, 사용량 제한을 수행하는 관문 패턴</td>
-<td>모델 경로의 책임 범위. Envoy AI Gateway 공식 문서는 확인하지 못함</td>
+<td>모델 경로의 책임 범위</td>
 </tr>
 </tbody>
 </table></div>
@@ -239,8 +239,8 @@
 <tbody>
 <tr>
 <td><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026">OWASP Top 10 for Agentic Applications 2026</a></td>
-<td>자율 Agent의 주요 보안 위험 10개 범주(ASI01~ASI10). 공식 페이지에서는 표지와 설명만 확인했으며 항목별 본문은 확인하지 못함</td>
-<td>위협 모델 보강 대상. 항목별 대응표는 본문 확인 후 작성</td>
+<td>자율 Agent의 주요 보안 위험 10개 범주(ASI01~ASI10)를 제시</td>
+<td>위협 모델 보강 대상</td>
 </tr>
 <tr>
 <td><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/">OWASP LLM01:2025</a></td>

@@ -34,9 +34,9 @@
 <td></td>
 </tr>
 <tr>
-<td>관문</td>
+<td>관문·개선</td>
 <td>Agent Gateway, Agent Tuning (FastTrack)</td>
-<td>External Tools and Models</td>
+<td>External Tools and Models (Agent Gateway 경유)</td>
 </tr>
 <tr>
 <td>실행 인프라</td>
@@ -86,10 +86,11 @@
 <h2 id="2-agent-platform-apis">2. Agent Platform APIs</h2>
 <p>플랫폼의 모든 외부 기능을 노출하는 단일 API 계층이자 진입 경계(northbound)다.</p>
 <ul>
-<li>포함 API: Agent 호출(<code>agent-gateway.openapi.json</code>), Registry 조회·Agent Card 발행(<a href="docs--agent-card.html">Agent Card</a>), 실행 상태·이벤트, 승인, 평가 결과 조회.</li>
+<li>현재 계약(<code>agent-gateway.openapi.json</code>): Agent 목록·조회(<code>listAgents</code>, <code>getAgent</code>), Agent 호출(<code>invokeAgent</code>), 실행 상태·취소·이벤트(<code>getInvocation</code>, <code>cancelInvocation</code>, <code>listEvents</code>), 승인 제출(<code>submitApproval</code>), health.</li>
+<li>후속 계약: Agent Card 조회·검색(<a href="docs--agent-card.html">Agent Card</a>), 평가 결과·실행 추적 조회.</li>
 <li>공통 규칙: OAuth 2.0 bearer 인증, 검증된 토큰에서 tenant·principal 파생, RFC 9457 Problem Details, W3C trace context, <code>/v1</code> 경로 버전, 멱등성 키.</li>
 <li>인증·Agent 해석·테넌트 인가·멱등성 책임은 기존 Agent 호출 API 정의를 그대로 따른다.</li>
-<li>v0.1 제공 범위: Agent 호출과 health는 mock 구현, 나머지는 계약만 제공한다(501).</li>
+<li>v0.1 제공 범위: Agent 호출과 health는 mock 구현, 나머지 현재 계약 경로는 계약만 제공한다(mock은 501).</li>
 </ul>
 <h2 id="3-agent-factory">3. Agent Factory</h2>
 <p>Agent를 만들고, 선언하고, 검증하고, 등록하는 개발 흐름을 담당한다.</p>
@@ -100,7 +101,7 @@
 <li>v0.1 제공 범위: Manifest 스키마, 양성·음성 fixture, <code>agentctl validate</code>, 4종 예제 Manifest. 템플릿 생성 명령은 후속 단계다.</li>
 </ul>
 <h2 id="4-agent-runtime">4. Agent Runtime</h2>
-<p>Agent를 실행하는 구성요소다. 하위 구성요소는 framework adapter, Durable 실행·상태, Memory다.</p>
+<p>Agent를 실행하는 구성요소다. 하위 구성요소는 framework adapter, Durable 실행·상태, Memory다. Knowledge(RAG) 검색은 Runtime이 소비하는 하위 기능이며 <code>retrieval.openapi.json</code>을 따른다. 검색 결과 guardrail(③)의 집행도 이 단계에서 수행한다.</p>
 <ul>
 <li>framework adapter, 실행 상태 전이는 <a href="docs--architecture.html">아키텍처</a>, <a href="docs--execution.html">Durable / HITL</a>를 따른다.</li>
 <li>Memory는 <a href="docs--memory.html">Memory</a>를 따른다.</li>
@@ -120,12 +121,118 @@
 <li><strong>모델 경로</strong>: 논리 모델 이름을 데이터 분류·지역·비용·가용성 정책에 맞는 endpoint로 라우팅한다. 규칙은 기존 Model Gateway 정의(<code>model-gateway.openapi.json</code>, <a href="docs--security.html">보안 경계</a>)를 따른다.</li>
 <li><strong>도구 경로</strong>: 도구 ID를 Agent Tools의 승인된 endpoint로 해석하고 Credential Broker의 lease로 호출한다. 규칙은 <a href="docs--agent-tools.html">Agent Tools</a>를 따른다.</li>
 <li>모델 입출력·도구 호출·도구 결과 guardrail의 집행 지점이다(<a href="docs--guardrails.html">Guardrails</a>).</li>
-<li>토큰 사용량 한도와 비용 귀속(tenant·Agent 단위)을 기록해야 한다(SHOULD). 한도 수치는 TBD-07이다.</li>
+<li>토큰 사용량 한도와 비용 귀속(tenant·Agent 단위)을 기록한다(SHOULD). 한도 수치는 TBD-07이다.</li>
 </ul>
 <h2 id="10-agent-tuning-fasttrack">10. Agent Tuning (FastTrack)</h2>
 <p>평가 결과와 실행 추적을 근거로 Agent를 개선하는 영역이다. 규칙은 <a href="docs--agent-tuning.html">Agent Tuning</a>을 따른다.</p>
+<h2 id="구현-상태">구현 상태</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>대상</th>
+<th>문서</th>
+<th>계약</th>
+<th>참조 구현(mock)</th>
+<th>검증(테스트)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Platform APIs</td>
+<td>O</td>
+<td>O (<code>agent-gateway.openapi.json</code>)</td>
+<td>호출·health</td>
+<td>인증·테넌트·멱등성·분류 하향 거부</td>
+</tr>
+<tr>
+<td>Agent Factory</td>
+<td>O</td>
+<td>O (Manifest 스키마)</td>
+<td><code>agentctl validate</code></td>
+<td>양성·음성 fixture</td>
+</tr>
+<tr>
+<td>Agent Runtime</td>
+<td>O</td>
+<td>O (<code>runtime</code>, <code>execution</code>)</td>
+<td>동기 실행</td>
+<td>호출 흐름</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>O</td>
+<td>—</td>
+<td>—</td>
+<td>— (목표 규칙)</td>
+</tr>
+<tr>
+<td>Agent Tools · 도구 경로</td>
+<td>O</td>
+<td>O (<code>tool-gateway.openapi.json</code>, descriptor)</td>
+<td>읽기 도구</td>
+<td>승인·scope·재시도·write 거부</td>
+</tr>
+<tr>
+<td>Agent Identity · Credential Broker</td>
+<td>O</td>
+<td>O</td>
+<td>lease 발급·소비</td>
+<td>binding·만료·audience</td>
+</tr>
+<tr>
+<td>Agent Gateway 모델 경로</td>
+<td>O</td>
+<td>O (<code>model-gateway.openapi.json</code>)</td>
+<td>분류 기반 라우팅</td>
+<td>fail closed</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>O</td>
+<td>—</td>
+<td>—</td>
+<td>— (목표 규칙)</td>
+</tr>
+<tr>
+<td>Agent Observability</td>
+<td>O</td>
+<td>trace context</td>
+<td>traceparent 전파·감사</td>
+<td>전파</td>
+</tr>
+<tr>
+<td>Agent Evaluation</td>
+<td>O</td>
+<td>O (<code>evaluation.schema.json</code>)</td>
+<td>—</td>
+<td>스키마</td>
+</tr>
+<tr>
+<td>Agent Card</td>
+<td>O</td>
+<td>—</td>
+<td>—</td>
+<td>— (목표 규칙)</td>
+</tr>
+<tr>
+<td>Agent Tuning</td>
+<td>O</td>
+<td>—</td>
+<td>—</td>
+<td>— (목표 규칙)</td>
+</tr>
+<tr>
+<td>AI Platform Applications</td>
+<td>O</td>
+<td>—</td>
+<td>DevTools(CLI·mock·TS client)</td>
+<td>CLI 검증</td>
+</tr>
+</tbody>
+</table></div>
+<p>"목표 규칙"은 v0.1 적합성 검사 대상이 아니며, 계약과 테스트가 추가될 때 적합성 대상으로 전환한다.</p>
 <h2 id="external-연결">External 연결</h2>
 <ul>
 <li><strong>External Applications and Solutions</strong>는 Agent Platform APIs로만 접근한다(MUST).</li>
 <li><strong>External Tools and Models</strong>는 Agent Gateway로만 접근한다(MUST). Agent Tuning이 외부 모델 튜닝 서비스를 사용할 때도 Agent Gateway의 모델 경로 정책(데이터 분류, egress)을 따른다(MUST).</li>
-</ul><p class="file-link">원본 파일: <a href="../docs/core-systems.md">docs/core-systems.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#층-구조">층 구조</a><a href="#명칭-대응">명칭 대응</a><a href="#1-ai-platform-applications">1. AI Platform Applications</a><a href="#2-agent-platform-apis">2. Agent Platform APIs</a><a href="#3-agent-factory">3. Agent Factory</a><a href="#4-agent-runtime">4. Agent Runtime</a><a href="#5-agent-tools">5. Agent Tools</a><a href="#6-agent-identity">6. Agent Identity</a><a href="#7-agent-observability">7. Agent Observability</a><a href="#8-agent-evaluation">8. Agent Evaluation</a><a href="#9-agent-gateway">9. Agent Gateway</a><a href="#10-agent-tuning-fasttrack">10. Agent Tuning (FastTrack)</a><a href="#external-연결">External 연결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+</ul><p class="file-link">원본 파일: <a href="../docs/core-systems.md">docs/core-systems.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#층-구조">층 구조</a><a href="#명칭-대응">명칭 대응</a><a href="#1-ai-platform-applications">1. AI Platform Applications</a><a href="#2-agent-platform-apis">2. Agent Platform APIs</a><a href="#3-agent-factory">3. Agent Factory</a><a href="#4-agent-runtime">4. Agent Runtime</a><a href="#5-agent-tools">5. Agent Tools</a><a href="#6-agent-identity">6. Agent Identity</a><a href="#7-agent-observability">7. Agent Observability</a><a href="#8-agent-evaluation">8. Agent Evaluation</a><a href="#9-agent-gateway">9. Agent Gateway</a><a href="#10-agent-tuning-fasttrack">10. Agent Tuning (FastTrack)</a><a href="#구현-상태">구현 상태</a><a href="#external-연결">External 연결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

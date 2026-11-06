@@ -19,7 +19,6 @@
 <div class="cards">
 <div class="card">{{icon:shield}}<b>규범 수준</b><p><code>MUST</code> 필수 · <code>MUST NOT</code> 금지 · <code>SHOULD</code> 사유 문서화 시 예외 허용 · <code>MAY</code> 선택</p></div>
 <div class="card">{{icon:question}}<b>미정 항목</b><p><code>TBD</code> 회사 환경에 따라 결정해야 하는 제품 또는 수치</p></div>
-<div class="card">{{icon:clock}}<b>적용 단계</b><p><code>MVP</code> · <code>Follow-up</code> · <code>Optional</code> 구현 시점</p></div>
 <div class="card">{{icon:code}}<b>계약 버전</b><p>예: <code>agent.platform/v1alpha1</code>, <code>/v1</code> 적용되는 계약의 버전</p></div>
 </div>
 
@@ -41,7 +40,7 @@
 <div class="cards">
 <div class="card">{{icon:book}}<b>패키지 버전</b><p><code>0.1.0</code> 문서·예제·도구 패키지의 버전</p></div>
 <div class="card">{{icon:manifest}}<b>Manifest 계약 버전</b><p><code>agent.platform/v1alpha1</code> Manifest 형식의 버전</p></div>
-<div class="card">{{icon:gateway}}<b>HTTP API 경로 버전</b><p><code>/v1</code> Gateway API의 버전</p></div>
+<div class="card">{{icon:gateway}}<b>HTTP API 경로 버전</b><p><code>/v1</code> Agent Platform APIs의 HTTP 경로 버전</p></div>
 </div>
 
 세 버전은 독립적으로 관리됩니다. 패키지 문서가 변경되어도 계약 버전은 유지될 수 있습니다. 계약을 변경할 때는 diff 검토, 변경 사유 기록, 마이그레이션 안내, 신규 released snapshot 승인이 필요하며, 테스트는 이전 snapshot과의 일치 여부를 검사합니다.

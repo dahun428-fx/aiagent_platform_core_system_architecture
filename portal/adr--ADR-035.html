@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>ADR-035: Evaluation과 Agent Tuning · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="adr-035-evaluation과-agent-tuning">ADR-035: Evaluation과 Agent Tuning</h1>
+<ul>
+<li>Status: Decided</li>
+<li>Baseline: v0.1 보강 / Q35</li>
+<li>Date: 2026-11-06</li>
+<li>Owner / 회사 승인자: TBD</li>
+<li>Source: <a href="docs--requirements--baseline-v0.1.html">기준선</a>, <a href="docs--onboarding--10-references.html">근거와 참고 자료</a></li>
+</ul>
+<h2 id="context">Context</h2>
+<p>평가가 배포 전 게이트에만 있으면 운영 중 품질 저하를 발견하고 개선하는 경로가 없다.</p>
+<h2 id="decision">Decision</h2>
+<p>Evaluation은 배포 전 평가·실행 추적 분석·운영 모니터링 3단계로 수행하고, 위험도 high Agent는 red teaming을 포함한다. Agent Tuning(FastTrack)은 평가 결과를 근거로 개선하며, 결과는 새 불변 버전으로 다시 평가·승인받는다. 승인 요건은 줄이지 않는다.</p>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<p>Tuning 결과의 즉시 반영: 승인 절차를 우회한다.</p>
+<h2 id="consequences">Consequences</h2>
+<p>평가 결과 스키마는 v0.1 계약을 그대로 사용한다. Tuning 자동화와 미세조정 파이프라인은 목표 규칙이다.
+구현 완료 여부는 해당 계약 테스트와 통합 증거로 별도 판단해야 한다(MUST).</p>
+<h2 id="constraints">Constraints</h2>
+<p>회사 환경·제품·운영 수치는 TBD. 예제 값은 production 기본값이 아니다.</p>
+<h2 id="related-contracts-verification">Related contracts / verification</h2>
+<p><a href="docs--evaluation.html">Evaluation</a>, <a href="docs--agent-tuning.html">Agent Tuning</a> · <a href="docs--core-systems.html#구현-상태">Core Systems 구현 상태</a></p>
+<h2 id="security-impact">Security impact</h2>
+<p>tenant·principal·Agent/workload·정책 버전을 경계에서 검증하고 최소 권한을 유지해야 한다(MUST).
+감사 로그에는 토큰·secret·원문 개인정보를 기록해서는 안 된다(MUST NOT).</p>
+<h2 id="supersession-migration">Supersession / migration</h2>
+<p>평가 기준 수치는 TBD-12이다.</p><p class="file-link">원본 파일: <a href="../adr/ADR-035.md">adr/ADR-035.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#context">Context</a><a href="#decision">Decision</a><a href="#alternatives-considered">Alternatives considered</a><a href="#consequences">Consequences</a><a href="#constraints">Constraints</a><a href="#related-contracts-verification">Related contracts / verification</a><a href="#security-impact">Security impact</a><a href="#supersession-migration">Supersession / migration</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

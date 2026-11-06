@@ -18,7 +18,7 @@ Credential Broker는 Agent Identity에 속하며 승인된 Tool Gateway adapter�
 <h2 id="shared-control-plane">Shared Control Plane</h2>
 <p>Registry(Agent/Tool/Model/Environment), Policy, Identity mediation, Evaluation, Observability metadata, Promotion을 제공한다.
 Registry는 source 자체가 아닌 불변 Git revision·artifact digest·Manifest·평가 증거를 저장해야 한다(MUST).
-등록(registered), 시험 가능(eligible), production 승인(production-approved), 격리(quarantined)를 구분한다.
+수명주기 상태는 <a href="docs--operating-model.html">운영·평가</a>의 목록을 따른다. 특히 등록(registered), 승격 후보(eligible), production 승인(production-approved), 격리(quarantined)를 구분한다.
 보안·정책 권한은 Runtime이 임의 변경할 수 없다(MUST NOT).</p>
 <h2 id="distributed-execution-plane">Distributed Execution Plane</h2>
 <p>개발자 로컬, 워크스테이션/Mac mini 계열 자원, 사내·클라우드 실행 target은 회사 환경 TBD로 취급한다.

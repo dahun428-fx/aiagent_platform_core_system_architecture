@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [아키텍처](../architecture.md), [Durable / HITL](../execution.md), [Memory](../memory.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Agent Runtime](09-glossary.md#term-runtime) [Framework adapter](09-glossary.md#term-adapter) [Memory](09-glossary.md#term-memory) [Durable 실행](09-glossary.md#term-durable) [Memory 오염](09-glossary.md#term-memory-poisoning)
+<span class="label">주요 용어</span> [Agent Runtime](09-glossary.md#term-runtime) [Framework adapter](09-glossary.md#term-adapter) [Memory](09-glossary.md#term-memory) [Durable 실행](09-glossary.md#term-durable) [Memory 오염](09-glossary.md#term-memory-poisoning) [HITL](09-glossary.md#term-hitl)
 </div>
 
 <div class="goals" markdown="1">
@@ -93,8 +93,7 @@ v0.1은 Memory의 규칙을 정의합니다. Memory 저장소 제품과 API 구�
 <div class="refs" markdown="1">
 **{{icon:book}} 근거와 참고 자료**
 
-- Memory를 독립 구성요소로 두는 플랫폼 사례와 Memory 오염 경고: [클라우드 Agent 플랫폼](10-references.md#ref-industry)
-- 메모리 관련 위험 범주: [보안 프레임워크](10-references.md#ref-security)
+- Memory를 별도 책임으로 두는 플랫폼 사례와 Memory 오염 경고: [클라우드 Agent 플랫폼](10-references.md#ref-industry)
 </div>
 
 <nav class="pager"><a href="05-agents-and-manifest.md"><small>이전</small><b>Agent Factory와 Manifest 명세</b></a><a class="next" href="04-trust.md"><small>다음</small><b>신뢰 경계와 Guardrails</b></a></nav>

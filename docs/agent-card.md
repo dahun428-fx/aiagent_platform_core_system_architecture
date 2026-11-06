@@ -1,6 +1,6 @@
 # Agent Card
 
-Agent Card는 A2A(Agent2Agent) 프로토콜에서 Agent를 설명하는 공개 메타데이터 문서다. 플랫폼은 Registry의 Agent 정보를 A2A Agent Card로 발행해 다른 Agent와 시스템이 Agent를 발견하고 호출 방법을 알 수 있게 한다. Agent 간 호출 자체는 공통 Agent 통신 계약(`cross-agent.schema.json`)을 따르며, A2A 프로토콜 채택은 선택이다.
+Agent Card는 A2A(Agent2Agent) 프로토콜에서 Agent를 설명하는 공개 메타데이터 문서다. 플랫폼은 Registry의 Agent 정보를 A2A Agent Card로 발행해 다른 Agent와 시스템이 Agent를 발견하고 호출 방법을 알 수 있게 한다. Agent 간 호출 자체는 공통 Agent 통신 계약(`cross-agent.schema.json`)을 따르며, A2A 프로토콜 채택은 선택이다([ADR-020](../adr/ADR-020.md)). 이 문서의 규칙은 A2A를 채택하거나 Agent를 다른 팀·외부에 노출해 발견 정보를 발행하는 경우에 적용한다([ADR-036](../adr/ADR-036.md)).
 
 ## 기준 버전
 
@@ -58,7 +58,7 @@ A2A 1.0.0 명세는 필드 표에서 `securityRequirements`, 본문 일부에서
 
 ## Registry 조회 API
 
-A2A는 큐레이션 레지스트리 API를 표준으로 정하지 않는다. 플랫폼은 Agent Platform APIs에 Registry 조회 API(목록, 검색, 카드 조회)를 정의한다. 계약은 후속 계약 버전에서 추가한다.
+A2A는 큐레이션 레지스트리 API를 표준으로 정하지 않는다. Agent 목록·조회는 기존 Agent 호출 API의 `listAgents`(`GET /v1/agents`), `getAgent`(`GET /v1/agents/{agentId}`)를 사용한다. Agent Card 조회와 검색은 후속 계약 버전에서 추가한다.
 
 ## 근거
 

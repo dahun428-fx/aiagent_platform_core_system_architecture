@@ -18,7 +18,7 @@ def main():
     failed = False
     for path in args.manifests:
         try:
-            value = json.loads(path.read_text())
+            value = json.loads(path.read_text(encoding="utf-8"))
             validate("agent-manifest", value)
             results.append({"file": str(path), "valid": True})
         except (Fault, ValueError, OSError):

@@ -1,6 +1,6 @@
-# Agent Tools와 Tool Gateway
+# Agent Tools와 도구 경로
 
-Agent Tools는 논리 capability domain이다. Tool Registry, Tool Gateway, REST/OpenAPI/MCP/custom adapters, tool policy/audit를 포함한다.
+Agent Tools는 Tool Registry, 도구 descriptor, REST/OpenAPI/MCP/custom adapter, 도구 정책·감사를 소유하는 Core System이다. 도구 호출의 집행은 Agent Gateway의 도구 경로(계약 파일 `tool-gateway.openapi.json`, 이 문서의 'Tool Gateway')가 수행한다([ADR-031](../adr/ADR-031.md)).
 
 ## Registry와 invoke
 ToolDescriptor는 불변 toolId/version, protocol, input/output schema URI, resource, effect(read/write), allowed scopes를 가진다.
@@ -9,7 +9,7 @@ SSRF 방지를 위해 protocol/host/port allowlist, DNS rebinding 및 private/me
 회사 private endpoint allowlist는 TBD이며 거부가 기본이다.
 
 Invoke request는 toolId, version, arguments, identity, policy, idempotencyKey, traceparent를 가진다.
-identity/policy는 신뢰한 Gateway가 생성하고 workload 인증으로 보호된 내부 wire에서만 수용한다.
+identity/policy는 Agent Platform APIs가 검증된 토큰에서 생성하고 workload 인증으로 보호된 내부 wire에서만 수용한다.
 입력·출력 schema를 모두 검증한다. 모든 호출에 tenant, agent/workload, principal, decisionId, toolVersion, result status를 감사한다.
 반환 값은 status/output 또는 Problem Details이며 token·credential handle을 포함하지 않는다(MUST NOT).
 
