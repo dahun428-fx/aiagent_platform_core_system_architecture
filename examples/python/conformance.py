@@ -77,6 +77,41 @@ def check_conflict(agent_dir):
     return "409 on key reuse with different content"
 
 
+def check_required_scopes(agent_dir):
+    platform, agent_id = _platform(agent_dir)
+    agent = platform.agents[agent_id]
+    agent["manifest"] = copy.deepcopy(agent["manifest"])
+    agent["manifest"]["identity"]["requiredScopes"].append("admin.all")
+    body = _body()
+    assert _status(lambda: platform.invoke(agent_id, body, "Bearer mock-user", "c10", TRACE)) == 403
+    assert _runs(platform) == 0
+    return "caller without a Manifest requiredScopes entry is denied (403) before the adapter runs"
+
+
+def check_identity_mode(agent_dir):
+    seen = {}
+    for mode in ("delegated", "independent"):
+        platform, agent_id = _platform(agent_dir)
+        agent = platform.agents[agent_id]
+        agent["manifest"] = copy.deepcopy(agent["manifest"])
+        agent["manifest"]["identity"]["mode"] = mode
+        original = platform.runtime.execute
+
+        def capture(envelope, a, key, _orig=original, _mode=mode):
+            seen[_mode] = copy.deepcopy(envelope["identity"])
+            return _orig(envelope, a, key)
+
+        platform.runtime.execute = capture
+        try:
+            platform.invoke(agent_id, _body(), "Bearer mock-user", "c11-" + mode, TRACE)
+        except ref.Fault:
+            pass  # an independent Agent may lack grants for its own calls; the envelope is what is checked
+    assert seen["delegated"]["mode"] == "delegated" and seen["delegated"].get("principalId")
+    ind = seen["independent"]
+    assert ind["mode"] == "independent" and "principalId" not in ind and ind["delegation"] == []
+    return "delegated runs as the caller; independent runs as the Agent workload without the user principal"
+
+
 def check_classification(agent_dir):
     platform, agent_id = _platform(agent_dir)
     platform.data_classification = "restricted"
@@ -87,7 +122,9 @@ def check_classification(agent_dir):
     external = [e for e in platform.audit if e["component"] == "model-gateway" and e.get("provider") == "external"]
     assert not external, "restricted data reached the external model route"
     assert status in (200, 503), status
-    return "caller cannot downgrade classification; external route unused"
+    used = any(e["component"] == "model-gateway" for e in platform.audit) or status == 503
+    return ("caller cannot downgrade classification; external route unused"
+            + ("" if used else " (this adapter did not call the model route, so only the platform rule was checked)"))
 
 
 def check_tools_and_leakage(agent_dir):
@@ -124,30 +161,41 @@ def check_adapter_failure(agent_dir):
     return "500 without adapter message; failure not cached, retry executes"
 
 
+LOADING, ADAPTER, PLATFORM = "manifest-loading", "adapter-path", "platform-enforcement"
+
+# (id, title, group, check). Groups say what a PASS guarantees:
+#   manifest-loading      the Manifest is valid and the local Registry accepts it
+#   adapter-path          this adapter produced a valid result through its own code path
+#   platform-enforcement  the platform enforces the rule around this adapter (the adapter cannot weaken it)
 CHECKS = [
-    ("C1", "Manifest and registration", check_manifest),
-    ("C2", "Successful call", check_success),
-    ("C3", "Missing token", check_missing_token),
-    ("C4", "Tenant spoof", check_tenant_spoof),
-    ("C5", "Idempotent replay", check_replay),
-    ("C6", "Idempotency conflict", check_conflict),
-    ("C7", "Classification downgrade", check_classification),
-    ("C8", "Undeclared tool and credential leakage", check_tools_and_leakage),
-    ("C9", "Adapter failure", check_adapter_failure),
+    ("C1", "Manifest and registration", LOADING, check_manifest),
+    ("C2", "Successful call", ADAPTER, check_success),
+    ("C3", "Missing token", PLATFORM, check_missing_token),
+    ("C4", "Tenant spoof", PLATFORM, check_tenant_spoof),
+    ("C5", "Idempotent replay", PLATFORM, check_replay),
+    ("C6", "Idempotency conflict", PLATFORM, check_conflict),
+    ("C7", "Classification downgrade", PLATFORM, check_classification),
+    ("C8", "Undeclared tool and credential leakage", PLATFORM, check_tools_and_leakage),
+    ("C9", "Adapter failure", PLATFORM, check_adapter_failure),
+    ("C10", "Manifest requiredScopes", PLATFORM, check_required_scopes),
+    ("C11", "Manifest identity.mode", PLATFORM, check_identity_mode),
 ]
+
+SCOPE_NOTE = ("Local conformance covers Manifest loading, this adapter's basic path and platform rule enforcement. "
+              "It is not a business-quality, security or production certification.")
 
 
 def run(agent_dir):
     """Return a list of {id, title, passed, detail}. Later checks are skipped if C1 fails."""
     results = []
-    for check_id, title, check in CHECKS:
+    for check_id, title, group, check in CHECKS:
         if results and check_id != "C1" and not results[0]["passed"]:
-            results.append({"id": check_id, "title": title, "passed": False, "detail": "skipped: C1 failed"})
+            results.append({"id": check_id, "title": title, "group": group, "passed": False, "detail": "skipped: C1 failed"})
             continue
         try:
             detail = check(agent_dir)
-            results.append({"id": check_id, "title": title, "passed": True, "detail": detail})
+            results.append({"id": check_id, "title": title, "group": group, "passed": True, "detail": detail})
         except (AssertionError, ref.Fault, ref.AgentLoadError, OSError) as exc:
-            results.append({"id": check_id, "title": title, "passed": False,
+            results.append({"id": check_id, "title": title, "group": group, "passed": False,
                             "detail": f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__})
     return results

@@ -26,8 +26,10 @@ def main():
     if args.command == "conformance":
         results = conformance.run(args.agent_dir)
         for r in results:
-            print(("PASS" if r["passed"] else "FAIL") + "  " + r["id"] + "  " + r["title"] + "  " + r["detail"])
-        print(json.dumps({"agentDir": str(args.agent_dir), "passed": all(r["passed"] for r in results), "checks": results},
+            print(("PASS" if r["passed"] else "FAIL") + "  " + r["id"].ljust(3) + "  " + r["group"].ljust(20) + "  " + r["title"] + "  " + r["detail"])
+        print("NOTE  " + conformance.SCOPE_NOTE)
+        print(json.dumps({"agentDir": str(args.agent_dir), "passed": all(r["passed"] for r in results),
+                          "scope": conformance.SCOPE_NOTE, "checks": results},
                          ensure_ascii=False, indent=2))
         return 0 if all(r["passed"] for r in results) else 1
     results = []

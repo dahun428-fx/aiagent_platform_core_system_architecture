@@ -41,6 +41,39 @@ class ConformanceTests(unittest.TestCase):
         self.assertEqual(bad.returncode, 1)
 
 
+class ManifestEnforcementTests(unittest.TestCase):
+    def setUp(self):
+        self.platform = ref.Platform(agents_dir=ROOT / "templates/agents")
+        self.body = ref.load("invocation")
+
+    def test_missing_required_scope_blocks_adapter(self):
+        agent = self.platform.agents["my-message-agent"]
+        agent["manifest"]["identity"]["requiredScopes"] = ["agents.invoke", "admin.all"]
+        with self.assertRaises(ref.Fault) as e:
+            self.platform.invoke("my-message-agent", self.body, "Bearer mock-user", "s1", TRACE)
+        self.assertEqual(e.exception.status, 403)
+        self.assertFalse(any(x["component"] == "runtime" for x in self.platform.audit))
+
+    def test_independent_mode_runs_as_workload(self):
+        agent = self.platform.agents["my-message-agent"]
+        agent["manifest"]["identity"] = {"mode": "independent", "requiredScopes": ["agents.invoke", "models.invoke"]}
+        seen = {}
+        original = self.platform.runtime.execute
+        self.platform.runtime.execute = lambda env, a, k: (seen.update(env["identity"]), original(env, a, k))[1]
+        result = self.platform.invoke("my-message-agent", self.body, "Bearer mock-user", "s2", TRACE)
+        self.assertEqual(result["status"], "succeeded")
+        self.assertEqual(seen["mode"], "independent")
+        self.assertNotIn("principalId", seen)
+        self.assertEqual(seen["scopes"], ["agents.invoke", "models.invoke"])
+
+    def test_independent_mode_without_grant_cannot_call_model(self):
+        agent = self.platform.agents["my-message-agent"]
+        agent["manifest"]["identity"] = {"mode": "independent", "requiredScopes": ["agents.invoke"]}
+        with self.assertRaises(ref.Fault) as e:
+            self.platform.invoke("my-message-agent", self.body, "Bearer mock-user", "s3", TRACE)
+        self.assertEqual(e.exception.status, 403)
+
+
 class LocalRegistryTests(unittest.TestCase):
     def body(self):
         return ref.load("invocation")
