@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Memory · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html" aria-current="page">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="memory">Memory</h1>
+<p>Memory는 Agent Runtime의 하위 구성요소로, Agent가 대화와 작업 사이에 정보를 유지하는 기능이다. Durable 실행의 checkpoint(실행 재개용 상태)와 구분한다.</p>
+<h2 id="종류">종류</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>종류</th>
+<th>범위</th>
+<th>예</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>단기 Memory</td>
+<td>하나의 세션·대화</td>
+<td>현재 대화의 이전 메시지, 중간 결과</td>
+</tr>
+<tr>
+<td>장기 Memory</td>
+<td>세션을 넘어 유지</td>
+<td>사용자 선호, 이전 작업에서 추출한 사실</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="규칙">규칙</h2>
+<ul>
+<li>모든 Memory 항목은 tenant, 범위 주체(사용자 또는 Agent), Agent ID에 결합해야 한다(MUST). 조회와 저장은 이 범위 안에서만 허용한다.</li>
+<li>장기 Memory의 쓰기는 Agent의 명시적 저장 동작 또는 정책이 허용한 추출 규칙으로만 수행한다(MUST).</li>
+<li>Memory 내용은 비신뢰 데이터로 취급한다(MUST). Memory에 저장된 지시문으로 권한을 획득할 수 없다.</li>
+<li>장기 Memory 쓰기 전에 민감정보·간접 인젝션 검사를 적용해야 한다(SHOULD). 잘못되거나 악의적인 정보가 저장되어 이후 세션에 영향을 주는 Memory 오염(memory poisoning)을 방지하기 위함이다.</li>
+<li>Memory에는 시크릿, 토큰, 자격증명을 저장해서는 안 된다(MUST NOT).</li>
+<li>데이터 분류는 저장 시점의 원본 분류를 상속한다(MUST). 사용자 삭제 요청과 보존 기간은 회사 정책 TBD-09를 따른다.</li>
+<li>Memory 조회·저장은 실행 추적에 기록하되, 내용 원문은 기록하지 않는다(MUST NOT).</li>
+</ul>
+<h2 id="계약과-제공-범위">계약과 제공 범위</h2>
+<ul>
+<li>Manifest의 <code>capabilities</code>에 Memory 사용 여부와 종류를 선언하는 확장은 후속 계약 버전에서 정의한다.</li>
+<li>v0.1은 Memory 저장소 제품과 API 구현을 제공하지 않는다. 저장소 제품은 TBD이다.</li>
+</ul>
+<h2 id="근거">근거</h2>
+<ul>
+<li>AWS Bedrock AgentCore는 Memory(단기 세션·장기 기억)를 독립 구성요소로 제공한다.</li>
+<li>Google Agent Engine Memory Bank는 장기 Memory를 특정 범위에 격리하고 memory poisoning을 위험으로 명시한다.</li>
+<li>OWASP Top 10 for Agentic Applications 2026은 메모리 관련 위험을 별도 범주로 다룬다.</li>
+<li>출처 목록: <a href="docs--onboarding--10-references.html">근거와 참고 자료</a></li>
+</ul><p class="file-link">원본 파일: <a href="../docs/memory.md">docs/memory.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#종류">종류</a><a href="#규칙">규칙</a><a href="#계약과-제공-범위">계약과 제공 범위</a><a href="#근거">근거</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Agent Card와 Agent 간 통신 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html" aria-current="page">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-card와-agent-간-통신">Agent Card와 Agent 간 통신</h1>
+<blockquote>
+<p>개발자 가이드 문서입니다. 규범은 <a href="docs--agent-card.html">Agent Card</a> 기술 표준 문서와 A2A 1.0.0 명세가 기준입니다.</p>
+</blockquote>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent-card">Agent Card</a> <a href="docs--onboarding--09-glossary.html#term-a2a">A2A</a> <a href="docs--onboarding--09-glossary.html#term-extended-card">확장 Agent Card</a> <a href="docs--onboarding--09-glossary.html#term-jws">JWS · JCS</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a></p>
+</div>
+<div class="goals">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
+<ul>
+<li>A2A Agent Card의 필수·선택 필드를 설명할 수 있습니다.</li>
+<li>공개 카드와 인증된 확장 카드의 차이를 설명할 수 있습니다.</li>
+<li>Agent Card의 서명과 검증 절차를 설명할 수 있습니다.</li>
+<li>Registry가 Agent Card를 발행하는 규칙을 설명할 수 있습니다.</li>
+</ul>
+</div>
+<h2 id="배경">배경</h2>
+<div class="opener">
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 문제 정의</span> 다른 팀의 Agent를 호출하려면, 그 Agent가 무엇을 할 수 있고 어디로 어떻게 인증해 호출하는지 알아야 합니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 현황</span> Agent 정보를 팀마다 문서나 메신저로 공유하면 최신 상태를 보장할 수 없고, 정보가 위조되었는지도 확인할 수 없습니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 설계 방향</span> Registry가 Manifest와 등록 정보로 <strong>A2A Agent Card</strong>를 생성하고 <strong>조직 키로 서명</strong>해 발행합니다. 호출하는 쪽은 서명을 검증한 카드만 신뢰합니다.</p>
+</div>
+<h2 id="agent-간-통신의-두-계층">Agent 간 통신의 두 계층</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>계층</th>
+<th>기준</th>
+<th>역할</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>발견(discovery)</td>
+<td>A2A 1.0.0 Agent Card</td>
+<td>Agent의 기능, 접속 인터페이스, 인증 방식을 알림</td>
+</tr>
+<tr>
+<td>호출</td>
+<td>공통 Agent 통신 계약(<code>cross-agent.schema.json</code>)</td>
+<td>상위 호출 ID, 축소된 권한 범위, 호출 깊이·예산 전달</td>
+</tr>
+</tbody>
+</table></div>
+<p>A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견은 Agent Card로 통일합니다.</p>
+<h2 id="agent-card-필드-a2a-100">Agent Card 필드 (A2A 1.0.0)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>필드</th>
+<th>필수</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code>, <code>description</code>, <code>version</code></td>
+<td>필수</td>
+<td>Agent 이름, 목적, 버전</td>
+</tr>
+<tr>
+<td><code>supportedInterfaces</code></td>
+<td>필수</td>
+<td>접속 인터페이스 목록. <strong>첫 항목이 우선</strong>입니다</td>
+</tr>
+<tr>
+<td><code>capabilities</code></td>
+<td>필수</td>
+<td><code>streaming</code>, <code>pushNotifications</code>, <code>extensions</code>, <code>extendedAgentCard</code></td>
+</tr>
+<tr>
+<td><code>defaultInputModes</code>, <code>defaultOutputModes</code></td>
+<td>필수</td>
+<td>입출력 미디어 유형</td>
+</tr>
+<tr>
+<td><code>skills</code></td>
+<td>필수</td>
+<td>Agent 기능 목록</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td>선택</td>
+<td><code>organization</code>, <code>url</code></td>
+</tr>
+<tr>
+<td><code>securitySchemes</code>, <code>securityRequirements</code></td>
+<td>선택</td>
+<td>인증 방식과 요구 조건</td>
+</tr>
+<tr>
+<td><code>signatures</code></td>
+<td>선택</td>
+<td>JWS 서명</td>
+</tr>
+<tr>
+<td><code>documentationUrl</code>, <code>iconUrl</code></td>
+<td>선택</td>
+<td>문서·아이콘</td>
+</tr>
+</tbody>
+</table></div>
+<div class="cards">
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>AgentInterface</b><p><code>url</code>(HTTP는 HTTPS, gRPC는 <code>host:port</code>), <code>protocolBinding</code>(<code>JSONRPC</code>·<code>GRPC</code>·<code>HTTP+JSON</code>), <code>protocolVersion</code>, 선택 <code>tenant</code>. <code>tenant</code>가 있으면 클라이언트는 모든 요청에 그 값을 그대로 넣습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>AgentSkill</b><p>필수 <code>id</code>, <code>name</code>, <code>description</code>, <code>tags</code>. 선택 <code>examples</code>, <code>inputModes</code>, <code>outputModes</code>, skill별 <code>securityRequirements</code>.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>SecurityScheme</b><p>API key, HTTP auth, OAuth 2.0, OpenID Connect, mTLS 중 정확히 하나입니다. OAuth 2.0은 Implicit·Password flow를 지원하지 않습니다.</p></div>
+</div>
+
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 명세 표기 차이</strong> A2A 1.0.0 명세는 필드 표에서 <code>securityRequirements</code>, 본문 일부에서 <code>AgentCard.security</code>로 표기합니다. 구현은 규범 원본인 <code>spec/a2a.proto</code>의 정의를 따릅니다.</p>
+</div>
+<h2 id="공개-카드와-확장-카드">공개 카드와 확장 카드</h2>
+<div class="compare">
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 공개 카드에 두지 않는 정보</strong></p>
+<ul>
+<li>사내 Agent의 내부 URL</li>
+<li>민감한 skill 설명</li>
+<li>시크릿·토큰 등 정적 자격증명</li>
+</ul>
+</div>
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 플랫폼의 공개 범위</strong></p>
+<ul>
+<li>사내 Agent: 공개 <code>/.well-known/agent-card.json</code> 없음, 인증된 Registry 조회로만 제공</li>
+<li>외부 공개 Agent: <code>https://{domain}/.well-known/agent-card.json</code>에 최소 정보</li>
+<li>상세 정보: 인증된 확장 카드로만 제공</li>
+</ul>
+</div>
+</div>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>공개 카드 조회</b><span><code>capabilities.extendedAgentCard: true</code> 확인</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>인증</b><span>공개 카드에 선언된 인증 방식으로 토큰 획득</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg><b>GetExtendedAgentCard</b><span>인증 수준에 따라 다른 내용 반환</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>카드 교체</b><span>세션 동안 공개 카드 대신 사용</span></li>
+</ol>
+
+<p>확장 카드는 반드시 인증을 요구하며(MUST), 확장 카드에도 유출 시 악용될 수 있는 정보는 넣지 않습니다(SHOULD NOT). 플랫폼은 확장 카드의 내용을 권한 교집합에 따라 제한합니다.</p>
+<h2 id="서명과-검증">서명과 검증</h2>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>정규화</b><span><code>signatures</code> 제외 후 JCS(RFC 8785) 정규화</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16.5 6.5l2.5 2.5M14 9l2 2"/></svg><b>서명</b><span>JWS(RFC 7515), 보호 헤더 <code>alg</code>·<code>typ</code>·<code>kid</code>, 선택 <code>jku</code></span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>발행</b><span>Registry가 조직 키로 서명한 카드 제공</span></li>
+<li class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>검증</b><span>키 조회(kid·jku) → 정규화 → 서명 검증 후 신뢰</span></li>
+</ol>
+
+<pre><code class="language-json">{&quot;alg&quot;: &quot;ES256&quot;, &quot;typ&quot;: &quot;JOSE&quot;, &quot;kid&quot;: &quot;key-1&quot;, &quot;jku&quot;: &quot;https://example.com/agent/jwks.json&quot;}
+</code></pre>
+<ul>
+<li>소비 측은 서명을 검증한 카드만 신뢰합니다(MUST). 키는 HTTPS로 받거나 신뢰 키 저장소를 사용합니다.</li>
+<li>만료·폐기된 키는 사용하지 않습니다(MUST NOT). 키 교체 기간에는 서명을 여러 개 둘 수 있습니다.</li>
+<li>서명이 유효하더라도 카드 내용(skill 설명 등)은 비신뢰 데이터입니다. 카드 내용으로 권한 정책을 변경할 수 없습니다.</li>
+</ul>
+<h2 id="registry의-발행-규칙">Registry의 발행 규칙</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>규칙</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>생성</td>
+<td>Registry가 Manifest와 등록 정보에서 생성합니다. 수동 작성 카드는 받지 않습니다</td>
+</tr>
+<tr>
+<td>필드 대응</td>
+<td><code>metadata.name</code>·<code>version</code> → <code>name</code>·<code>version</code>, 기능 선언 → <code>skills</code>, <code>identity.requiredScopes</code> → 보안 요구, 승인된 실행 환경 endpoint → <code>supportedInterfaces</code>, <code>metadata.owner.team</code> → <code>provider.organization</code></td>
+</tr>
+<tr>
+<td>상태 연동</td>
+<td>production-approved 버전만 발행하고, deprecated·quarantined·retired 전환 시 갱신·회수합니다</td>
+</tr>
+<tr>
+<td>캐시</td>
+<td><code>Cache-Control</code>과 카드 <code>version</code> 또는 내용 해시 기반 <code>ETag</code>를 제공합니다</td>
+</tr>
+<tr>
+<td>버전</td>
+<td>A2A 1.0.0을 기준으로 하며 <code>A2A-Version</code> 헤더를 사용합니다</td>
+</tr>
+<tr>
+<td>조회 API</td>
+<td>A2A는 레지스트리 API를 표준으로 정하지 않으므로 Agent Platform APIs에 Registry 조회 API를 정의합니다</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="제공-범위">제공 범위</h2>
+<p>v0.1은 Agent Card 발행·소비 규칙을 정의합니다. 카드 생성·서명 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계로 제공합니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
+<details>
+<summary>Q1. 사내 전용 Agent의 Agent Card는 어디에서 조회합니까?</summary>
+<p>공개 <code>/.well-known/agent-card.json</code>이 아니라, Agent Platform APIs의 인증된 Registry 조회로만 조회합니다.</p>
+</details>
+<details>
+<summary>Q2. 서명 검증 전에 수행해야 하는 정규화 방식은 무엇입니까?</summary>
+<p><code>signatures</code> 필드를 제외하고 JCS(RFC 8785)로 정규화합니다.</p>
+</details>
+<details>
+<summary>Q3. Agent Card는 어떤 상태의 Agent 버전에 발행됩니까?</summary>
+<p>production-approved 상태의 버전에만 발행합니다.</p>
+</details>
+</div>
+<div class="summary">
+<p><strong>요약</strong></p>
+<ul>
+<li>Agent 발견은 A2A 1.0.0 Agent Card, 호출은 공통 Agent 통신 계약을 따릅니다.</li>
+<li>사내 Agent는 인증된 Registry 조회로만 카드를 제공하고, 상세 정보는 확장 카드로 제한합니다.</li>
+<li>Registry가 JCS 정규화 후 JWS로 서명하며, 소비 측은 서명을 검증한 카드만 신뢰합니다.</li>
+</ul>
+</div>
+<div class="refs">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg> 근거와 참고 자료</strong></p>
+<ul>
+<li>A2A 1.0.0 명세, 발견 문서, 변경 사항: <a href="docs--onboarding--10-references.html#ref-a2a">A2A</a></li>
+<li>서명·정규화 규격: <a href="docs--onboarding--10-references.html#ref-identity">IETF·OAuth</a></li>
+</ul>
+</div>
+<nav class="pager"><a href="docs--onboarding--12-observability-evaluation.html"><small>이전</small><b>Agent Observability와 Agent Evaluation</b></a><a class="next" href="docs--onboarding--06-lifecycle.html"><small>다음</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/13-agent-card.md">docs/onboarding/13-agent-card.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#agent-간-통신의-두-계층">Agent 간 통신의 두 계층</a><a href="#agent-card-필드-a2a-100">Agent Card 필드 (A2A 1.0.0)</a><a href="#공개-카드와-확장-카드">공개 카드와 확장 카드</a><a href="#서명과-검증">서명과 검증</a><a href="#registry의-발행-규칙">Registry의 발행 규칙</a><a href="#제공-범위">제공 범위</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

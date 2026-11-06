@@ -1,15 +1,16 @@
-# 신뢰 경계와 보안 통제
+# 신뢰 경계와 Guardrails
 
 > 개발자 가이드 문서입니다. 규범은 [보안 경계와 위협 모델](../security.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [신뢰 경계](09-glossary.md#term-boundary) [프롬프트 인젝션](09-glossary.md#term-injection) [권한 교집합](09-glossary.md#term-scope) [fail closed](09-glossary.md#term-fail-closed) [HITL](09-glossary.md#term-hitl) [unknown_outcome](09-glossary.md#term-unknown)
+<span class="label">주요 용어</span> [신뢰 경계](09-glossary.md#term-boundary) [프롬프트 인젝션](09-glossary.md#term-injection) [권한 교집합](09-glossary.md#term-scope) [fail closed](09-glossary.md#term-fail-closed) [HITL](09-glossary.md#term-hitl) [unknown_outcome](09-glossary.md#term-unknown) [Guardrail](09-glossary.md#term-guardrail)
 </div>
 
 <div class="goals" markdown="1">
 **{{icon:target}} 학습 목표**
 
 - 플랫폼이 신뢰하지 않는 입력 다섯 가지와 그 근거를 설명할 수 있습니다.
+- Guardrail의 공통 검사 서비스와 네 집행 지점을 설명할 수 있습니다.
 - 실패 시 거부(fail closed) 원칙을 설명할 수 있습니다.
 - 외부 쓰기 작업의 중복 실행을 방지하는 방식을 설명할 수 있습니다.
 </div>
@@ -46,25 +47,48 @@
 <div class="good" markdown="1">
 **{{icon:check}} 이 플랫폼의 구조**
 
-LLM이 해당 지시를 따르더라도 도구 호출은 Tool Gateway에서 정책으로 재검증됩니다. LLM은 자격증명을 보유하지 않으며, 권한은 교집합을 초과하지 않습니다.
+LLM이 해당 지시를 따르더라도 도구 호출은 Agent Gateway 도구 경로에서 정책으로 재검증됩니다. LLM은 자격증명을 보유하지 않으며, 권한은 교집합을 초과하지 않습니다.
 </div>
+</div>
+
+## Guardrails
+
+Guardrail은 공통 검사 서비스 하나와 네 개의 집행 지점으로 구성합니다. 검사 서비스는 판정(판정 결과, 정책 버전, 검사 ID)만 반환하고, 차단·수정·통과는 각 집행 지점이 결정합니다.
+
+<div class="lanes">
+<div class="lane"><div>{{icon:model}} ① 모델 입력·출력</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 모델 경로<small>프롬프트 인젝션 · PII · 유해 콘텐츠 · 출력 형식</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane"><div>{{icon:tools}} ② 도구 호출·결과</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 도구 경로<small>호출 인자 · 도구 결과의 간접 인젝션 · 민감정보</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane"><div>{{icon:knowledge}} ③ 검색 결과</div><i>&#8594;</i><div class="gate">{{icon:knowledge}}<span>Knowledge(RAG) 단계<small>간접 인젝션 · ACL·분류 필터 · 근거성</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane"><div>{{icon:approve}} ④ 실행 제어</div><i>&#8594;</i><div class="gate">{{icon:runtime}}<span>Agent Runtime<small>권한 최소화 · 고위험 작업의 사람 승인</small></span></div><i>&#8594;</i><div>{{icon:lock}} 승인 전 실행 보류</div></div>
+</div>
+
+- 네 집행 지점은 모두 적용합니다(MUST). 하나의 지점으로 다른 지점을 대체할 수 없습니다.
+- ①은 사용자 메시지뿐 아니라 모델에 전달되는 도구 결과·검색 문서·Memory 내용도 검사합니다(MUST). 사용자 메시지만 검사하는 관문 검사로는 간접 인젝션을 놓칠 수 있기 때문입니다.
+- 프로덕션 환경의 ①②③은 "검사 후 차단" 모드로 운영합니다(MUST). "검사만(기록)" 모드는 차단하지 않습니다.
+- 인코딩(예: Base64)으로 우회하는 입력을 고려해 정규화 후 검사합니다(SHOULD).
+- 검사 제품은 adapter로 연결하며 특정 제품을 강제하지 않습니다.
+
+<div class="point" markdown="1">
+**{{icon:warn}} 위험 감소 통제** Guardrail은 완전한 방어를 보장하지 않습니다. 권한 교집합, 자격증명 비노출, 사람의 승인과 함께 적용해야 효과가 있습니다.
 </div>
 
 ## 실패 시 거부 (fail closed)
 
 <div class="point" markdown="1">
-**{{icon:lock}} fail closed** IdP, Credential Broker, 정책 조회가 실패하면 신규 자격증명을 발급하지 않습니다. Control Plane과의 연결이 끊기면 신규 권한 부여와 프로덕션 승격을 중단합니다. 검증할 수 없는 요청은 **거부**합니다.
+**{{icon:lock}} fail closed** IdP, Credential Broker, 정책 조회, Guardrail 검사 서비스가 실패하면 신규 자격증명 발급과 고위험 경로의 처리를 중단합니다. Control Plane과의 연결이 끊기면 신규 권한 부여와 프로덕션 승격을 중단합니다. 검증할 수 없는 요청은 **거부**합니다.
 </div>
 
 ## 위협별 통제
 
 | 경계 | 위협 | 통제 |
 |---|---|---|
-| {{icon:gateway}} Client → Agent Gateway | Identity·테넌트 위조 | 토큰 기반 Identity 도출, 기본 거부 |
+| {{icon:gateway}} Client → Agent Platform APIs | Identity·테넌트 위조 | 토큰 기반 Identity 도출, 기본 거부 |
 | {{icon:tools}} Runtime → Tools | 프롬프트 인젝션을 통한 confused deputy | 논리 도구 ID, 권한 교집합, 정책 재검증 |
 | {{icon:key}} Tools → Broker | 자격증명 유출 | audience 제한, 단기 만료, 호출 결합, 비노출 handle |
 | {{icon:knowledge}} RAG → 모델 | 접근 권한 없는 문서 노출 | 검색 시점의 ACL·분류 필터 |
-| {{icon:model}} Model Gateway → 외부 | 기밀 데이터 반출 | confidential·restricted 데이터의 외부 경로 거부 |
+| {{icon:model}} Agent Gateway 모델 경로 → 외부 | 기밀 데이터 반출 | confidential·restricted 데이터의 외부 경로 거부 |
+| {{icon:shield}} 입력·출력·도구·검색 결과 | 간접 인젝션, 민감정보, 유해 콘텐츠 | 공통 검사 서비스 + 네 집행 지점 |
+| {{icon:knowledge}} Memory | Memory 오염 | 범위 결합, 쓰기 전 검사, 비신뢰 취급 |
 | {{icon:agents}} Agent → Agent | 권한 확산, 순환 호출 | 범위 축소, 깊이·예산·순환 제어 |
 | {{icon:clock}} 재시도·재개 | 승인 재사용, 중복 쓰기 | digest·만료 검증, 멱등성 키, unknown outcome 처리 |
 | {{icon:eye}} 실행 추적·감사 | 로그를 통한 정보 유출 | 허용된 메타데이터만 기록, 토큰·개인정보 제거 |
@@ -106,4 +130,12 @@ LLM이 해당 지시를 따르더라도 도구 호출은 Tool Gateway에서 정�
 - 결과가 불명확한 쓰기 작업은 재실행하지 않고 `unknown_outcome`으로 노출합니다.
 </div>
 
-<nav class="pager"><a href="03-one-request.md"><small>이전</small><b>Agent 요청 처리 흐름</b></a><a class="next" href="05-agents-and-manifest.md"><small>다음</small><b>Agent 유형과 Manifest 명세</b></a></nav>
+<div class="refs" markdown="1">
+**{{icon:book}} 근거와 참고 자료**
+
+- 처리 단계별 guardrail 배치, 검사와 차단의 책임 분리: [Guardrails](10-references.md#ref-guardrails)
+- MCP 인가와 토큰 passthrough 금지: [MCP](10-references.md#ref-mcp)
+- Agent 보안 위험 범주: [보안 프레임워크](10-references.md#ref-security)
+</div>
+
+<nav class="pager"><a href="11-runtime-memory.md"><small>이전</small><b>Agent Runtime과 Memory</b></a><a class="next" href="12-observability-evaluation.md"><small>다음</small><b>Agent Observability와 Agent Evaluation</b></a></nav>

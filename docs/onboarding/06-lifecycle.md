@@ -1,9 +1,9 @@
-# Agent 수명주기와 프로덕션 승인
+# Agent 수명주기·Tuning과 프로덕션 승인
 
 > 개발자 가이드 문서입니다. 규범은 [운영·평가](../operating-model.md), [배포 프로파일](../deployment.md), [Durable / HITL](../execution.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [Registered / Production-approved](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Durable 실행](09-glossary.md#term-durable) [Contract-as-Code](09-glossary.md#term-contract-as-code)
+<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [Registered / Production-approved](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Durable 실행](09-glossary.md#term-durable) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning)
 </div>
 
 <div class="goals" markdown="1">
@@ -12,6 +12,7 @@
 - 로컬 실험부터 폐기까지 Agent 수명주기 7단계를 설명할 수 있습니다.
 - 프로덕션 승인에 필요한 검증 근거 6가지를 나열할 수 있습니다.
 - 배포 프로파일 3가지와 실행 상태 전이를 설명할 수 있습니다.
+- Agent Tuning(FastTrack)의 개선 흐름과 승인 요건의 관계를 설명할 수 있습니다.
 </div>
 
 ## 배경
@@ -102,15 +103,39 @@ workflow Agent는 장시간 실행되거나 중간에 사람의 승인을 대기
 
 Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TBD이며, 이 패키지는 계약만 제공합니다.
 
+## Agent Tuning (FastTrack)
+
+Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. FastTrack은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름입니다.
+
+<ol class="flow">
+<li>{{icon:eye}}<b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
+<li>{{icon:code}}<b>개선안 작성</b><span>새 revision (Local-First)</span></li>
+<li>{{icon:test}}<b>배포 전 평가</b><span>기존 버전과 비교</span></li>
+<li>{{icon:approve}}<b>eligible 등록</b><span>Registry</span></li>
+<li class="hi">{{icon:rocket}}<b>프로덕션 승인</b><span>승인 요건 그대로 적용</span></li>
+</ol>
+
+| 개선 대상 | 예 | 산출물 |
+|---|---|---|
+| 프롬프트·지시문 | 시스템 지시문, few-shot 예시 | 새 Agent 버전 |
+| 도구·검색 구성 | 도구 선택, 검색 파라미터 | 새 Agent 버전 또는 Manifest 변경 |
+| 모델 선택 | 논리 모델 capability 변경 | Manifest 변경 |
+| 미세조정(fine-tuning) | 평가 데이터 기반 모델 조정 | Agent Gateway 모델 경로에 새 endpoint 등록 |
+
+- FastTrack은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).
+- Tuning 결과는 항상 새 불변 버전으로 등록하며, 기존 버전을 덮어쓰지 않습니다(MUST).
+- 미세조정 데이터는 데이터 분류와 반출 정책을 따르며, 외부 튜닝 서비스도 Agent Gateway 모델 경로 정책을 적용합니다(MUST).
+- v0.1은 흐름과 규칙을 정의하며, 자동 개선안 생성과 미세조정 파이프라인은 후속 단계에서 구현합니다.
+
 ## 초기 구현 범위: 종단 간 실행 경로
 
 플랫폼은 전체 모듈을 동시에 구현하지 않습니다. 다음 종단 간 실행 경로를 먼저 완성한 뒤, 도구·RAG·Durable 실행·Multi-Agent·분산 실행 환경을 단계적으로 추가합니다.
 
 <ol class="flow">
 <li>{{icon:laptop}}<b>로컬 Agent</b><span>Manifest 검증</span></li>
-<li>{{icon:gateway}}<b>Agent Gateway</b><span>인증 · Identity · 정책</span></li>
+<li>{{icon:gateway}}<b>Agent Platform APIs</b><span>인증 · Identity · 정책</span></li>
 <li>{{icon:runtime}}<b>Runtime adapter</b><span>Agent 실행</span></li>
-<li>{{icon:model}}<b>Model Gateway</b><span>외부 · 자체 호스팅 모델</span></li>
+<li>{{icon:model}}<b>Agent Gateway 모델 경로</b><span>외부 · 자체 호스팅 모델</span></li>
 <li>{{icon:trace}}<b>실행 추적 · 평가</b><span>검증 근거 기록</span></li>
 <li>{{icon:rocket}}<b>Registry · CI 게이트</b><span>승인된 실행 환경으로 승격</span></li>
 </ol>
@@ -145,4 +170,10 @@ Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TB
 - 종단 간 실행 경로를 먼저 완성하고, 기능은 단계적으로 추가합니다.
 </div>
 
-<nav class="pager"><a href="05-agents-and-manifest.md"><small>이전</small><b>Agent 유형과 Manifest 명세</b></a><a class="next" href="07-hands-on.md"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav>
+<div class="refs" markdown="1">
+**{{icon:book}} 근거와 참고 자료**
+
+- 평가 기반 개선과 운영 모니터링: [클라우드 Agent 플랫폼](10-references.md#ref-industry)
+</div>
+
+<nav class="pager"><a href="13-agent-card.md"><small>이전</small><b>Agent Card와 Agent 간 통신</b></a><a class="next" href="07-hands-on.md"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav>

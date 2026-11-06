@@ -1,14 +1,15 @@
-# Agent 유형과 Manifest 명세
+# Agent Factory와 Manifest 명세
 
 > 개발자 가이드 문서입니다. 규범은 [Agent Manifest JSON Schema](../../contracts/agent-manifest.schema.json)가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Framework adapter](09-glossary.md#term-adapter)
+<span class="label">주요 용어</span> [Agent Factory](09-glossary.md#term-factory) [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Framework adapter](09-glossary.md#term-adapter)
 </div>
 
 <div class="goals" markdown="1">
 **{{icon:target}} 학습 목표**
 
+- Agent Factory의 개발 흐름(생성·선언·검증·등록)을 설명할 수 있습니다.
 - 플랫폼이 지원하는 Agent 유형 4가지를 구분할 수 있습니다.
 - Manifest의 블록별 의미와 검증 규칙을 설명할 수 있습니다.
 - 검증에 실패하는 Manifest의 대표 사례를 식별할 수 있습니다.
@@ -24,11 +25,31 @@
 <span class="tag">{{icon:bulb}} 설계 방향</span> 각 Agent는 **Agent 선언 명세(Manifest)**를 제출합니다. Manifest는 플랫폼이 Agent를 통제·호출하는 데 필요한 메타데이터, 실행 설정, 권한 요구사항을 선언하며, 플랫폼은 이 선언을 기준으로 동작합니다.
 </div>
 
+## Agent Factory 개발 흐름
+
+Agent Factory는 Agent를 만들고, 선언하고, 검증하고, 등록하는 개발 흐름을 담당하는 Core System입니다. 소스는 개발자 저장소에 두며, Factory는 소스 업로드를 요구하지 않습니다(MUST NOT).
+
+<ol class="flow">
+<li>{{icon:code}}<b>생성</b><span>Agent 유형별 템플릿<br>(후속 단계)</span></li>
+<li>{{icon:manifest}}<b>선언</b><span>Manifest 작성</span></li>
+<li>{{icon:test}}<b>로컬 검증</b><span><code>agentctl validate</code></span></li>
+<li>{{icon:shield}}<b>CI 게이트</b><span>계약·보안·평가 검증</span></li>
+<li class="hi">{{icon:control}}<b>Registry 등록</b><span>불변 revision · artifact digest</span></li>
+</ol>
+
+<div class="cards">
+<div class="card">{{icon:code}}<b>CLI</b><p><code>scripts/agentctl.py validate</code>로 Manifest를 JSON Schema 기준으로 검증합니다.</p><span class="sub">구현</span></div>
+<div class="card">{{icon:manifest}}<b>스키마와 fixture</b><p>Manifest JSON Schema, 4종 예제 Manifest, 검증 실패용 fixture를 제공합니다.</p><span class="sub">구현</span></div>
+<div class="card">{{icon:laptop}}<b>템플릿</b><p>Agent 유형별 프로젝트 템플릿과 생성 명령을 제공합니다.</p><span class="sub">후속 단계</span></div>
+</div>
+
+Factory의 도구는 AI Platform Applications의 DevTools로 제공됩니다.
+
 ## Agent 유형
 
 <div class="cards">
-<div class="card">{{icon:knowledge}}<b>rag</b><p>사내 문서를 검색하고 근거를 포함해 응답합니다.</p><span class="sub">Knowledge Backend · Model Gateway</span></div>
-<div class="card">{{icon:tools}}<b>tool</b><p>사내·외부 시스템 API를 호출해 작업을 수행합니다.</p><span class="sub">Tool Gateway · Credential Broker</span></div>
+<div class="card">{{icon:knowledge}}<b>rag</b><p>사내 문서를 검색하고 근거를 포함해 응답합니다.</p><span class="sub">Knowledge Backend · Agent Gateway 모델 경로</span></div>
+<div class="card">{{icon:tools}}<b>tool</b><p>사내·외부 시스템 API를 호출해 작업을 수행합니다.</p><span class="sub">Agent Gateway 도구 경로 · Credential Broker</span></div>
 <div class="card">{{icon:workflow}}<b>workflow</b><p>여러 단계를 순차적으로 처리하며, 장시간 실행과 사람의 승인을 포함할 수 있습니다.</p><span class="sub">Durable 실행 · HITL</span></div>
 <div class="card">{{icon:agents}}<b>multi-agent</b><p>하위 Agent에 작업을 위임합니다.</p><span class="sub">공통 Agent 통신 계약</span></div>
 </div>
@@ -172,4 +193,10 @@ Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보
 - 소스는 불변 revision과 digest로 참조하며, 시크릿은 Manifest에 포함할 수 없습니다.
 </div>
 
-<nav class="pager"><a href="04-trust.md"><small>이전</small><b>신뢰 경계와 보안 통제</b></a><a class="next" href="06-lifecycle.md"><small>다음</small><b>Agent 수명주기와 프로덕션 승인</b></a></nav>
+<div class="refs" markdown="1">
+**{{icon:book}} 근거와 참고 자료**
+
+- Agent Factory 명칭과 구축 패턴: [클라우드 Agent 플랫폼](10-references.md#ref-industry)
+</div>
+
+<nav class="pager"><a href="03-one-request.md"><small>이전</small><b>Agent 요청 처리 흐름</b></a><a class="next" href="11-runtime-memory.md"><small>다음</small><b>Agent Runtime과 Memory</b></a></nav>

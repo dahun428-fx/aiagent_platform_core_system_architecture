@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Agent Observability와 Agent Evaluation · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html" aria-current="page">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-observability와-agent-evaluation">Agent Observability와 Agent Evaluation</h1>
+<blockquote>
+<p>개발자 가이드 문서입니다. 규범은 <a href="docs--observability.html">Observability</a>, <a href="docs--evaluation.html">Evaluation</a> 기술 표준 문서가 기준입니다.</p>
+</blockquote>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-observability">관측성</a> <a href="docs--onboarding--09-glossary.html#term-trace">실행 추적 컨텍스트</a> <a href="docs--onboarding--09-glossary.html#term-otel-genai">OTel GenAI</a> <a href="docs--onboarding--09-glossary.html#term-evaluation">평가 3단계</a> <a href="docs--onboarding--09-glossary.html#term-red-teaming">Red teaming</a></p>
+</div>
+<div class="goals">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
+<ul>
+<li>관측성, 실행 추적, 감사의 목적 차이를 설명할 수 있습니다.</li>
+<li>OpenTelemetry GenAI 규격의 Agent span 이름과 필수 속성을 설명할 수 있습니다.</li>
+<li>평가 3단계(배포 전 평가, 실행 추적 분석, 운영 모니터링)를 구분할 수 있습니다.</li>
+</ul>
+</div>
+<h2 id="배경">배경</h2>
+<div class="opener">
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 문제 정의</span> Agent의 응답이 잘못되었을 때, 원인이 모델·도구·검색·정책 중 어디에 있는지 확인할 수 있어야 합니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 현황</span> Agent 한 번의 실행에는 여러 모델 호출과 도구 호출이 포함됩니다. 구성요소마다 다른 형식으로 기록하면 하나의 실행으로 연결되지 않고, 품질 변화도 비교할 수 없습니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 설계 방향</span> 실행 추적은 <strong>공개 표준 형식(OpenTelemetry GenAI)</strong>으로 통일하고, 평가는 <strong>배포 전·실행 후·운영 중 3단계</strong>로 나눠 승격 판단의 근거로 사용합니다.</p>
+</div>
+<h2 id="관측성-실행-추적-감사">관측성, 실행 추적, 감사</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>목적</th>
+<th>예</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>관측성(Observability)</td>
+<td>시스템 동작 이해, 장애 분석</td>
+<td>지연 시간, 오류율, 토큰 사용량</td>
+</tr>
+<tr>
+<td>실행 추적(trace)</td>
+<td>요청 하나의 처리 경로 추적</td>
+<td>Agent 호출 → 모델 추론 → 도구 호출 span</td>
+</tr>
+<tr>
+<td>감사(audit)</td>
+<td>행위의 증적 보존</td>
+<td>누가 어떤 정책 결정으로 어떤 도구를 호출했는지</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="실행-추적-규격">실행 추적 규격</h2>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Platform APIs</b><span>traceparent 수신·생성</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4"/><circle cx="12" cy="3.5" r="1"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg><b>invoke_agent</b><span>Agent 호출 span</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><b>모델 추론 span</b><span>operation + model</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>도구 호출 span</b><span>도구 경로</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg><b>하위 Agent</b><span>traceparent 전파</span></li>
+</ol>
+
+<ul>
+<li>W3C Trace Context(<code>traceparent</code>, <code>tracestate</code>)를 모든 구간에 전파합니다(MUST).</li>
+<li>span 이름과 속성은 OpenTelemetry GenAI semantic conventions를 따릅니다(MUST).</li>
+</ul>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>span</th>
+<th>이름</th>
+<th>주요 속성</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 호출</td>
+<td><code>invoke_agent {gen_ai.agent.name}</code></td>
+<td><code>gen_ai.agent.name</code>, <code>gen_ai.operation.name</code></td>
+</tr>
+<tr>
+<td>Agent 생성</td>
+<td><code>create_agent</code></td>
+<td><code>gen_ai.agent.name</code></td>
+</tr>
+<tr>
+<td>모델 추론</td>
+<td><code>{gen_ai.operation.name} {gen_ai.request.model}</code></td>
+<td><code>gen_ai.provider.name</code>(필수), <code>gen_ai.request.model</code>, 토큰 사용량</td>
+</tr>
+<tr>
+<td>플랫폼 고유</td>
+<td>—</td>
+<td><code>platform.</code> 접두사: tenant 별칭, 정책 결정 ID, routeDecisionId, Guardrail 검사 ID</td>
+</tr>
+</tbody>
+</table></div>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 규격 버전 고정</strong> OpenTelemetry GenAI semantic conventions는 Development 단계 규격입니다. 플랫폼은 사용하는 규격 버전을 고정하고 기록하며(MUST), 버전 전환은 계약 변경 절차를 따릅니다.</p>
+</div>
+<div class="compare">
+<div class="good">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 기록 대상</strong></p>
+<p>지연 시간, 오류, 모델 호출 수, 입력·출력 토큰, tenant·Agent별 비용 귀속, 도구 실패, 정책 거부, Guardrail 차단, 승인 대기</p>
+</div>
+<div class="bad">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 기본 기록 제외 대상</strong></p>
+<p>프롬프트 원문, 모델 출력 원문, 토큰, 검색된 개인정보 원문. baggage에도 개인정보와 토큰을 넣지 않습니다</p>
+</div>
+</div>
+<h2 id="평가-3단계">평가 3단계</h2>
+<ol class="flow">
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>배포 전 평가</b><span>CI·승격 전<br>평가 데이터셋으로 기준 충족 확인</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>실행 추적 분석</b><span>실행 후<br>처리 경로와 실패 원인 분석</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>운영 모니터링</b><span>프로덕션 운영 중<br>추세와 회귀 감지</span></li>
+<li class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 15c-1.5 1.2-2 3.5-2 6 2.5 0 4.8-.5 6-2"/><path d="M9 18l-3-3c1.5-5 5.5-10 13-12-2 7.5-7 11.5-12 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg><b>Agent Tuning</b><span>평가 결과를 근거로 개선<br>새 버전은 다시 배포 전 평가</span></li>
+</ol>
+
+<div class="cards">
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><b>품질</b><p>과제 완료, 응답 정확성, 근거성(RAG), 도구 사용 정확성</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>안전성</b><p>프롬프트 인젝션 저항, 민감정보 노출, 유해 콘텐츠, 권한 외 도구 호출 시도. 공격 시나리오 기반 평가(red teaming)를 포함합니다</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>운영</b><p>지연 시간, 비용, 오류율</p></div>
+</div>
+
+<ul>
+<li>위험도 high Agent는 프로덕션 승인 전에 red teaming을 포함해야 합니다(MUST).</li>
+<li>평가 결과는 <code>evaluation.schema.json</code>을 따르며 datasetVersion, agentVersion, manifestDigest, policyVersion, metric, gate, traceId를 포함합니다(MUST).</li>
+<li>이 패키지의 deterministic fixture는 smoke regression이며, 업무 품질·안전성·통계적 유의성을 입증하지 않습니다.</li>
+</ul>
+<h2 id="제공-범위">제공 범위</h2>
+<p>v0.1은 trace context 전파, mock 감사 기록, 평가 결과 스키마와 smoke 평가 테스트를 제공합니다. OpenTelemetry exporter, 관측 백엔드, 평가 데이터셋과 기준 수치는 회사 결정(TBD)입니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
+<details>
+<summary>Q1. Agent 호출 span의 이름 규칙은 무엇입니까?</summary>
+<p><code>invoke_agent {gen_ai.agent.name}</code>입니다.</p>
+</details>
+<details>
+<summary>Q2. 운영 모니터링에서 품질 저하가 감지되면 어떤 흐름으로 개선합니까?</summary>
+<p>평가 결과와 실행 추적을 근거로 Agent Tuning에서 개선안을 만들고, 새 불변 버전으로 배포 전 평가를 다시 통과한 뒤 승인 절차를 따릅니다.</p>
+</details>
+</div>
+<div class="summary">
+<p><strong>요약</strong></p>
+<ul>
+<li>관측성은 동작 이해, 실행 추적은 요청 경로 추적, 감사는 행위 증적을 목적으로 합니다.</li>
+<li>실행 추적은 W3C Trace Context와 OpenTelemetry GenAI 규격(버전 고정)을 따릅니다.</li>
+<li>평가는 배포 전 평가, 실행 추적 분석, 운영 모니터링의 3단계로 수행하며 Tuning의 입력이 됩니다.</li>
+</ul>
+</div>
+<div class="refs">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg> 근거와 참고 자료</strong></p>
+<ul>
+<li>span 규격: <a href="docs--onboarding--10-references.html#ref-otel">OpenTelemetry GenAI</a></li>
+<li>평가 3단계와 red teaming: <a href="docs--onboarding--10-references.html#ref-industry">클라우드 Agent 플랫폼</a></li>
+</ul>
+</div>
+<nav class="pager"><a href="docs--onboarding--04-trust.html"><small>이전</small><b>신뢰 경계와 Guardrails</b></a><a class="next" href="docs--onboarding--13-agent-card.html"><small>다음</small><b>Agent Card와 Agent 간 통신</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/12-observability-evaluation.md">docs/onboarding/12-observability-evaluation.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#관측성-실행-추적-감사">관측성, 실행 추적, 감사</a><a href="#실행-추적-규격">실행 추적 규격</a><a href="#평가-3단계">평가 3단계</a><a href="#제공-범위">제공 범위</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

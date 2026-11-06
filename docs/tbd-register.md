@@ -16,5 +16,5 @@
 | TBD-10 | P1 | 모델 endpoint·지역·fallback·budget | ML/Security | 분류 기반 routing 검증 |
 | TBD-11 | P1 | tool endpoint·schema·MCP transport/version | Tools owner | adapter conformance·SSRF 검증 |
 | TBD-12 | P1 | 평가 dataset·threshold·관측 exporter·보존 | Quality/SRE | regression·redaction·접근통제 |
-| TBD-13 | P2 | A2A protocol/adapter·GPU scheduler·Developer Portal | Platform | 별도 ADR/적합성 |
+| TBD-13 | P2 | A2A protocol adapter 구현·GPU scheduler·Space 구현 제품·Memory 저장소·Guardrail 검사 제품·Tuning 인프라 | Platform | 별도 ADR/적합성 |
 

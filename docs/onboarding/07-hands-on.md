@@ -85,7 +85,7 @@ python3 -m venv .venv
 Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
 ```
 
-이 mock은 Agent Gateway → Runtime → Model Gateway의 동기 처리 흐름과 Tool Gateway → Credential Broker 흐름을 모사합니다. loopback(127.0.0.1)에만 바인딩되며, 고정된 합성 토큰 `mock-user`만 허용합니다.
+이 mock은 Agent Platform APIs(Agent 호출 API) → Runtime → Agent Gateway 모델 경로의 동기 처리 흐름과, Agent Gateway 도구 경로 → Credential Broker 흐름을 모사합니다. 출력과 코드에 나오는 `agent-gateway`, `model-gateway`는 각각 Agent 호출 API와 모델 경로의 component 이름입니다. loopback(127.0.0.1)에만 바인딩되며, 고정된 합성 토큰 `mock-user`만 허용합니다.
 
 두 번째 터미널에서 Python 클라이언트로 Agent를 호출합니다.
 
@@ -109,11 +109,11 @@ Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
 
 | 필드 | 생성 주체 | 의미 |
 |---|---|---|
-| {{icon:gateway}} `invocationId` | Agent Gateway | 호출 식별자 |
+| {{icon:gateway}} `invocationId` | Agent Platform APIs | 호출 식별자 |
 | {{icon:manifest}} `agentVersion` | Registry | 실행된 불변 버전 |
 | {{icon:trace}} `traceparent` | 전 구간 | 종단 간 실행 추적 컨텍스트 |
-| {{icon:model}} `routeDecisionId` | Model Gateway | 모델 라우팅 결정. 이 예시에서는 자체 호스팅 경로 |
-| {{icon:eye}} `usage` | Model Gateway | 토큰 사용량 |
+| {{icon:model}} `routeDecisionId` | Agent Gateway 모델 경로 | 모델 라우팅 결정. 이 예시에서는 자체 호스팅 경로 |
+| {{icon:eye}} `usage` | Agent Gateway 모델 경로 | 토큰 사용량 |
 
 `examples/python/client.py`의 요청에는 `Authorization: Bearer mock-user`와 `Idempotency-Key` 헤더가 포함되어 있습니다.
 
@@ -179,8 +179,8 @@ JSON Schema, API, 인가, 멱등성, 승인, 모델 정책, 평가, 포털 정�
 <div class="good" markdown="1">
 **{{icon:check}} mock이 모사하는 기능**
 
-- Agent Gateway → Runtime → Model Gateway 동기 처리 흐름
-- Tool Gateway → Credential Broker 흐름
+- Agent Platform APIs → Runtime → Agent Gateway 모델 경로 동기 처리 흐름
+- Agent Gateway 도구 경로 → Credential Broker 흐름
 - 토큰 누락, 멱등성 키 재사용 시 거부 동작
 </div>
 <div class="bad" markdown="1">

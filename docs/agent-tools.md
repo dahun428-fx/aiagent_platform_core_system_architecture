@@ -28,6 +28,8 @@ timeout 이후 외부 write의 성공 여부가 불명확하면 unknown_outcome�
 외부 효과 exactly-once는 이 패키지가 보장하지 않는다. key 보존 기간·재시도 횟수는 TBD.
 
 ## MCP
+Tool Gateway adapter는 HTTP 기반 MCP 서버에 대해 OAuth 2.1 client로 동작한다. 대상 서버 식별자를 RFC 8707 resource indicator로 지정하고, RFC 9728 Protected Resource Metadata로 인가 서버를 찾는다(MUST). 서버가 audience를 검증하지 않는 토큰 재사용을 허용하지 않는다.
+지원하는 MCP authorization revision은 고정하고 기록한다(MUST). 고정 revision은 TBD-11이다.
 MCP client는 Runtime 대신 Tool Gateway adapter가 소유하는 enterprise proxy 패턴을 기본으로 한다.
 tools/list는 허용된 descriptor만 노출하고 tools/call은 같은 authz/input/output/audit 규칙을 따른다.
 MCP transport/session/version 협상은 adapter 구현 책임이며 protocol pin은 TBD다.

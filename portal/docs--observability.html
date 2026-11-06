@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Observability · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html" aria-current="page">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="observability">Observability</h1>
+<p>Agent Observability는 실행 추적(trace), 지표(metric), 로그를 수집해 Agent의 동작을 파악하게 하는 Core System이다. 감사(audit) 기록과 목적이 다르다. 감사는 행위의 증적을, Observability는 동작 이해와 장애 분석을 목적으로 한다.</p>
+<h2 id="실행-추적">실행 추적</h2>
+<ul>
+<li>W3C Trace Context(<code>traceparent</code>, <code>tracestate</code>)를 Agent Platform APIs → Agent Runtime → Agent Gateway(모델·도구 경로) → Knowledge → 하위 Agent까지 전파해야 한다(MUST).</li>
+<li>span 이름과 속성은 OpenTelemetry GenAI semantic conventions를 따른다(MUST).</li>
+<li>Agent 호출: <code>invoke_agent {gen_ai.agent.name}</code></li>
+<li>Agent 생성: <code>create_agent</code></li>
+<li>모델 추론: <code>{gen_ai.operation.name} {gen_ai.request.model}</code>, <code>gen_ai.provider.name</code> 필수</li>
+<li>GenAI semantic conventions는 Development 단계 규격이다. 플랫폼은 사용하는 규격 버전을 고정하고 기록해야 한다(MUST). 버전 전환은 <a href="docs--versioning.html">계약 변경</a> 절차를 따른다. 고정 버전은 TBD-12이다.</li>
+<li>플랫폼 고유 속성(tenant 별칭, policy decision ID, route decision ID, guardrail 검사 ID)은 <code>platform.</code> 접두사로 기록한다(SHOULD).</li>
+</ul>
+<h2 id="지표">지표</h2>
+<p>다음 지표를 측정해야 한다(SHOULD).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>분류</th>
+<th>지표</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>성능</td>
+<td>지연 시간, 오류율, timeout</td>
+</tr>
+<tr>
+<td>사용량</td>
+<td>모델 호출 수, 입력·출력 토큰, tenant·Agent별 비용 귀속</td>
+</tr>
+<tr>
+<td>도구</td>
+<td>도구 호출 실패, unknown outcome</td>
+</tr>
+<tr>
+<td>통제</td>
+<td>정책 거부, guardrail 차단, 승인 대기</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="기록-금지">기록 금지</h2>
+<ul>
+<li>프롬프트 원문, 모델 출력 원문, 토큰, 검색된 개인정보 원문은 기본적으로 기록하지 않는다(MUST NOT). 원문 기록이 필요한 평가 목적은 별도 승인과 보존 정책(TBD-12)을 따른다.</li>
+<li>baggage에 개인정보나 토큰을 넣지 않는다(MUST NOT).</li>
+</ul>
+<h2 id="제공-범위">제공 범위</h2>
+<p>v0.1은 trace context 전파와 mock 감사 기록을 제공한다. OpenTelemetry exporter 연동과 백엔드 제품은 TBD-12이다.</p>
+<h2 id="근거">근거</h2>
+<ul>
+<li>OpenTelemetry GenAI semantic conventions: agent span(<code>invoke_agent</code>, <code>create_agent</code>)과 inference span 규격.</li>
+<li>W3C Trace Context.</li>
+<li>Microsoft Foundry는 평가, 추적, 모니터링을 구분하고 Agent 실행·모델·도구·토큰·지연·실패를 추적한다.</li>
+<li>출처 목록: <a href="docs--onboarding--10-references.html">근거와 참고 자료</a></li>
+</ul><p class="file-link">원본 파일: <a href="../docs/observability.md">docs/observability.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#실행-추적">실행 추적</a><a href="#지표">지표</a><a href="#기록-금지">기록 금지</a><a href="#제공-범위">제공 범위</a><a href="#근거">근거</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

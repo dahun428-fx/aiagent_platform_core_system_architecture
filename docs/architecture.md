@@ -1,10 +1,12 @@
 # 아키텍처
 
 ## 구조
-전사 Client/App은 Agent Gateway로 들어온다. Gateway는 인증·agent resolution·tenant authorization·idempotency를 책임진다.
-Runtime은 orchestration consumer이며 Identity·Model·Tools·Knowledge·State·Policy를 소비한다.
-Model Gateway는 모델 capability·분류·지역·비용/가용성 정책으로 endpoint를 선택한다.
-Tool Gateway는 Agent Tools에 속하며 REST/OpenAPI/MCP egress를 중재한다.
+플랫폼의 구성요소는 [Core Systems](core-systems.md)의 10개 Core System으로 정의한다. 이 문서는 책임과 신뢰 경계를 다룬다.
+전사 Client/App은 Agent Platform APIs로 들어온다. Agent 호출 API(`agent-gateway.openapi.json`)는 인증·agent resolution·tenant authorization·idempotency를 책임진다.
+Runtime은 orchestration consumer이며 Identity·Model·Tools·Knowledge·State·Memory·Policy를 소비한다.
+Agent Gateway는 외부 모델·도구로 나가는 관문이다. 모델 경로(`model-gateway.openapi.json`)는 모델 capability·분류·지역·비용/가용성 정책으로 endpoint를 선택한다.
+도구 경로(`tool-gateway.openapi.json`)는 REST/OpenAPI/MCP egress를 중재하며, Tool Registry·도구 정책은 Agent Tools가 소유한다.
+Guardrail은 [Guardrails](guardrails.md)의 네 집행 지점에 적용한다.
 Credential Broker는 Agent Identity에 속하며 승인된 Tool Gateway adapter에만 단기 credential을 전달하거나 비노출 handle을 발급한다.
 
 ## Shared Control Plane
@@ -28,5 +30,5 @@ Registry는 source 자체가 아닌 불변 Git revision·artifact digest·Manife
 - tenant는 검증된 identity에서 파생한다. body의 tenant assertion은 비교용이며 권한의 근거가 아니다.
 - 정책과 위임은 grant가 아니라 검증할 evidence다. 사용자 입력에 principal/roles를 넣어 승격할 수 없다.
 - 검색 결과·tool output·model output은 비신뢰 데이터다. prompt instruction으로 권한을 획득할 수 없다.
-- Gateway→Runtime→Model/Tool/RAG→하위 Agent에 traceparent를 전달한다. baggage에 PII·token을 넣지 않는다.
+- Agent Platform APIs→Runtime→Agent Gateway(모델·도구)/RAG→하위 Agent에 traceparent를 전달한다. span 규격은 [Observability](observability.md)를 따른다. baggage에 PII·token을 넣지 않는다.
 

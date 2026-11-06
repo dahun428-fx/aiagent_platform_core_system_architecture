@@ -54,16 +54,24 @@
 
 | 주제 | 기술 표준 문서 |
 |---|---|
+| {{icon:map}} 10개 Core System의 책임과 제공 범위 | [Core Systems](../core-systems.md) |
 | {{icon:map}} 구성요소의 책임과 신뢰 경계 | [아키텍처](../architecture.md) |
 | {{icon:tools}} 도구 호출, MCP, 재시도 규칙 | [Agent Tools](../agent-tools.md) |
 | {{icon:identity}} 사용자·Agent Identity, 위임, 자격증명 | [Agent Identity](../identity-and-credentials.md) |
 | {{icon:shield}} 위협 모델과 보안 통제 | [보안 경계](../security.md) |
+| {{icon:shield}} Guardrail 검사 서비스와 집행 지점 | [Guardrails](../guardrails.md) |
+| {{icon:knowledge}} 단기·장기 Memory | [Memory](../memory.md) |
+| {{icon:agents}} A2A Agent Card 발행·소비 | [Agent Card](../agent-card.md) |
 | {{icon:clock}} 실행 상태, 승인, Durable 실행 | [Durable / HITL](../execution.md) |
-| {{icon:eye}} 역할, 수명주기, 평가와 관측성 | [운영·평가](../operating-model.md) |
+| {{icon:eye}} 역할, 수명주기, 승인 요건 | [운영·평가](../operating-model.md) |
+| {{icon:eye}} 실행 추적 규격과 지표 | [Observability](../observability.md) |
+| {{icon:test}} 평가 3단계와 평가 항목 | [Evaluation](../evaluation.md) |
+| {{icon:rocket}} Tuning 흐름과 규칙 | [Agent Tuning](../agent-tuning.md) |
 | {{icon:cloud}} 실행 환경과 승격 | [배포 프로파일](../deployment.md) |
 | {{icon:code}} 계약 버전과 호환성 | [계약 변경](../versioning.md) |
 | {{icon:test}} CI 연동 | [CI 통합](../ci-integration.md) |
 | {{icon:book}} 용어 | [주요 용어 정의](09-glossary.md), [용어와 규범](../glossary.md) |
+| {{icon:book}} 외부 근거 자료 | [근거와 참고 자료](10-references.md) |
 | {{icon:manifest}} API 계약과 JSON Schema 원본 | 포털 메뉴의 "계약 · 예제" |
 
 ## FAQ
@@ -78,15 +86,15 @@
 </details>
 
 <details markdown="1"><summary>외부 모델 API를 Agent 코드에서 직접 호출할 수 있습니까?</summary>
-프로덕션 환경에서는 특정 공급사에 직접 결합하지 않고 Model Gateway를 경유해야 합니다. 이를 통해 데이터 분류에 따른 외부 전송 통제와 공급사 교체 시 코드 변경 최소화가 가능합니다. 개발 단계부터 Model Gateway 계약을 기준으로 구현하면 승격 시 변경 범위가 줄어듭니다.
+프로덕션 환경에서는 특정 공급사에 직접 결합하지 않고 Agent Gateway 모델 경로를 경유해야 합니다. 이를 통해 데이터 분류에 따른 외부 전송 통제와 공급사 교체 시 코드 변경 최소화가 가능합니다. 개발 단계부터 모델 경로 계약을 기준으로 구현하면 승격 시 변경 범위가 줄어듭니다.
 </details>
 
 <details markdown="1"><summary>Agent가 MCP 서버에 직접 연결할 수 있습니까?</summary>
-기본 패턴은 Tool Gateway의 adapter가 MCP client를 소유하는 enterprise proxy 방식입니다. MCP는 도구 프로토콜이며 회사 인가 정책을 대체하지 않습니다. <code>tools/list</code>는 허용된 도구만 노출하고, <code>tools/call</code>도 동일한 인가·입출력 검증·감사 규칙을 따릅니다.
+기본 패턴은 Agent Gateway 도구 경로의 adapter가 MCP client를 소유하는 enterprise proxy 방식입니다. adapter는 OAuth 2.1 client로서 RFC 8707 resource indicator와 RFC 9728 Protected Resource Metadata를 사용합니다. MCP는 도구 프로토콜이며 회사 인가 정책을 대체하지 않습니다. <code>tools/list</code>는 허용된 도구만 노출하고, <code>tools/call</code>도 동일한 인가·입출력 검증·감사 규칙을 따릅니다.
 </details>
 
 <details markdown="1"><summary>도구 접근용 API 키는 어디에 저장합니까?</summary>
-Agent 코드, Manifest, 환경 변수에 저장하지 않습니다. Credential Broker가 호출마다 단기 자격증명을 발급하며, 자격증명은 Tool Gateway의 adapter 내부에서만 사용됩니다.
+Agent 코드, Manifest, 환경 변수에 저장하지 않습니다. Credential Broker가 호출마다 단기 자격증명을 발급하며, 자격증명은 Agent Gateway 도구 경로의 adapter 내부에서만 사용됩니다.
 </details>
 
 <details markdown="1"><summary>등록한 Mac mini를 바로 서비스에 사용할 수 있습니까?</summary>
@@ -110,4 +118,4 @@ Agent 코드, Manifest, 환경 변수에 저장하지 않습니다. Credential B
 - 용어 확인: [주요 용어 정의](09-glossary.md)
 </div>
 
-<nav class="pager"><a href="07-hands-on.md"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="09-glossary.md"><small>다음</small><b>주요 용어 정의</b></a></nav>
+<nav class="pager"><a href="07-hands-on.md"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="10-references.md"><small>다음</small><b>근거와 참고 자료</b></a></nav>

@@ -23,19 +23,23 @@ def link(p):
 
 onboarding = [
     ("docs/onboarding/01-why.md", "플랫폼 도입 배경과 설계 원칙", "5분", "팀별 Agent 개발 환경과 전사 공통 보안·운영 통제의 책임 구분", "target"),
-    ("docs/onboarding/02-big-picture.md", "플랫폼 아키텍처와 주요 구성요소", "10분", "Shared Control Plane과 Distributed Execution Plane의 구성 및 책임", "map"),
-    ("docs/onboarding/03-one-request.md", "Agent 요청 처리 흐름", "15분", "Agent Gateway 진입부터 모델·도구 호출, 실행 추적까지의 처리 흐름", "trace"),
-    ("docs/onboarding/04-trust.md", "신뢰 경계와 보안 통제", "10분", "요청 입력, 도구 응답, 자격증명 및 승인 정보의 검증 원칙", "shield"),
-    ("docs/onboarding/05-agents-and-manifest.md", "Agent 유형과 Manifest 명세", "10분", "RAG·Tool·Workflow·Multi-Agent 유형과 Manifest 구성 및 검증 규칙", "manifest"),
-    ("docs/onboarding/06-lifecycle.md", "Agent 수명주기와 프로덕션 승인", "10분", "등록·검증·평가·승인 단계와 프로덕션 승인 요건", "rocket"),
+    ("docs/onboarding/02-big-picture.md", "Core Systems 아키텍처", "15분", "10개 Core System의 층 구조, 책임, 진입·반출 경계와 배치 관점", "map"),
+    ("docs/onboarding/03-one-request.md", "Agent 요청 처리 흐름", "15분", "Agent Platform APIs 진입부터 Agent Gateway를 통한 모델·도구 호출, 실행 추적까지", "trace"),
+    ("docs/onboarding/05-agents-and-manifest.md", "Agent Factory와 Manifest 명세", "10분", "생성·선언·검증·등록 흐름, Agent 유형과 Manifest 검증 규칙", "manifest"),
+    ("docs/onboarding/11-runtime-memory.md", "Agent Runtime과 Memory", "10분", "framework adapter, Durable 실행, 단기·장기 Memory의 범위와 규칙", "runtime"),
+    ("docs/onboarding/04-trust.md", "신뢰 경계와 Guardrails", "15분", "신뢰하지 않는 입력, Guardrail의 공통 검사 서비스와 네 집행 지점", "shield"),
+    ("docs/onboarding/12-observability-evaluation.md", "Agent Observability와 Agent Evaluation", "10분", "OpenTelemetry GenAI 실행 추적과 평가 3단계", "eye"),
+    ("docs/onboarding/13-agent-card.md", "Agent Card와 Agent 간 통신", "10분", "A2A 1.0.0 Agent Card의 필드, 확장 카드, 서명과 Registry 발행 규칙", "agents"),
+    ("docs/onboarding/06-lifecycle.md", "Agent 수명주기·Tuning과 프로덕션 승인", "10분", "등록·검증·평가·승인 단계, 승인 요건, FastTrack 개선 흐름", "rocket"),
     ("docs/onboarding/07-hands-on.md", "로컬 환경 구성 및 호출 실습", "30분", "로컬 mock 환경에서 Manifest 검증, Agent 호출 및 오류 응답 확인", "code"),
     ("docs/onboarding/08-reading-the-spec.md", "기술 표준 해석과 FAQ", "10분", "MUST·SHOULD·MAY, TBD 및 버전 표기의 의미", "question"),
-    ("docs/onboarding/09-glossary.md", "주요 용어 정의", "참조용", "플랫폼 구성요소, 실행 모델 및 기술 계약의 주요 용어", "book"),
+    ("docs/onboarding/10-references.md", "근거와 참고 자료", "참조용", "클라우드 Agent 플랫폼, OpenTelemetry, MCP, A2A, IETF, OWASP 등 외부 근거", "book"),
+    ("docs/onboarding/09-glossary.md", "주요 용어 정의", "참조용", "Core Systems, 실행 모델 및 기술 계약의 주요 용어", "book"),
 ]
 navigation = [
     ("개발자 가이드", [("index.html", "가이드 개요")] + [(p, t) for p, t, _, _, _ in onboarding]),
-    ("설계 정의", [("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/execution.md", "Durable / HITL")]),
-    ("운영 정의", [("docs/operating-model.md", "운영·평가"), ("docs/deployment.md", "배포 프로파일"), ("docs/versioning.md", "계약 변경"), ("docs/ci-integration.md", "CI 통합"), ("docs/glossary.md", "용어와 규범")]),
+    ("설계 정의", [("docs/core-systems.md", "Core Systems"), ("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/guardrails.md", "Guardrails"), ("docs/memory.md", "Memory"), ("docs/agent-card.md", "Agent Card"), ("docs/execution.md", "Durable / HITL")]),
+    ("운영 정의", [("docs/operating-model.md", "운영·평가"), ("docs/observability.md", "Observability"), ("docs/evaluation.md", "Evaluation"), ("docs/agent-tuning.md", "Agent Tuning"), ("docs/deployment.md", "배포 프로파일"), ("docs/versioning.md", "계약 변경"), ("docs/ci-integration.md", "CI 통합"), ("docs/glossary.md", "용어와 규범")]),
     ("레퍼런스", [("catalog.html", "계약 · 예제"), ("diagrams.html", "아키텍처 도식 9종"), ("docs/tbd-register.md", "TBD 등록부"), ("docs/release-scope.md", "제공 범위와 한계")]),
     ("결정 기록", [("records.html", "결정 기록과 이력")]),
 ]
@@ -108,9 +112,10 @@ home = """<h1>AI Agent Platform 개발자 가이드</h1>
 <h2>학습 경로</h2><ol class="index-list path">"""
 for p, title, minutes, detail, icon in onboarding:
     home += f'<li><div>{icon_svg(icon, "icon tile-icon")}<a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">예상 소요 시간 {minutes}</p></div></li>' if minutes != "참조용" else f'<li><div>{icon_svg(icon, "icon tile-icon")}<a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">참조용</p></div></li>'
-home += '</ol><h2>공통 제어 평면과 분산 실행 평면</h2><a href="diagrams.html"><img class="diagram" src="../diagrams/c4-container.svg" alt="C4 Container: Shared Control Plane과 Distributed Execution Plane"></a><p>구성요소별 설명은 <a href="docs--onboarding--02-big-picture.html">플랫폼 아키텍처와 주요 구성요소</a>를 참고하십시오.</p>'
+home += '</ol><h2>Core Systems</h2><p>플랫폼은 AI Platform Applications, Agent Platform APIs, Agent Factory, Agent Runtime, Agent Tools, Agent Identity, Agent Observability, Agent Evaluation, Agent Gateway, Agent Tuning의 10개 Core System으로 구성됩니다. 층 구조와 책임은 <a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a>를, 외부 근거는 <a href="docs--onboarding--10-references.html">근거와 참고 자료</a>를 참고하십시오.</p>'
 home += """<h2>기술 표준 및 참조 명세</h2><p>특정 규칙이나 계약을 확인하려면 기술 표준 문서를 참조합니다. 규범(MUST·SHOULD)은 기술 표준 문서가 기준입니다.</p><ul>"""
 for p, title, detail in [
+    ("docs/core-systems.md", "Core Systems", "10개 Core System의 책임과 제공 범위"),
     ("docs/architecture.md", "아키텍처", "구성요소의 책임과 신뢰 경계"),
     ("docs/security.md", "보안 경계", "위협과 필수 통제"),
     ("docs/operating-model.md", "운영·평가", "역할, 수명주기, 평가와 관측"),

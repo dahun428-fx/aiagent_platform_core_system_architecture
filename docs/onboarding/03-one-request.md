@@ -21,22 +21,22 @@
 
 <span class="tag">{{icon:eye}} 현황</span> 예시 Agent는 사내 ERP에서 청구서를 조회(도구 호출)하고 모델로 요약합니다. 데이터 분류는 `confidential`입니다. 하나의 요청에 인증·인가, 도구 권한, 데이터 반출 통제가 모두 관여합니다.
 
-<span class="tag">{{icon:bulb}} 설계 방향</span> 각 Gateway가 **자신의 경계에서 하나의 책임**을 수행합니다. 한 지점의 통제가 실패해도 다른 지점에서 차단할 수 있습니다.
+<span class="tag">{{icon:bulb}} 설계 방향</span> 각 Core System이 **자신의 경계에서 하나의 책임**을 수행합니다. 한 지점의 통제가 실패해도 다른 지점에서 차단할 수 있습니다.
 </div>
 
 ## 처리 단계
 
 <ol class="flow">
-<li>{{icon:gateway}}<b>1. 진입</b><span>Agent Gateway<br>인증 · 해석 · 인가 · 멱등성</span></li>
+<li>{{icon:gateway}}<b>1. 진입</b><span>Agent Platform APIs<br>인증 · 해석 · 인가 · 멱등성</span></li>
 <li>{{icon:runtime}}<b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
-<li>{{icon:tools}}<b>3. 도구 호출</b><span>Tool Gateway + Broker<br>단기 자격증명</span></li>
-<li>{{icon:model}}<b>4. 모델 호출</b><span>Model Gateway<br>분류 기반 라우팅</span></li>
-<li>{{icon:trace}}<b>5. 기록</b><span>Observability<br>종단 간 실행 추적</span></li>
+<li>{{icon:tools}}<b>3. 도구 호출</b><span>Agent Gateway 도구 경로<br>+ Credential Broker</span></li>
+<li>{{icon:model}}<b>4. 모델 호출</b><span>Agent Gateway 모델 경로<br>분류 기반 라우팅</span></li>
+<li>{{icon:trace}}<b>5. 기록</b><span>Agent Observability<br>종단 간 실행 추적</span></li>
 </ol>
 
-## 1단계. Agent Gateway 진입
+## 1단계. Agent Platform APIs 진입
 
-클라이언트는 Agent Gateway에 HTTP 요청을 전송합니다.
+클라이언트는 Agent Platform APIs의 Agent 호출 API(계약 파일 `agent-gateway.openapi.json`)에 HTTP 요청을 전송합니다.
 
 ```text
 POST /v1/agents/{agentId}/invocations
@@ -75,7 +75,7 @@ Idempotency-Key: <재전송 요청을 식별하는 키>
 
 ## 2단계. Agent Runtime 실행
 
-Agent Gateway는 Agent 버전, **검증된 실행 주체 식별 정보(identity context)**, **정책 컨텍스트(policy context)**를 Runtime에 전달합니다.
+Agent Platform APIs는 Agent 버전, **검증된 실행 주체 식별 정보(identity context)**, **정책 컨텍스트(policy context)**를 Runtime에 전달합니다.
 
 Runtime은 Manifest에 선언된 framework adapter로 Agent를 실행합니다. LangGraph 기반 Agent와 자체 구현 Agent는 Runtime에 동일한 계약으로 노출되므로, 프레임워크를 교체해도 플랫폼 측 변경은 필요하지 않습니다.
 
@@ -83,23 +83,23 @@ Runtime은 Manifest에 선언된 framework adapter로 Agent를 실행합니다. 
 **{{icon:bulb}} 핵심 포인트** Runtime은 보안·정책 권한을 임의로 변경할 수 없습니다(MUST NOT). 전달받은 권한 범위 안에서만 동작합니다.
 </div>
 
-## 3단계. Tool Gateway를 통한 도구 호출
+## 3단계. Agent Gateway 도구 경로를 통한 도구 호출
 
 Agent가 ERP에서 청구서를 조회하는 단계입니다. 각 구간이 보유하는 정보를 확인하십시오.
 
 <ol class="flow">
 <li>{{icon:runtime}}<b>Runtime</b><span>도구 ID · 버전 · 인자<br><strong>자격증명 없음</strong></span></li>
-<li>{{icon:gateway}}<b>Tool Gateway</b><span>승인된 endpoint 해석<br>입력 스키마 · 정책 · 승인</span></li>
+<li>{{icon:gateway}}<b>도구 경로</b><span>승인된 endpoint 해석<br>입력 스키마 · 정책 · 승인</span></li>
 <li class="hi">{{icon:key}}<b>Credential Broker</b><span>정책 근거 재검증 후<br>호출에 결합된 lease</span></li>
 <li>{{icon:tools}}<b>Tool adapter</b><span>신뢰 경계 내부에서<br>lease를 자격증명으로 교환</span></li>
 <li>{{icon:server}}<b>ERP</b><span>출력 스키마·분류 검증 후<br>Runtime에 반환</span></li>
 </ol>
 
-1. Runtime은 Tool Gateway에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
-2. Tool Gateway는 Tool Registry에서 **승인된 endpoint**를 해석하고 입력 스키마와 정책을 검증합니다. 쓰기(write) 작업은 유효한 승인 여부도 확인합니다.
+1. Runtime은 Agent Gateway의 도구 경로(Tool Gateway)에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
+2. 도구 경로는 Agent Tools의 Tool Registry에서 **승인된 endpoint**를 해석하고 입력 스키마와 정책을 검증합니다. 쓰기(write) 작업은 유효한 승인 여부도 확인합니다.
 3. Credential Broker에 요청하는 범위는 **사용자 권한 ∩ Agent 권한 ∩ 도구 허용 범위 ∩ 정책**을 초과할 수 없습니다.
 4. Credential Broker는 토큰 원문 대신 **단기·호출 결합형 불투명 lease**를 발급합니다.
-5. 결과는 출력 스키마와 데이터 분류 검증, 감사 기록, 민감 정보 제거를 거쳐 반환됩니다. 결과에는 토큰과 lease가 포함되지 않습니다.
+5. 결과는 출력 스키마와 데이터 분류 검증, Guardrail 검사(간접 인젝션·민감정보), 감사 기록을 거쳐 반환됩니다. 결과에는 토큰과 lease가 포함되지 않습니다.
 
 <div class="compare" markdown="1">
 <div class="bad" markdown="1">
@@ -115,8 +115,9 @@ LLM이 자격증명에 접근하면 프롬프트 인젝션으로 유출될 수 �
 **{{icon:check}} 표준 구조**
 
 ```text
-Runtime → Tool Gateway → Credential Broker
-→ 단기 lease → adapter → ERP
+Runtime → Agent Gateway(도구 경로)
+→ Credential Broker → 단기 lease
+→ adapter → ERP
 ```
 
 LLM은 자격증명에 접근하지 않으므로 유출 경로가 없습니다.
@@ -127,14 +128,14 @@ LLM은 자격증명에 접근하지 않으므로 유출 경로가 없습니다.
 
 ![Tool 호출과 Credential 발급 순서](../../diagrams/tool-credential.svg)
 
-## 4단계. Model Gateway를 통한 모델 호출
+## 4단계. Agent Gateway 모델 경로를 통한 모델 호출
 
-Agent는 특정 공급사의 모델을 직접 호출하지 않고, Model Gateway에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다.
+Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway의 모델 경로(Model Gateway)에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다. 모델 입력과 출력은 Guardrail 검사를 거칩니다. 입력 검사 대상에는 사용자 메시지뿐 아니라 도구 결과와 검색 문서도 포함됩니다.
 
 <div class="lanes">
-<div class="lane"><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Model Gateway<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:lock}} <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Model Gateway<small>외부 경로 거부</small></span></div><i>&#8594;</i><div>{{icon:server}} 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:warn}} 허용 경로 없음</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Model Gateway<small>우회 없음</small></span></div><i>&#8594;</i><div>{{icon:cross}} 요청 실패</div></div>
+<div class="lane"><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
+<div class="lane"><div>{{icon:lock}} <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>외부 경로 거부</small></span></div><i>&#8594;</i><div>{{icon:server}} 자체 호스팅 모델</div></div>
+<div class="lane"><div>{{icon:warn}} 허용 경로 없음</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>우회 없음</small></span></div><i>&#8594;</i><div>{{icon:cross}} 요청 실패</div></div>
 </div>
 
 예시 데이터는 `confidential`이므로 자체 호스팅 모델로 라우팅됩니다. 응답에는 라우팅 결정을 기록한 `routeDecisionId`가 포함됩니다.
@@ -143,7 +144,7 @@ Agent는 특정 공급사의 모델을 직접 호출하지 않고, Model Gateway
 
 ## 5단계. 실행 추적과 응답
 
-요청의 `traceparent`는 Agent Gateway → Runtime → Tool Gateway → Model Gateway의 모든 구간에 전파됩니다. 이를 통해 요청 하나의 처리 경로를 종단 간으로 추적할 수 있습니다.
+요청의 `traceparent`는 Agent Platform APIs → Runtime → Agent Gateway(도구·모델 경로)의 모든 구간에 전파됩니다. 각 구간은 OpenTelemetry GenAI 규격의 span(`invoke_agent`, 모델 추론 span 등)으로 기록되어, 요청 하나의 처리 경로를 종단 간으로 추적할 수 있습니다.
 
 <div class="compare" markdown="1">
 <div class="good" markdown="1">
@@ -181,8 +182,8 @@ Agent는 특정 공급사의 모델을 직접 호출하지 않고, Model Gateway
 접근할 수 없습니다. 테넌트는 검증된 토큰에서 도출하며, 요청 본문의 값은 비교에만 사용합니다. 두 값이 다르면 요청을 거부합니다.
 </details>
 
-<details markdown="1"><summary>Q2. Runtime이 Tool Gateway에 전달하는 정보는 무엇입니까?</summary>
-도구 ID, 버전, 인자입니다. URL과 토큰은 전달하지 않으며, endpoint와 자격증명은 Tool Gateway와 Credential Broker가 결정합니다.
+<details markdown="1"><summary>Q2. Runtime이 Agent Gateway 도구 경로에 전달하는 정보는 무엇입니까?</summary>
+도구 ID, 버전, 인자입니다. URL과 토큰은 전달하지 않으며, endpoint는 Agent Tools의 Registry, 자격증명은 Credential Broker가 결정합니다.
 </details>
 
 <details markdown="1"><summary>Q3. confidential 데이터 요청 시 자체 호스팅 모델을 사용할 수 없으면 어떻게 처리됩니까?</summary>
@@ -193,9 +194,17 @@ Agent는 특정 공급사의 모델을 직접 호출하지 않고, Model Gateway
 <div class="summary" markdown="1">
 **요약**
 
-- 진입 → 실행 → 도구 호출 → 모델 호출 → 기록의 각 단계에서 담당 구성요소가 하나의 책임을 수행합니다.
+- 진입(Agent Platform APIs) → 실행(Agent Runtime) → 도구·모델 호출(Agent Gateway) → 기록(Agent Observability)의 각 단계에서 담당 Core System이 하나의 책임을 수행합니다.
 - Identity는 토큰에서만 도출하며, 자격증명은 Runtime과 LLM에 노출하지 않습니다.
 - 데이터 분류가 모델 경로를 결정하며, 허용 경로가 없으면 요청이 실패합니다.
 </div>
 
-<nav class="pager"><a href="02-big-picture.md"><small>이전</small><b>플랫폼 아키텍처와 주요 구성요소</b></a><a class="next" href="04-trust.md"><small>다음</small><b>신뢰 경계와 보안 통제</b></a></nav>
+<div class="refs" markdown="1">
+**{{icon:book}} 근거와 참고 자료**
+
+- 실행 추적 규격: [OpenTelemetry GenAI](10-references.md#ref-otel)
+- 모델 입출력 검사 위치: [Guardrails](10-references.md#ref-guardrails)
+- 오류 형식과 토큰 교환: [IETF·OAuth](10-references.md#ref-identity)
+</div>
+
+<nav class="pager"><a href="02-big-picture.md"><small>이전</small><b>Core Systems 아키텍처</b></a><a class="next" href="05-agents-and-manifest.md"><small>다음</small><b>Agent Factory와 Manifest 명세</b></a></nav>

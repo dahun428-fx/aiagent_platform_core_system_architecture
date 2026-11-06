@@ -45,8 +45,8 @@
 
 <ol class="flow">
 <li>{{icon:manifest}}<b>Manifest 제출</b><span>Agent의 메타데이터, 런타임 설정, 권한 요구사항을 선언</span></li>
-<li>{{icon:model}}<b>Model Gateway 경유</b><span>모델 호출은 Model Gateway를 통해 수행</span></li>
-<li>{{icon:tools}}<b>Tool Gateway 경유</b><span>도구 호출은 Tool Gateway를 통해 수행</span></li>
+<li>{{icon:gateway}}<b>Agent Platform APIs 진입</b><span>Agent 호출은 Agent Platform APIs로 수행</span></li>
+<li>{{icon:model}}<b>Agent Gateway 경유</b><span>외부 모델·도구 호출은 Agent Gateway를 통해 수행</span></li>
 <li>{{icon:trace}}<b>추적 컨텍스트 전파</b><span>trace 정보를 모든 구간에 전달</span></li>
 </ol>
 
@@ -97,8 +97,9 @@
 **요약**
 
 - 팀별로 구현하던 인증·인가, 데이터 반출 통제, 시크릿 관리, 실행 추적, 품질 검증을 공통 지점에서 수행합니다.
-- 개발 방식은 유지하고, Manifest 제출·Gateway 경유·추적 컨텍스트 전파라는 기술 계약을 준수합니다.
+- 개발 방식은 유지하고, Manifest 제출·Agent Platform APIs 진입·Agent Gateway 경유·추적 컨텍스트 전파라는 기술 계약을 준수합니다.
+- 이 책임은 10개 Core System이 나눠 맡습니다. 구성은 다음 장에서 설명합니다.
 - 결정되지 않은 제품과 수치는 TBD로 유지하며 임의로 정하지 않습니다.
 </div>
 
-<nav class="pager"><a class="next" href="02-big-picture.md"><small>다음</small><b>플랫폼 아키텍처와 주요 구성요소</b></a></nav>
+<nav class="pager"><a class="next" href="02-big-picture.md"><small>다음</small><b>Core Systems 아키텍처</b></a></nav>
