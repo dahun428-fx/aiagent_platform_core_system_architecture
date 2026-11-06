@@ -1,100 +1,100 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
-<title>왜 이 플랫폼이 필요한가 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<title>플랫폼 도입 배경과 설계 원칙 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html" aria-current="page">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html" aria-current="page">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">플랫폼 아키텍처와 주요 구성요소</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 보안 통제</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent 유형과 Manifest 명세</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기와 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="왜-이-플랫폼이-필요한가">왜 이 플랫폼이 필요한가</h1>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="플랫폼-도입-배경과-설계-원칙">플랫폼 도입 배경과 설계 원칙</h1>
 <blockquote>
-<p>온보딩 안내서입니다. 규범(MUST/SHOULD)은 링크된 정의 문서가 기준이며, 안내서와 다르면 정의 문서가 맞습니다.</p>
+<p>개발자 가이드 문서입니다. 규범(MUST/SHOULD)은 링크된 기술 표준 문서가 기준이며, 이 가이드와 다를 경우 기술 표준 문서를 따릅니다.</p>
 </blockquote>
 <div class="terms">
-<p><span class="label">핵심 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent">AI Agent</a> <a href="docs--onboarding--09-glossary.html#term-boundary">공통 경계</a> <a href="docs--onboarding--09-glossary.html#term-contract">계약</a> <a href="docs--onboarding--09-glossary.html#term-tbd">TBD</a></p>
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent">AI Agent</a> <a href="docs--onboarding--09-glossary.html#term-boundary">신뢰 경계</a> <a href="docs--onboarding--09-glossary.html#term-contract">기술 계약</a> <a href="docs--onboarding--09-glossary.html#term-tbd">TBD</a></p>
 </div>
 <div class="goals">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 이 페이지에서 배울 것</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
 <ul>
-<li>팀마다 Agent를 따로 만들 때 생기는 문제 다섯 가지</li>
-<li>이 플랫폼이 그 문제를 푸는 방식을 한 문장으로 말하기</li>
-<li>이 플랫폼이 하는 일과 하지 않는 일 구분하기</li>
+<li>팀별 Agent 개발에서 반복되는 보안·운영 과제를 설명할 수 있습니다.</li>
+<li>팀별 개발 환경과 전사 공통 통제의 책임 구분을 설명할 수 있습니다.</li>
+<li>플랫폼의 제공 범위와 제공하지 않는 범위를 구분할 수 있습니다.</li>
 </ul>
 </div>
-<h2 id="들어가며">들어가며</h2>
+<h2 id="배경">배경</h2>
 <div class="opener">
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 질문</span> Agent를 잘 만드는 팀이 이미 있는데, 왜 회사 공통 플랫폼이 필요할까요?</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 관찰</span> Agent가 늘어날수록 팀마다 같은 고민을 다시 풉니다. 누가 불렀는지, 데이터가 밖으로 나가는지, 비밀값은 어디 두는지, 무슨 일이 있었는지. 답이 팀마다 다르면 회사 전체의 보안 수준은 가장 약한 팀에 맞춰집니다.</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 해결책</span> 이 고민들을 <strong>공통 경계에서 한 번에</strong> 풉니다. 개발은 각 팀이 하던 대로 하고, 통제만 플랫폼이 맡습니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 문제 정의</span> Agent를 개발하는 팀이 늘어나면, 각 팀이 인증·데이터 반출·시크릿 관리·실행 추적을 개별적으로 구현하게 됩니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 현황</span> 팀마다 구현 방식과 보안 수준이 다르면 전사 보안 수준은 가장 약한 구현에 맞춰지고, 동일한 기능이 중복으로 개발됩니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 설계 방향</span> 이러한 통제를 <strong>공통 제어·연계 지점</strong>에서 일괄 적용합니다. Agent 개발은 각 팀의 방식대로 진행하고, 통제는 플랫폼이 담당합니다.</p>
 </div>
-<h2 id="팀마다-따로-만들면-생기는-다섯-가지-문제">팀마다 따로 만들면 생기는 다섯 가지 문제</h2>
+<h2 id="팀별-개발-시-반복되는-과제">팀별 개발 시 반복되는 과제</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>누가 불렀나</b><p>호출한 사람과 권한을 팀마다 다르게 확인합니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg><b>데이터가 나가나</b><p>기밀 문서가 외부 모델로 전송되지 않는다는 보장이 없습니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16.5 6.5l2.5 2.5M14 9l2 2"/></svg><b>비밀값은 어디에</b><p>ERP·메일·저장소 토큰이 코드나 설정 파일에 남습니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>무슨 일이 있었나</b><p>요청이 어디를 거쳐 무엇을 했는지 끝까지 추적하기 어렵습니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>써도 되나</b><p>실제 업무에 쓸 만큼 품질이 검증됐는지 판단 기준이 없습니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg><b>결과</b><p>비용은 겹치고, 한 팀의 실수가 회사 전체의 위험이 됩니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>인증·인가</b><p>호출 주체 확인과 접근 권한 판단이 팀마다 다르게 구현됩니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg><b>데이터 반출 통제</b><p>기밀 데이터가 외부 모델로 전송되지 않는다는 보장이 없습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16.5 6.5l2.5 2.5M14 9l2 2"/></svg><b>시크릿·자격증명 관리</b><p>ERP·메일·저장소 접근 토큰이 코드나 설정 파일에 남습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>실행 추적</b><p>요청이 거친 구성요소와 수행한 작업을 종단 간으로 추적하기 어렵습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>품질 검증</b><p>업무 적용 여부를 판단할 공통 평가 기준이 없습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg><b>영향</b><p>개발 비용이 중복되고, 단일 팀의 보안 결함이 전사 위험으로 확대됩니다.</p></div>
 </div>
 
-<h2 id="이-플랫폼이-하는-방식">이 플랫폼이 하는 방식</h2>
+<h2 id="핵심-설계-원칙">핵심 설계 원칙</h2>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 핵심 포인트</strong> 개발자는 지금 쓰는 도구와 프레임워크를 그대로 쓰고, 신원·정책·관측·평가·배포 통제는 플랫폼의 공통 경계에서 적용합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 핵심 설계 원칙</strong> Agent 개발에는 팀별 도구와 프레임워크를 사용하며, 플랫폼은 공통 제어·연계 지점에서 인증·인가, 정책 적용, 관측성(Observability), 평가 및 배포 통제를 수행합니다.</p>
 </div>
-<p>소스 코드는 지금처럼 각 팀의 Git 저장소에 있고, 개발도 각자의 IDE와 CLI에서 합니다. 플랫폼이 요구하는 것은 네 가지 <strong>약속(계약)</strong>입니다.</p>
+<p>소스 코드는 각 팀의 Git 저장소에서 관리하고, 개발은 각자의 IDE와 CLI에서 수행합니다. 플랫폼이 요구하는 것은 다음 네 가지 <strong>기술 계약</strong> 준수입니다.</p>
 <ol class="flow">
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>신분증을 낸다</b><span>Agent가 무엇이고 무엇이 필요한지 Manifest에 적는다</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><b>모델은 관문으로</b><span>모델은 Model Gateway를 통해 부른다</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>도구도 관문으로</b><span>사내 도구는 Tool Gateway를 통해 부른다</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>추적을 잇는다</b><span>trace 정보를 끊지 않고 전달한다</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Manifest 제출</b><span>Agent의 메타데이터, 런타임 설정, 권한 요구사항을 선언</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><b>Model Gateway 경유</b><span>모델 호출은 Model Gateway를 통해 수행</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>Tool Gateway 경유</b><span>도구 호출은 Tool Gateway를 통해 수행</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>추적 컨텍스트 전파</b><span>trace 정보를 모든 구간에 전달</span></li>
 </ol>
 
-<h2 id="하는-일과-하지-않는-일">하는 일과 하지 않는 일</h2>
+<h2 id="제공-범위">제공 범위</h2>
 <div class="compare">
 <div class="bad">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 이 플랫폼이 아닌 것</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 플랫폼이 제공하지 않는 것</strong></p>
 <ul>
-<li>모든 Agent를 중앙 서버 한 곳에서 실행하는 시스템</li>
-<li>특정 프레임워크(LangGraph 등)를 강제하는 SDK</li>
-<li>특정 IdP·CI·벡터 DB 제품을 정해 둔 패키지</li>
-<li>소스 코드를 중앙에 올려야 쓰는 Agent Studio</li>
+<li>모든 Agent를 단일 중앙 서버에서 실행하는 구조</li>
+<li>특정 프레임워크(LangGraph 등)의 강제</li>
+<li>특정 IdP·CI·벡터 DB 제품의 지정</li>
+<li>소스 코드 업로드가 필요한 Agent Studio</li>
 </ul>
 </div>
 <div class="good">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 이 플랫폼인 것</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 플랫폼이 제공하는 것</strong></p>
 <ul>
-<li>개발자 PC·사내 서버·클라우드 어디서든 같은 계약으로 실행</li>
-<li>공통 Runtime 계약과 adapter로 프레임워크는 팀이 선택</li>
-<li>회사가 정할 제품과 수치는 <strong>TBD</strong>로 분리</li>
-<li>중앙에는 불변 버전 참조와 검증 증거만 등록</li>
+<li>개발자 PC·사내 서버·클라우드에서 동일한 계약에 따른 실행</li>
+<li>공통 Runtime 계약과 framework adapter 기반의 프레임워크 선택</li>
+<li>회사 결정이 필요한 제품·수치의 <strong>TBD</strong> 분리</li>
+<li>불변 버전 참조와 검증 근거의 중앙 등록</li>
 </ul>
 </div>
 </div>
-<h2 id="이-패키지에-들어-있는-것">이 패키지에 들어 있는 것</h2>
+<h2 id="패키지-구성">패키지 구성</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg><b>정의 문서</b><p>구조, 신뢰 경계, 운영 규칙을 정의한 한국어 문서</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>계약 파일</b><p>OpenAPI와 JSON Schema로 된 기계가 읽는 계약</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>실행 예제</b><p>4종 Agent Manifest, Python mock, TypeScript 클라이언트, 테스트</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg><b>기술 표준 문서</b><p>아키텍처, 신뢰 경계, 운영 규칙을 정의한 한국어 문서</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>API 계약과 JSON Schema</b><p>OpenAPI와 JSON Schema로 작성된 기계 판독 가능한 계약</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>예제 구현</b><p>4종 Agent Manifest, Python mock, TypeScript 클라이언트, 테스트</p></div>
 </div>
 
-<p>실제 회사 IdP나 운영 환경에 연결된 production 시스템은 아닙니다. 구현을 시작하기 위한 기술 표준입니다.</p>
+<p>이 패키지는 구현 착수를 위한 기술 표준이며, 회사 IdP나 운영 환경에 연결된 프로덕션 시스템이 아닙니다.</p>
 <div class="check">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 스스로 점검</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
 <details>
-<summary>Q1. 이 플랫폼을 쓰려면 개발 프레임워크를 바꿔야 하나요?</summary>
-<p>아닙니다. 공통 Runtime 계약과 framework adapter로 연결하므로 프레임워크는 팀이 고릅니다.</p>
+<summary>Q1. 플랫폼을 사용하려면 개발 프레임워크를 변경해야 합니까?</summary>
+<p>아닙니다. 공통 Runtime 계약과 framework adapter로 연결하므로 프레임워크는 각 팀이 선택합니다.</p>
 </details>
 <details>
-<summary>Q2. 플랫폼의 중앙에서 하는 일은 실행인가요, 통제인가요?</summary>
-<p>통제입니다. 실행은 여러 환경에 분산되고, 신원·정책·관측·평가·배포 통제를 공통 경계에서 적용합니다.</p>
+<summary>Q2. Shared Control Plane이 담당하는 것은 실행입니까, 통제입니까?</summary>
+<p>통제입니다. 실행은 여러 환경에 분산되며, 인증·인가, 정책, 관측성, 평가, 배포 통제를 공통 지점에서 적용합니다.</p>
 </details>
 </div>
 <div class="summary">
-<p><strong>정리</strong></p>
+<p><strong>요약</strong></p>
 <ul>
-<li>팀마다 따로 풀던 신원·데이터·비밀값·추적·품질 문제를 공통 경계에서 해결합니다.</li>
-<li>개발 방식은 그대로 두고, Manifest·Model Gateway·Tool Gateway·trace라는 약속만 지킵니다.</li>
-<li>정해지지 않은 제품과 수치는 TBD로 남겨 두고 임의로 정하지 않습니다.</li>
+<li>팀별로 구현하던 인증·인가, 데이터 반출 통제, 시크릿 관리, 실행 추적, 품질 검증을 공통 지점에서 수행합니다.</li>
+<li>개발 방식은 유지하고, Manifest 제출·Gateway 경유·추적 컨텍스트 전파라는 기술 계약을 준수합니다.</li>
+<li>결정되지 않은 제품과 수치는 TBD로 유지하며 임의로 정하지 않습니다.</li>
 </ul>
 </div>
-<nav class="pager"><a class="next" href="docs--onboarding--02-big-picture.html"><small>다음</small><b>한 장으로 보는 전체 구조</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/01-why.md">docs/onboarding/01-why.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#들어가며">들어가며</a><a href="#팀마다-따로-만들면-생기는-다섯-가지-문제">팀마다 따로 만들면 생기는 다섯 가지 문제</a><a href="#이-플랫폼이-하는-방식">이 플랫폼이 하는 방식</a><a href="#하는-일과-하지-않는-일">하는 일과 하지 않는 일</a><a href="#이-패키지에-들어-있는-것">이 패키지에 들어 있는 것</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a class="next" href="docs--onboarding--02-big-picture.html"><small>다음</small><b>플랫폼 아키텍처와 주요 구성요소</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/01-why.md">docs/onboarding/01-why.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#팀별-개발-시-반복되는-과제">팀별 개발 시 반복되는 과제</a><a href="#핵심-설계-원칙">핵심 설계 원칙</a><a href="#제공-범위">제공 범위</a><a href="#패키지-구성">패키지 구성</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

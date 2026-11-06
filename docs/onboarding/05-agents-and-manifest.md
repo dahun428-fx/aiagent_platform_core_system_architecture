@@ -1,60 +1,60 @@
-# 네 종류 Agent와 Manifest
+# Agent 유형과 Manifest 명세
 
-> 온보딩 안내서입니다. 규범은 [Agent Manifest 스키마](../../contracts/agent-manifest.schema.json)가 기준입니다.
+> 개발자 가이드 문서입니다. 규범은 [Agent Manifest JSON Schema](../../contracts/agent-manifest.schema.json)가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">핵심 용어</span> [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Adapter](09-glossary.md#term-adapter)
+<span class="label">주요 용어</span> [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Framework adapter](09-glossary.md#term-adapter)
 </div>
 
 <div class="goals" markdown="1">
-**{{icon:target}} 이 페이지에서 배울 것**
+**{{icon:target}} 학습 목표**
 
-- 플랫폼이 처음부터 지원하는 네 종류 Agent
-- Manifest의 블록별 의미
-- 검증에 실패하는 Manifest의 대표 사례 여덟 가지
+- 플랫폼이 지원하는 Agent 유형 4가지를 구분할 수 있습니다.
+- Manifest의 블록별 의미와 검증 규칙을 설명할 수 있습니다.
+- 검증에 실패하는 Manifest의 대표 사례를 식별할 수 있습니다.
 </div>
 
-## 들어가며
+## 배경
 
 <div class="opener" markdown="1">
-<span class="tag">{{icon:question}} 질문</span> 플랫폼은 Agent 코드를 열어 보지 않는데, 어떻게 Agent를 통제할까요?
+<span class="tag">{{icon:question}} 문제 정의</span> 플랫폼은 Agent 소스 코드를 해석하지 않으므로, 통제와 호출에 필요한 정보를 다른 방식으로 확보해야 합니다.
 
-<span class="tag">{{icon:eye}} 관찰</span> 프레임워크도 언어도 팀마다 다릅니다. 코드를 직접 해석하는 방식으로는 전사 공통 통제를 할 수 없습니다.
+<span class="tag">{{icon:eye}} 현황</span> 팀마다 프레임워크와 언어가 다르므로, 코드 분석 방식으로는 전사 공통 통제를 적용할 수 없습니다.
 
-<span class="tag">{{icon:bulb}} 해결책</span> Agent마다 **Manifest라는 신분증**을 냅니다. 플랫폼이 통제하고 호출하는 데 필요한 것만 적고, 플랫폼은 그것만 봅니다.
+<span class="tag">{{icon:bulb}} 설계 방향</span> 각 Agent는 **Agent 선언 명세(Manifest)**를 제출합니다. Manifest는 플랫폼이 Agent를 통제·호출하는 데 필요한 메타데이터, 실행 설정, 권한 요구사항을 선언하며, 플랫폼은 이 선언을 기준으로 동작합니다.
 </div>
 
-## 네 종류 Agent
+## Agent 유형
 
 <div class="cards">
-<div class="card">{{icon:knowledge}}<b>rag</b><p>사내 문서를 검색해 근거를 붙여 답합니다.</p><span class="sub">Knowledge Backend · Model Gateway</span></div>
-<div class="card">{{icon:tools}}<b>tool</b><p>사내·외부 시스템의 API를 불러 일을 처리합니다.</p><span class="sub">Tool Gateway · Credential Broker</span></div>
-<div class="card">{{icon:workflow}}<b>workflow</b><p>여러 단계를 순서대로, 때로는 오래 걸려 처리합니다. 중간에 사람 승인이 들어갈 수 있습니다.</p><span class="sub">Durable 실행 · HITL</span></div>
-<div class="card">{{icon:agents}}<b>multi-agent</b><p>다른 Agent에게 일을 나눠 맡깁니다.</p><span class="sub">공통 Agent 통신 계약</span></div>
+<div class="card">{{icon:knowledge}}<b>rag</b><p>사내 문서를 검색하고 근거를 포함해 응답합니다.</p><span class="sub">Knowledge Backend · Model Gateway</span></div>
+<div class="card">{{icon:tools}}<b>tool</b><p>사내·외부 시스템 API를 호출해 작업을 수행합니다.</p><span class="sub">Tool Gateway · Credential Broker</span></div>
+<div class="card">{{icon:workflow}}<b>workflow</b><p>여러 단계를 순차적으로 처리하며, 장시간 실행과 사람의 승인을 포함할 수 있습니다.</p><span class="sub">Durable 실행 · HITL</span></div>
+<div class="card">{{icon:agents}}<b>multi-agent</b><p>하위 Agent에 작업을 위임합니다.</p><span class="sub">공통 Agent 통신 계약</span></div>
 </div>
 
-네 종류 모두 **계약 수준**에서 처음부터 지원합니다. 예제 Manifest가 네 개 있다고 네 종류의 production 엔진이 완성된 것은 아닙니다. 예를 들어 durable 실행은 계약만 있고, 로컬 mock에서는 501을 돌려줍니다.
+4가지 유형은 모두 **계약 수준에서** 지원합니다. 예제 Manifest가 4종 제공된다는 것이 4종의 프로덕션 실행 엔진 구현을 의미하지는 않습니다. 예를 들어 durable 실행은 계약만 제공되며, 로컬 mock은 501을 반환합니다.
 
 <div class="point" markdown="1">
-**{{icon:knowledge}} RAG의 규칙** 공통 RAG 계약만 지키면 지식 저장소는 바꿔 낄 수 있습니다. 대신 검색할 때 **사용자 권한(ACL)과 데이터 분류로 먼저 걸러야** 합니다. 볼 권한이 없는 문서는 검색 결과에 아예 나오지 않아야 합니다.
+**{{icon:knowledge}} RAG 검색 규칙** 공통 RAG 계약을 준수하면 지식 저장소를 교체할 수 있습니다. 검색 시에는 **사용자 권한(ACL)과 데이터 분류로 먼저 필터링해야** 하며, 접근 권한이 없는 문서는 검색 결과에 포함되지 않아야 합니다.
 </div>
 
 <div class="point" markdown="1">
-**{{icon:agents}} Agent끼리 부를 때** 공통 통신 계약(`cross-agent.schema.json`)을 씁니다. 부모 호출 ID, 줄어든 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하고, A2A 같은 특정 프로토콜은 선택입니다.
+**{{icon:agents}} Agent 간 호출** 공통 Agent 통신 계약(`cross-agent.schema.json`)을 사용합니다. 상위 호출 ID, 축소된 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하며, A2A 등 특정 프로토콜은 선택 사항입니다.
 </div>
 
-## Manifest: Agent의 신분증
+## Manifest 명세
 
-Manifest는 "이 Agent를 통제하고 호출하는 데 플랫폼이 알아야 할 것"만 적은 JSON입니다. 프레임워크 내부 구현은 적지 않습니다.
+Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보만 선언하는 JSON 문서입니다. 프레임워크 내부 구현은 포함하지 않습니다. Manifest는 인증 수단이 아니며, 실행 주체의 Identity나 자격증명과 구분됩니다.
 
 <ol class="flow">
-<li>{{icon:identity}}<b>누구인가</b><span>apiVersion · kind<br>metadata</span></li>
-<li>{{icon:code}}<b>어디 있나</b><span>source</span></li>
-<li>{{icon:runtime}}<b>어떻게 도나</b><span>runtime</span></li>
-<li>{{icon:tools}}<b>무엇을 쓰나</b><span>capabilities</span></li>
-<li>{{icon:user}}<b>누구 권한인가</b><span>identity</span></li>
-<li>{{icon:shield}}<b>얼마나 민감한가</b><span>governance</span></li>
-<li>{{icon:cloud}}<b>어디 배포하나</b><span>deployment · contracts</span></li>
+<li>{{icon:identity}}<b>메타데이터</b><span>apiVersion · kind<br>metadata</span></li>
+<li>{{icon:code}}<b>소스 참조</b><span>source</span></li>
+<li>{{icon:runtime}}<b>런타임 설정</b><span>runtime</span></li>
+<li>{{icon:tools}}<b>기능 및 의존 리소스</b><span>capabilities</span></li>
+<li>{{icon:user}}<b>실행 주체와 권한 모드</b><span>identity</span></li>
+<li>{{icon:shield}}<b>데이터 분류·위험도·정책</b><span>governance</span></li>
+<li>{{icon:cloud}}<b>배포 설정과 입출력 계약</b><span>deployment · contracts</span></li>
 </ol>
 
 이 패키지의 tool Agent 예제(`examples/manifests/tool.json`)입니다.
@@ -101,75 +101,75 @@ Manifest는 "이 Agent를 통제하고 호출하는 데 플랫폼이 알아야 �
 }
 ```
 
-| 블록 | 뜻 | 알아 둘 점 |
+| 블록 | 의미 | 검증 규칙 및 주의 사항 |
 |---|---|---|
-| `apiVersion`, `kind` | 어떤 계약 버전의 무엇인가 | 현재는 `agent.platform/v1alpha1`. alpha라서 운영 안정성 보증이 아닙니다 |
+| `apiVersion`, `kind` | 계약 버전과 리소스 유형 | 현재 `agent.platform/v1alpha1`입니다. alpha 버전이므로 운영 안정성을 보증하지 않습니다 |
 | `metadata` | ID, 이름, 버전, 소유 팀 | 소유 팀이 없으면 검증에 실패합니다 |
-| `source` | 소스가 어디 있는가 | 소스를 올리지 않고 **위치와 불변 revision, artifact digest**만 적습니다 |
-| `runtime` | 어떻게 실행하는가 | `executionMode`는 `sync`, `async`, `durable` 중 하나 |
-| `capabilities` | 무엇을 쓰는가 | `type`은 네 종류 중 하나. 도구·지식·하위 Agent를 **논리 ID**로 적습니다 |
-| `identity` | 누구의 권한으로 일하는가 | `delegated`(사용자 대신) 또는 `independent`(Agent 자신의 권한) |
-| `governance` | 얼마나 민감하고 위험한가 | 분류 `public`·`internal`·`confidential`·`restricted`, 위험 `low`·`medium`·`high` |
-| `deployment` | 어디에 배포하는가 | `local`, `shared-experiment`, `production` |
-| `contracts` | 입출력 형식 | 입력·출력 스키마 URI |
+| `source` | 소스 참조 | 소스를 업로드하지 않고 **저장소 위치, 불변 revision, artifact digest**를 선언합니다 |
+| `runtime` | 런타임 설정 | `executionMode`는 `sync`, `async`, `durable` 중 하나입니다 |
+| `capabilities` | 기능 및 의존 리소스 | `type`은 4가지 유형 중 하나이며, 도구·지식·하위 Agent를 **논리 ID**로 선언합니다 |
+| `identity` | 실행 주체와 권한 모드 | `delegated`(사용자 위임) 또는 `independent`(Agent 자체 권한)이며, 필요 scope를 선언합니다 |
+| `governance` | 데이터 분류·위험도·정책 | 분류 `public`·`internal`·`confidential`·`restricted`, 위험도 `low`·`medium`·`high`, 정책·평가 프로파일 |
+| `deployment` | 배포 설정 | 프로파일 `local`, `shared-experiment`, `production` |
+| `contracts` | 입출력 계약 | 입력·출력 JSON Schema URI |
 
 <div class="compare" markdown="1">
 <div class="bad" markdown="1">
-**{{icon:cross}} 거부되는 source**
+**{{icon:cross}} 검증 실패: 가변 참조**
 
 ```json
 "revision": "main"
 ```
 
-브랜치 이름은 내일 다른 코드를 가리킬 수 있습니다.
+브랜치 이름은 시점에 따라 다른 커밋을 가리킵니다.
 </div>
 <div class="good" markdown="1">
-**{{icon:check}} 통과하는 source**
+**{{icon:check}} 검증 통과: 불변 참조**
 
 ```json
 "revision": "aaaaaaaa…(40자 커밋 해시)",
 "artifactDigest": "sha256:…"
 ```
 
-언제 봐도 같은 코드를 가리킵니다.
+항상 동일한 코드와 산출물을 가리킵니다.
 </div>
 </div>
 
-## 검증에 실패하는 Manifest
+## 검증 실패 사례
 
-`examples/negative/`에는 일부러 틀리게 만든 Manifest가 있습니다. 무엇이 왜 거부되는지 보면 규칙이 빨리 익혀집니다.
+`examples/negative/`에는 검증 실패를 확인하기 위한 Manifest가 포함되어 있습니다.
 
-| 파일 | 거부되는 이유 |
+| 파일 | 실패 원인 |
 |---|---|
-| {{icon:user}} `missing-owner.json` | 소유 팀이 없다 |
-| {{icon:manifest}} `invalid-version.json` | 버전 형식이 틀렸다 |
-| {{icon:code}} `mutable-revision.json` | 소스 revision이 `main`처럼 바뀔 수 있는 값이다 |
-| {{icon:key}} `unexpected-secret.json` | 허용되지 않은 필드에 비밀값을 넣었다 |
-| {{icon:runtime}} `unsupported-mode.json` | 지원하지 않는 실행 모드다 |
-| {{icon:shield}} `invalid-classification.json` | 정의되지 않은 데이터 분류다 |
-| {{icon:map}} `malformed-uri.json` | URI 형식이 틀렸다 |
-| {{icon:tools}} `empty-tools.json` | 도구 Agent인데 도구 목록이 비어 있다 |
+| {{icon:user}} `missing-owner.json` | 소유 팀 누락 |
+| {{icon:manifest}} `invalid-version.json` | 버전 형식 오류 |
+| {{icon:code}} `mutable-revision.json` | `main` 등 가변 revision 사용 |
+| {{icon:key}} `unexpected-secret.json` | 정의되지 않은 필드에 시크릿 포함 |
+| {{icon:runtime}} `unsupported-mode.json` | 지원하지 않는 실행 모드 |
+| {{icon:shield}} `invalid-classification.json` | 정의되지 않은 데이터 분류 |
+| {{icon:map}} `malformed-uri.json` | URI 형식 오류 |
+| {{icon:tools}} `empty-tools.json` | tool 유형 Agent의 도구 목록 누락 |
 
-직접 검증해 보는 방법은 [30분 실습](07-hands-on.md)에 있습니다.
+검증 실행 방법은 [로컬 환경 구성 및 호출 실습](07-hands-on.md)을 참고하십시오.
 
 <div class="check" markdown="1">
-**{{icon:question}} 스스로 점검**
+**{{icon:question}} 이해도 점검**
 
-<details markdown="1"><summary>Q1. Manifest에 API 키를 넣어 두면 편하지 않을까요?</summary>
-넣을 수 없습니다. 스키마가 정의되지 않은 필드를 허용하지 않아서 검증에 실패합니다. 자격증명은 Credential Broker가 호출마다 발급합니다.
+<details markdown="1"><summary>Q1. Manifest에 API 키를 포함할 수 있습니까?</summary>
+포함할 수 없습니다. 스키마가 정의되지 않은 필드를 허용하지 않으므로 검증에 실패합니다. 접근 자격증명은 Credential Broker가 호출 시점에 발급합니다.
 </details>
 
-<details markdown="1"><summary>Q2. 사용자를 대신해 일하는 Agent의 identity.mode는 무엇인가요?</summary>
-<code>delegated</code>입니다. Agent 자신의 권한으로만 일하면 <code>independent</code>입니다.
+<details markdown="1"><summary>Q2. 사용자를 대신해 동작하는 Agent의 identity.mode 값은 무엇입니까?</summary>
+<code>delegated</code>입니다. Agent 자체 권한으로만 동작하면 <code>independent</code>입니다.
 </details>
 </div>
 
 <div class="summary" markdown="1">
-**정리**
+**요약**
 
-- 플랫폼은 rag, tool, workflow, multi-agent 네 종류를 공통 계약으로 지원합니다.
-- Manifest는 누구인가·어디 있나·어떻게 도나·무엇을 쓰나·누구 권한인가·얼마나 민감한가·어디 배포하나를 적은 신분증입니다.
-- 소스는 불변 revision과 digest로 가리키고, 비밀값은 Manifest에 들어갈 수 없습니다.
+- 플랫폼은 rag, tool, workflow, multi-agent 4가지 유형을 공통 계약 수준에서 지원합니다.
+- Manifest는 메타데이터, 소스 참조, 런타임 설정, 기능·의존 리소스, 권한 모드, 데이터 분류·정책, 배포 설정을 선언하는 Agent 선언 명세입니다.
+- 소스는 불변 revision과 digest로 참조하며, 시크릿은 Manifest에 포함할 수 없습니다.
 </div>
 
-<nav class="pager"><a href="04-trust.md"><small>이전</small><b>신뢰 경계</b></a><a class="next" href="06-lifecycle.md"><small>다음</small><b>내 Agent가 production까지 가는 길</b></a></nav>
+<nav class="pager"><a href="04-trust.md"><small>이전</small><b>신뢰 경계와 보안 통제</b></a><a class="next" href="06-lifecycle.md"><small>다음</small><b>Agent 수명주기와 프로덕션 승인</b></a></nav>

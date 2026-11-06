@@ -331,7 +331,7 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
 .term-group { display: grid; gap: 10px; margin: 16px 0 8px; }
 .term { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 4px 14px; padding: 16px 20px; background: var(--surface); border-radius: var(--radius); scroll-margin-top: calc(var(--header) + 16px); }
 .term:target { background: var(--accent-wash); }
-.term > .icon { grid-row: 1 / span 3; width: 30px; height: 30px; color: var(--accent); }
+.term > .icon { grid-row: 1 / span 4; width: 30px; height: 30px; color: var(--accent); }
 .term > b { font-size: 17px; }
 .term > b small { margin-left: 8px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
 .content .term > p { margin: 0; max-width: none; }

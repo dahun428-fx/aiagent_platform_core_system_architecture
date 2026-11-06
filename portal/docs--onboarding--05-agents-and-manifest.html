@@ -1,57 +1,57 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
-<title>네 종류 Agent와 Manifest · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<title>Agent 유형과 Manifest 명세 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="app.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>온보딩</h2><a href="index.html">시작하기</a><a href="docs--onboarding--01-why.html">왜 이 플랫폼이 필요한가</a><a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a><a href="docs--onboarding--04-trust.html">신뢰 경계: 무엇을 믿지 않는가</a><a href="docs--onboarding--05-agents-and-manifest.html" aria-current="page">네 종류 Agent와 Manifest</a><a href="docs--onboarding--06-lifecycle.html">내 Agent가 production까지 가는 길</a><a href="docs--onboarding--07-hands-on.html">30분 실습</a><a href="docs--onboarding--08-reading-the-spec.html">규격 읽는 법과 자주 묻는 질문</a><a href="docs--onboarding--09-glossary.html">핵심 용어 사전</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">플랫폼 아키텍처와 주요 구성요소</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 보안 통제</a><a href="docs--onboarding--05-agents-and-manifest.html" aria-current="page">Agent 유형과 Manifest 명세</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기와 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="네-종류-agent와-manifest">네 종류 Agent와 Manifest</h1>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-유형과-manifest-명세">Agent 유형과 Manifest 명세</h1>
 <blockquote>
-<p>온보딩 안내서입니다. 규범은 <a href="contracts--agent-manifest.schema.html">Agent Manifest 스키마</a>가 기준입니다.</p>
+<p>개발자 가이드 문서입니다. 규범은 <a href="contracts--agent-manifest.schema.html">Agent Manifest JSON Schema</a>가 기준입니다.</p>
 </blockquote>
 <div class="terms">
-<p><span class="label">핵심 용어</span> <a href="docs--onboarding--09-glossary.html#term-manifest">Manifest</a> <a href="docs--onboarding--09-glossary.html#term-rag">RAG</a> <a href="docs--onboarding--09-glossary.html#term-immutable">불변 버전</a> <a href="docs--onboarding--09-glossary.html#term-delegated">Delegated / Independent</a> <a href="docs--onboarding--09-glossary.html#term-classification">데이터 분류</a> <a href="docs--onboarding--09-glossary.html#term-adapter">Adapter</a></p>
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-manifest">Manifest</a> <a href="docs--onboarding--09-glossary.html#term-rag">RAG</a> <a href="docs--onboarding--09-glossary.html#term-immutable">불변 버전</a> <a href="docs--onboarding--09-glossary.html#term-delegated">Delegated / Independent</a> <a href="docs--onboarding--09-glossary.html#term-classification">데이터 분류</a> <a href="docs--onboarding--09-glossary.html#term-adapter">Framework adapter</a></p>
 </div>
 <div class="goals">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 이 페이지에서 배울 것</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
 <ul>
-<li>플랫폼이 처음부터 지원하는 네 종류 Agent</li>
-<li>Manifest의 블록별 의미</li>
-<li>검증에 실패하는 Manifest의 대표 사례 여덟 가지</li>
+<li>플랫폼이 지원하는 Agent 유형 4가지를 구분할 수 있습니다.</li>
+<li>Manifest의 블록별 의미와 검증 규칙을 설명할 수 있습니다.</li>
+<li>검증에 실패하는 Manifest의 대표 사례를 식별할 수 있습니다.</li>
 </ul>
 </div>
-<h2 id="들어가며">들어가며</h2>
+<h2 id="배경">배경</h2>
 <div class="opener">
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 질문</span> 플랫폼은 Agent 코드를 열어 보지 않는데, 어떻게 Agent를 통제할까요?</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 관찰</span> 프레임워크도 언어도 팀마다 다릅니다. 코드를 직접 해석하는 방식으로는 전사 공통 통제를 할 수 없습니다.</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 해결책</span> Agent마다 <strong>Manifest라는 신분증</strong>을 냅니다. 플랫폼이 통제하고 호출하는 데 필요한 것만 적고, 플랫폼은 그것만 봅니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 문제 정의</span> 플랫폼은 Agent 소스 코드를 해석하지 않으므로, 통제와 호출에 필요한 정보를 다른 방식으로 확보해야 합니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 현황</span> 팀마다 프레임워크와 언어가 다르므로, 코드 분석 방식으로는 전사 공통 통제를 적용할 수 없습니다.</p>
+<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 설계 방향</span> 각 Agent는 <strong>Agent 선언 명세(Manifest)</strong>를 제출합니다. Manifest는 플랫폼이 Agent를 통제·호출하는 데 필요한 메타데이터, 실행 설정, 권한 요구사항을 선언하며, 플랫폼은 이 선언을 기준으로 동작합니다.</p>
 </div>
-<h2 id="네-종류-agent">네 종류 Agent</h2>
+<h2 id="agent-유형">Agent 유형</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M9 7h6M9 11h4"/></svg><b>rag</b><p>사내 문서를 검색해 근거를 붙여 답합니다.</p><span class="sub">Knowledge Backend · Model Gateway</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>tool</b><p>사내·외부 시스템의 API를 불러 일을 처리합니다.</p><span class="sub">Tool Gateway · Credential Broker</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6"/></svg><b>workflow</b><p>여러 단계를 순서대로, 때로는 오래 걸려 처리합니다. 중간에 사람 승인이 들어갈 수 있습니다.</p><span class="sub">Durable 실행 · HITL</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg><b>multi-agent</b><p>다른 Agent에게 일을 나눠 맡깁니다.</p><span class="sub">공통 Agent 통신 계약</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M9 7h6M9 11h4"/></svg><b>rag</b><p>사내 문서를 검색하고 근거를 포함해 응답합니다.</p><span class="sub">Knowledge Backend · Model Gateway</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>tool</b><p>사내·외부 시스템 API를 호출해 작업을 수행합니다.</p><span class="sub">Tool Gateway · Credential Broker</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6"/></svg><b>workflow</b><p>여러 단계를 순차적으로 처리하며, 장시간 실행과 사람의 승인을 포함할 수 있습니다.</p><span class="sub">Durable 실행 · HITL</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg><b>multi-agent</b><p>하위 Agent에 작업을 위임합니다.</p><span class="sub">공통 Agent 통신 계약</span></div>
 </div>
 
-<p>네 종류 모두 <strong>계약 수준</strong>에서 처음부터 지원합니다. 예제 Manifest가 네 개 있다고 네 종류의 production 엔진이 완성된 것은 아닙니다. 예를 들어 durable 실행은 계약만 있고, 로컬 mock에서는 501을 돌려줍니다.</p>
+<p>4가지 유형은 모두 <strong>계약 수준에서</strong> 지원합니다. 예제 Manifest가 4종 제공된다는 것이 4종의 프로덕션 실행 엔진 구현을 의미하지는 않습니다. 예를 들어 durable 실행은 계약만 제공되며, 로컬 mock은 501을 반환합니다.</p>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M9 7h6M9 11h4"/></svg> RAG의 규칙</strong> 공통 RAG 계약만 지키면 지식 저장소는 바꿔 낄 수 있습니다. 대신 검색할 때 <strong>사용자 권한(ACL)과 데이터 분류로 먼저 걸러야</strong> 합니다. 볼 권한이 없는 문서는 검색 결과에 아예 나오지 않아야 합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M9 7h6M9 11h4"/></svg> RAG 검색 규칙</strong> 공통 RAG 계약을 준수하면 지식 저장소를 교체할 수 있습니다. 검색 시에는 <strong>사용자 권한(ACL)과 데이터 분류로 먼저 필터링해야</strong> 하며, 접근 권한이 없는 문서는 검색 결과에 포함되지 않아야 합니다.</p>
 </div>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg> Agent끼리 부를 때</strong> 공통 통신 계약(<code>cross-agent.schema.json</code>)을 씁니다. 부모 호출 ID, 줄어든 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하고, A2A 같은 특정 프로토콜은 선택입니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg> Agent 간 호출</strong> 공통 Agent 통신 계약(<code>cross-agent.schema.json</code>)을 사용합니다. 상위 호출 ID, 축소된 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하며, A2A 등 특정 프로토콜은 선택 사항입니다.</p>
 </div>
-<h2 id="manifest-agent의-신분증">Manifest: Agent의 신분증</h2>
-<p>Manifest는 "이 Agent를 통제하고 호출하는 데 플랫폼이 알아야 할 것"만 적은 JSON입니다. 프레임워크 내부 구현은 적지 않습니다.</p>
+<h2 id="manifest-명세">Manifest 명세</h2>
+<p>Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보만 선언하는 JSON 문서입니다. 프레임워크 내부 구현은 포함하지 않습니다. Manifest는 인증 수단이 아니며, 실행 주체의 Identity나 자격증명과 구분됩니다.</p>
 <ol class="flow">
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg><b>누구인가</b><span>apiVersion · kind<br>metadata</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>어디 있나</b><span>source</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>어떻게 도나</b><span>runtime</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>무엇을 쓰나</b><span>capabilities</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>누구 권한인가</b><span>identity</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>얼마나 민감한가</b><span>governance</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg><b>어디 배포하나</b><span>deployment · contracts</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg><b>메타데이터</b><span>apiVersion · kind<br>metadata</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>소스 참조</b><span>source</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>런타임 설정</b><span>runtime</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>기능 및 의존 리소스</b><span>capabilities</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>실행 주체와 권한 모드</b><span>identity</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>데이터 분류·위험도·정책</b><span>governance</span></li>
+<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg><b>배포 설정과 입출력 계약</b><span>deployment · contracts</span></li>
 </ol>
 
 <p>이 패키지의 tool Agent 예제(<code>examples/manifests/tool.json</code>)입니다.</p>
@@ -99,15 +99,15 @@
 <thead>
 <tr>
 <th>블록</th>
-<th>뜻</th>
-<th>알아 둘 점</th>
+<th>의미</th>
+<th>검증 규칙 및 주의 사항</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>apiVersion</code>, <code>kind</code></td>
-<td>어떤 계약 버전의 무엇인가</td>
-<td>현재는 <code>agent.platform/v1alpha1</code>. alpha라서 운영 안정성 보증이 아닙니다</td>
+<td>계약 버전과 리소스 유형</td>
+<td>현재 <code>agent.platform/v1alpha1</code>입니다. alpha 버전이므로 운영 안정성을 보증하지 않습니다</td>
 </tr>
 <tr>
 <td><code>metadata</code></td>
@@ -116,118 +116,118 @@
 </tr>
 <tr>
 <td><code>source</code></td>
-<td>소스가 어디 있는가</td>
-<td>소스를 올리지 않고 <strong>위치와 불변 revision, artifact digest</strong>만 적습니다</td>
+<td>소스 참조</td>
+<td>소스를 업로드하지 않고 <strong>저장소 위치, 불변 revision, artifact digest</strong>를 선언합니다</td>
 </tr>
 <tr>
 <td><code>runtime</code></td>
-<td>어떻게 실행하는가</td>
-<td><code>executionMode</code>는 <code>sync</code>, <code>async</code>, <code>durable</code> 중 하나</td>
+<td>런타임 설정</td>
+<td><code>executionMode</code>는 <code>sync</code>, <code>async</code>, <code>durable</code> 중 하나입니다</td>
 </tr>
 <tr>
 <td><code>capabilities</code></td>
-<td>무엇을 쓰는가</td>
-<td><code>type</code>은 네 종류 중 하나. 도구·지식·하위 Agent를 <strong>논리 ID</strong>로 적습니다</td>
+<td>기능 및 의존 리소스</td>
+<td><code>type</code>은 4가지 유형 중 하나이며, 도구·지식·하위 Agent를 <strong>논리 ID</strong>로 선언합니다</td>
 </tr>
 <tr>
 <td><code>identity</code></td>
-<td>누구의 권한으로 일하는가</td>
-<td><code>delegated</code>(사용자 대신) 또는 <code>independent</code>(Agent 자신의 권한)</td>
+<td>실행 주체와 권한 모드</td>
+<td><code>delegated</code>(사용자 위임) 또는 <code>independent</code>(Agent 자체 권한)이며, 필요 scope를 선언합니다</td>
 </tr>
 <tr>
 <td><code>governance</code></td>
-<td>얼마나 민감하고 위험한가</td>
-<td>분류 <code>public</code>·<code>internal</code>·<code>confidential</code>·<code>restricted</code>, 위험 <code>low</code>·<code>medium</code>·<code>high</code></td>
+<td>데이터 분류·위험도·정책</td>
+<td>분류 <code>public</code>·<code>internal</code>·<code>confidential</code>·<code>restricted</code>, 위험도 <code>low</code>·<code>medium</code>·<code>high</code>, 정책·평가 프로파일</td>
 </tr>
 <tr>
 <td><code>deployment</code></td>
-<td>어디에 배포하는가</td>
-<td><code>local</code>, <code>shared-experiment</code>, <code>production</code></td>
+<td>배포 설정</td>
+<td>프로파일 <code>local</code>, <code>shared-experiment</code>, <code>production</code></td>
 </tr>
 <tr>
 <td><code>contracts</code></td>
-<td>입출력 형식</td>
-<td>입력·출력 스키마 URI</td>
+<td>입출력 계약</td>
+<td>입력·출력 JSON Schema URI</td>
 </tr>
 </tbody>
 </table></div>
 <div class="compare">
 <div class="bad">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 거부되는 source</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 검증 실패: 가변 참조</strong></p>
 <pre><code class="language-json">&quot;revision&quot;: &quot;main&quot;
 </code></pre>
-<p>브랜치 이름은 내일 다른 코드를 가리킬 수 있습니다.</p>
+<p>브랜치 이름은 시점에 따라 다른 커밋을 가리킵니다.</p>
 </div>
 <div class="good">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 통과하는 source</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 검증 통과: 불변 참조</strong></p>
 <pre><code class="language-json">&quot;revision&quot;: &quot;aaaaaaaa…(40자 커밋 해시)&quot;,
 &quot;artifactDigest&quot;: &quot;sha256:…&quot;
 </code></pre>
-<p>언제 봐도 같은 코드를 가리킵니다.</p>
+<p>항상 동일한 코드와 산출물을 가리킵니다.</p>
 </div>
 </div>
-<h2 id="검증에-실패하는-manifest">검증에 실패하는 Manifest</h2>
-<p><code>examples/negative/</code>에는 일부러 틀리게 만든 Manifest가 있습니다. 무엇이 왜 거부되는지 보면 규칙이 빨리 익혀집니다.</p>
+<h2 id="검증-실패-사례">검증 실패 사례</h2>
+<p><code>examples/negative/</code>에는 검증 실패를 확인하기 위한 Manifest가 포함되어 있습니다.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th>파일</th>
-<th>거부되는 이유</th>
+<th>실패 원인</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg> <code>missing-owner.json</code></td>
-<td>소유 팀이 없다</td>
+<td>소유 팀 누락</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg> <code>invalid-version.json</code></td>
-<td>버전 형식이 틀렸다</td>
+<td>버전 형식 오류</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg> <code>mutable-revision.json</code></td>
-<td>소스 revision이 <code>main</code>처럼 바뀔 수 있는 값이다</td>
+<td><code>main</code> 등 가변 revision 사용</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16.5 6.5l2.5 2.5M14 9l2 2"/></svg> <code>unexpected-secret.json</code></td>
-<td>허용되지 않은 필드에 비밀값을 넣었다</td>
+<td>정의되지 않은 필드에 시크릿 포함</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg> <code>unsupported-mode.json</code></td>
-<td>지원하지 않는 실행 모드다</td>
+<td>지원하지 않는 실행 모드</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg> <code>invalid-classification.json</code></td>
-<td>정의되지 않은 데이터 분류다</td>
+<td>정의되지 않은 데이터 분류</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg> <code>malformed-uri.json</code></td>
-<td>URI 형식이 틀렸다</td>
+<td>URI 형식 오류</td>
 </tr>
 <tr>
 <td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg> <code>empty-tools.json</code></td>
-<td>도구 Agent인데 도구 목록이 비어 있다</td>
+<td>tool 유형 Agent의 도구 목록 누락</td>
 </tr>
 </tbody>
 </table></div>
-<p>직접 검증해 보는 방법은 <a href="docs--onboarding--07-hands-on.html">30분 실습</a>에 있습니다.</p>
+<p>검증 실행 방법은 <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a>을 참고하십시오.</p>
 <div class="check">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 스스로 점검</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
 <details>
-<summary>Q1. Manifest에 API 키를 넣어 두면 편하지 않을까요?</summary>
-<p>넣을 수 없습니다. 스키마가 정의되지 않은 필드를 허용하지 않아서 검증에 실패합니다. 자격증명은 Credential Broker가 호출마다 발급합니다.</p>
+<summary>Q1. Manifest에 API 키를 포함할 수 있습니까?</summary>
+<p>포함할 수 없습니다. 스키마가 정의되지 않은 필드를 허용하지 않으므로 검증에 실패합니다. 접근 자격증명은 Credential Broker가 호출 시점에 발급합니다.</p>
 </details>
 <details>
-<summary>Q2. 사용자를 대신해 일하는 Agent의 identity.mode는 무엇인가요?</summary>
-<p><code>delegated</code>입니다. Agent 자신의 권한으로만 일하면 <code>independent</code>입니다.</p>
+<summary>Q2. 사용자를 대신해 동작하는 Agent의 identity.mode 값은 무엇입니까?</summary>
+<p><code>delegated</code>입니다. Agent 자체 권한으로만 동작하면 <code>independent</code>입니다.</p>
 </details>
 </div>
 <div class="summary">
-<p><strong>정리</strong></p>
+<p><strong>요약</strong></p>
 <ul>
-<li>플랫폼은 rag, tool, workflow, multi-agent 네 종류를 공통 계약으로 지원합니다.</li>
-<li>Manifest는 누구인가·어디 있나·어떻게 도나·무엇을 쓰나·누구 권한인가·얼마나 민감한가·어디 배포하나를 적은 신분증입니다.</li>
-<li>소스는 불변 revision과 digest로 가리키고, 비밀값은 Manifest에 들어갈 수 없습니다.</li>
+<li>플랫폼은 rag, tool, workflow, multi-agent 4가지 유형을 공통 계약 수준에서 지원합니다.</li>
+<li>Manifest는 메타데이터, 소스 참조, 런타임 설정, 기능·의존 리소스, 권한 모드, 데이터 분류·정책, 배포 설정을 선언하는 Agent 선언 명세입니다.</li>
+<li>소스는 불변 revision과 digest로 참조하며, 시크릿은 Manifest에 포함할 수 없습니다.</li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--04-trust.html"><small>이전</small><b>신뢰 경계</b></a><a class="next" href="docs--onboarding--06-lifecycle.html"><small>다음</small><b>내 Agent가 production까지 가는 길</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/05-agents-and-manifest.md">docs/onboarding/05-agents-and-manifest.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#들어가며">들어가며</a><a href="#네-종류-agent">네 종류 Agent</a><a href="#manifest-agent의-신분증">Manifest: Agent의 신분증</a><a href="#검증에-실패하는-manifest">검증에 실패하는 Manifest</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--04-trust.html"><small>이전</small><b>신뢰 경계와 보안 통제</b></a><a class="next" href="docs--onboarding--06-lifecycle.html"><small>다음</small><b>Agent 수명주기와 프로덕션 승인</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/05-agents-and-manifest.md">docs/onboarding/05-agents-and-manifest.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#agent-유형">Agent 유형</a><a href="#manifest-명세">Manifest 명세</a><a href="#검증-실패-사례">검증 실패 사례</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
