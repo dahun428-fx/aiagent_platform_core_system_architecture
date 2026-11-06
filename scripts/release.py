@@ -78,7 +78,7 @@ def main():
     except Exception as exc:
         checks.append({"check": "release", "exitCode": 1, "error": str(exc)})
         status = "failed"
-    report = {"packageVersion": "0.1.0", "status": status, "date": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(),
+    report = {"packageVersion": "0.1.1", "status": status, "date": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(),
               "runtime": {"python": sys.version, "node": subprocess.run(["node", "--version"], capture_output=True, text=True).stdout.strip(),
                           "jsonschema": importlib.metadata.version("jsonschema"),
                           "openapi-spec-validator": importlib.metadata.version("openapi-spec-validator")},

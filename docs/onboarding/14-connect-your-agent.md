@@ -11,7 +11,7 @@
 
 - 템플릿을 복사해 자신의 Agent adapter와 Manifest를 작성합니다.
 - 플랫폼 핵심 코드를 수정하지 않고 새 Agent ID로 Agent를 호출합니다.
-- `agentctl conformance`로 9개 적합성 검사를 통과합니다.
+- `agentctl conformance`로 11개 적합성 검사를 통과하고, 각 검사가 무엇을 보장하는지 구분합니다.
 </div>
 
 ## 배경
@@ -111,10 +111,11 @@ cp -r templates/agents/tool my-agents/order-agent
 ```
 
 ```text
-PASS  C1  Manifest and registration  Manifest valid, adapter python-inprocess-v1, profile local
-PASS  C2  Successful call  200, result.schema valid
+PASS  C1   manifest-loading      Manifest and registration  Manifest valid, adapter python-inprocess-v1, profile local
+PASS  C2   adapter-path          Successful call  200, result.schema valid
 ...
-PASS  C9  Adapter failure  500 without adapter message; failure not cached, retry executes
+PASS  C11  platform-enforcement  Manifest identity.mode  delegated runs as the caller; independent runs as the Agent workload ...
+NOTE  Local conformance covers Manifest loading, this adapter's basic path and platform rule enforcement. It is not a business-quality, security or production certification.
 ```
 
 검사가 하나라도 실패하면 종료 코드 1을 반환합니다. CI에서 그대로 사용할 수 있습니다.
@@ -137,21 +138,54 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
   -d '{"input":{"type":"message","content":"hello"},"context":{"tenantId":"tenant-demo","dataClassification":"internal"},"execution":{"mode":"sync","timeoutMs":5000}}'
 ```
 
-## 적합성 검사 9항목
+## 적합성 검사 11항목
 
-| ID | 검사 | 기대 결과 |
+| ID | 구분 | 검사 | 기대 결과 |
+|---|---|---|---|
+| C1 | manifest-loading | Manifest와 등록 | Manifest 유효, `python-inprocess-v1`, `local` 프로파일 |
+| C2 | adapter-path | 정상 호출 | 200, `result.schema` 적합 |
+| C3 | platform-enforcement | 토큰 없음 | 401, adapter 미실행 |
+| C4 | platform-enforcement | tenant 위조 | 403, adapter 미실행 |
+| C5 | platform-enforcement | 같은 멱등성 키 재전송 | 저장 결과 반환, adapter 1회 실행 |
+| C6 | platform-enforcement | 같은 키·다른 내용 | 409 |
+| C7 | platform-enforcement | 분류 하향 선언 + 외부 모델만 가용 | 외부 모델 경로 미사용. 모델을 호출하지 않는 adapter는 플랫폼 규칙만 확인됨을 결과에 표시 |
+| C8 | platform-enforcement | 미선언 도구 호출, 응답의 자격증명 형태 문자열 | 403, 응답에 자격증명 형태 문자열 없음 |
+| C9 | platform-enforcement | adapter 예외 | 500, 예외 메시지 미포함, 실패 결과 미저장 |
+| C10 | platform-enforcement | Manifest `requiredScopes`에 호출자가 갖지 않은 scope 추가 | 403, adapter 미실행 |
+| C11 | platform-enforcement | Manifest `identity.mode` | `delegated`는 호출자 신원, `independent`는 사용자 principal 없는 workload 신원 |
+
+모든 판정은 응답, 감사 기록, 호출 횟수 등 플랫폼 경계에서 수행합니다. 구분별 보장 범위는 다음과 같습니다.
+
+| 구분 | PASS의 의미 | 보장하지 않는 것 |
 |---|---|---|
-| C1 | Manifest와 등록 | Manifest 유효, `python-inprocess-v1`, `local` 프로파일 |
-| C2 | 정상 호출 | 200, `result.schema` 적합 |
-| C3 | 토큰 없음 | 401, adapter 미실행 |
-| C4 | tenant 위조 | 403, adapter 미실행 |
-| C5 | 같은 멱등성 키 재전송 | 저장 결과 반환, adapter 1회 실행 |
-| C6 | 같은 키·다른 내용 | 409 |
-| C7 | 분류 하향 선언 + 외부 모델만 가용 | 외부 모델 경로 미사용 |
-| C8 | 미선언 도구 호출, 응답의 자격증명 형태 문자열 | 403, 응답에 자격증명 형태 문자열 없음 |
-| C9 | adapter 예외 | 500, 예외 메시지 미포함, 실패 결과 미저장 |
+| `manifest-loading` | Manifest가 유효하고 로컬 Registry가 받아들임 | 소스·artifact의 실제 내용 |
+| `adapter-path` | 이 adapter가 자기 코드 경로로 유효한 결과를 만듦 | 응답의 정확성·업무 품질 |
+| `platform-enforcement` | 이 adapter 주변에서 플랫폼 규칙이 집행되고 adapter가 규칙을 약화하지 못함 | adapter의 모든 실패 동작, 모든 형태의 정보 유출 탐지 |
 
-모든 판정은 응답, 감사 기록, 호출 횟수 등 플랫폼 경계에서 수행합니다. adapter 내부 구현에 의존하지 않습니다.
+C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 [평가 3단계](12-observability-evaluation.md), 운영 승인은 [수명주기](06-lifecycle.md)에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.
+
+## Manifest 필드 지원 범위 (로컬 mock)
+
+| 필드 | 처리 | 내용 |
+|---|---|---|
+| `apiVersion`, `kind`, 전체 구조 | 검증됨 | JSON Schema(계약 0.1.1) 검증 |
+| `metadata.id`, `metadata.version` | 실행에 사용 | Agent ID 라우팅, 결과의 `agentVersion`, 멱등성 키 |
+| `metadata.owner`, `metadata.name` | 검증만 | 실행 동작에 영향 없음 |
+| `source.*` | 검증만 | 불변 revision·digest 형식 검사. 실제 artifact 대조는 하지 않음 |
+| `runtime.adapter` | 실행에 사용 | `python-inprocess-v1`만 허용, 그 외 등록 거부 |
+| `runtime.entrypoint` | 실행에 사용 | `module:factory`, Agent 폴더 안의 파일만 |
+| `runtime.executionMode` | 실행에 사용 | `sync`만 허용, 그 외 등록 거부 |
+| `runtime.framework` | 메타데이터만 | 실행 동작에 영향 없음 |
+| `capabilities.type` | 검증만 | 유형별 필수 목록 검사(`tool`은 도구 1개 이상) |
+| `capabilities.tools` | 실행에 사용 | 선언한 도구만 `ctx.call_tool` 허용, 정책과 교집합 |
+| `capabilities.knowledge`, `capabilities.agents` | 미지원 | 로컬 mock에 검색·하위 Agent 호출 경로 없음 |
+| `identity.requiredScopes` | 실행에 사용 | 호출자가 모두 보유해야 adapter 실행. `independent`에서는 정책과 교집합한 값이 Agent workload 권한 |
+| `identity.mode` | 실행에 사용 | `delegated`는 호출자 신원, `independent`는 사용자 principal 없는 Agent workload 신원으로 실행 |
+| `governance.classification` | 실행에 사용 | 서버 측 분류. 호출자 선언·정책과 비교해 가장 높은 값 적용 |
+| `governance.risk`, `policyProfile`, `evaluationProfile` | 메타데이터만 | 위험도별 승인·평가 연동은 미구현 |
+| `deployment.profile` | 실행에 사용 | `local`만 등록 |
+| `deployment.environmentRef` | 메타데이터만 | 실행 동작에 영향 없음 |
+| `contracts.inputSchema`, `outputSchema` | 메타데이터만 | 실제 입출력은 플랫폼의 invocation·result 스키마로 검증 |
 
 ## 제약과 한계
 
@@ -178,8 +212,8 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
 
-<details markdown="1"><summary>Q1. adapter에서 사용자 Identity나 토큰을 읽을 수 있습니까?</summary>
-읽을 수 없습니다. adapter는 <code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>만 사용하며, Identity와 자격증명은 플랫폼이 호출 내부에서 주입합니다.
+<details markdown="1"><summary>Q1. adapter가 사용자 Identity나 토큰에 접근할 수 있습니까?</summary>
+공개 adapter 인터페이스(<code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>)는 Identity·정책·자격증명을 제공하지 않으며, 플랫폼이 호출 내부에서 주입합니다. 다만 in-process adapter는 같은 프로세스에서 실행되므로 언어 수준의 접근(비공개 속성, closure 조사 등)을 보안적으로 차단하지 않습니다. 이 방식은 신뢰된 코드에만 사용하며, 신뢰하지 않는 코드는 별도 프로세스·원격 adapter에서 실행해야 합니다.
 </details>
 
 <details markdown="1"><summary>Q2. 새 Agent를 연결할 때 플랫폼 코드를 수정해야 합니까?</summary>
@@ -190,7 +224,7 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 <div class="summary" markdown="1">
 **요약**
 
-- Agent는 `handle(ctx, message)`를 구현하는 adapter로 연결하며, 규칙은 플랫폼이 적용합니다.
+- Agent는 `handle(ctx, message)`를 구현하는 adapter로 연결하며, `requiredScopes`·`identity.mode`·분류·도구 목록 등 Manifest 선언은 플랫폼이 집행합니다.
 - 템플릿 복사 → Manifest 수정 → adapter 작성 → `conformance` 통과 → 새 ID로 호출 순서로 진행합니다.
 - in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.
 </div>

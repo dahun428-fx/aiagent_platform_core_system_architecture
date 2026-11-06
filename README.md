@@ -12,6 +12,8 @@
 5. 예제를 실행하고 tests/로 계약 적합성을 확인한다.
 6. docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.
 
+버전별 포함 기능과 검증 방법은 [CHANGELOG](CHANGELOG.md)를 따른다.
+
 ## 빠른 시작 (최소 경로)
 Python 3.11+만으로 첫 호출과 실패 응답까지 확인한다. 상세 설명과 문제 해결은 [로컬 환경 구성 및 호출 실습](docs/onboarding/07-hands-on.md)을 따른다.
 

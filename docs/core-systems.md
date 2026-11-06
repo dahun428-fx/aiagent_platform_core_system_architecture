@@ -95,7 +95,7 @@ Agent가 외부 모델과 도구에 접근하는 관문(egress)이다.
 | 대상 | 문서 | 계약 | 참조 구현(mock) | 검증(테스트) |
 |---|---|---|---|---|
 | Agent Platform APIs | O | O (`agent-gateway.openapi.json`) | 호출·health | 인증·테넌트·멱등성·분류 하향 거부 |
-| Agent Factory | O | O (Manifest 스키마) | `agentctl validate`·`run`·`conformance`, 템플릿 2종(`message`, `tool`) | 양성·음성 fixture, 적합성 9항목 |
+| Agent Factory | O | O (Manifest 스키마) | `agentctl validate`·`run`·`conformance`, 템플릿 2종(`message`, `tool`) | 양성·음성 fixture, 적합성 11항목(scope·mode 집행 포함) |
 | Agent Runtime | O | O (`runtime`, `execution`) | 동기 실행, adapter·AgentContext, 로컬 Registry | 호출 흐름, entrypoint 제한, 모듈 독립 로딩 |
 | Memory | O | — | — | — (목표 규칙) |
 | Agent Tools · 도구 경로 | O | O (`tool-gateway.openapi.json`, descriptor) | 읽기 도구 | 승인·scope·재시도·write 거부 |

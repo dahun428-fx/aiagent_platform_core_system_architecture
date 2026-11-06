@@ -18,7 +18,7 @@
 <ul>
 <li>템플릿을 복사해 자신의 Agent adapter와 Manifest를 작성합니다.</li>
 <li>플랫폼 핵심 코드를 수정하지 않고 새 Agent ID로 Agent를 호출합니다.</li>
-<li><code>agentctl conformance</code>로 9개 적합성 검사를 통과합니다.</li>
+<li><code>agentctl conformance</code>로 11개 적합성 검사를 통과하고, 각 검사가 무엇을 보장하는지 구분합니다.</li>
 </ul>
 </div>
 <h2 id="배경">배경</h2>
@@ -148,10 +148,11 @@ cp -r templates/agents/tool my-agents/order-agent
 <pre><code class="language-sh">.venv/bin/python scripts/agentctl.py validate my-agents/order-agent/agent-manifest.json
 .venv/bin/python scripts/agentctl.py conformance my-agents/order-agent
 </code></pre>
-<pre><code class="language-text">PASS  C1  Manifest and registration  Manifest valid, adapter python-inprocess-v1, profile local
-PASS  C2  Successful call  200, result.schema valid
+<pre><code class="language-text">PASS  C1   manifest-loading      Manifest and registration  Manifest valid, adapter python-inprocess-v1, profile local
+PASS  C2   adapter-path          Successful call  200, result.schema valid
 ...
-PASS  C9  Adapter failure  500 without adapter message; failure not cached, retry executes
+PASS  C11  platform-enforcement  Manifest identity.mode  delegated runs as the caller; independent runs as the Agent workload ...
+NOTE  Local conformance covers Manifest loading, this adapter's basic path and platform rule enforcement. It is not a business-quality, security or production certification.
 </code></pre>
 <p>검사가 하나라도 실패하면 종료 코드 1을 반환합니다. CI에서 그대로 사용할 수 있습니다.</p>
 <h3 id="5-실행과-호출">5. 실행과 호출</h3>
@@ -164,11 +165,12 @@ PASS  C9  Adapter failure  500 without adapter message; failure not cached, retr
   -H &quot;Content-Type: application/json&quot; -H &quot;Authorization: Bearer mock-user&quot; -H &quot;Idempotency-Key: order-1&quot; \
   -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;hello&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;internal&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:5000}}'
 </code></pre>
-<h2 id="적합성-검사-9항목">적합성 검사 9항목</h2>
+<h2 id="적합성-검사-11항목">적합성 검사 11항목</h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th>ID</th>
+<th>구분</th>
 <th>검사</th>
 <th>기대 결과</th>
 </tr>
@@ -176,52 +178,202 @@ PASS  C9  Adapter failure  500 without adapter message; failure not cached, retr
 <tbody>
 <tr>
 <td>C1</td>
+<td>manifest-loading</td>
 <td>Manifest와 등록</td>
 <td>Manifest 유효, <code>python-inprocess-v1</code>, <code>local</code> 프로파일</td>
 </tr>
 <tr>
 <td>C2</td>
+<td>adapter-path</td>
 <td>정상 호출</td>
 <td>200, <code>result.schema</code> 적합</td>
 </tr>
 <tr>
 <td>C3</td>
+<td>platform-enforcement</td>
 <td>토큰 없음</td>
 <td>401, adapter 미실행</td>
 </tr>
 <tr>
 <td>C4</td>
+<td>platform-enforcement</td>
 <td>tenant 위조</td>
 <td>403, adapter 미실행</td>
 </tr>
 <tr>
 <td>C5</td>
+<td>platform-enforcement</td>
 <td>같은 멱등성 키 재전송</td>
 <td>저장 결과 반환, adapter 1회 실행</td>
 </tr>
 <tr>
 <td>C6</td>
+<td>platform-enforcement</td>
 <td>같은 키·다른 내용</td>
 <td>409</td>
 </tr>
 <tr>
 <td>C7</td>
+<td>platform-enforcement</td>
 <td>분류 하향 선언 + 외부 모델만 가용</td>
-<td>외부 모델 경로 미사용</td>
+<td>외부 모델 경로 미사용. 모델을 호출하지 않는 adapter는 플랫폼 규칙만 확인됨을 결과에 표시</td>
 </tr>
 <tr>
 <td>C8</td>
+<td>platform-enforcement</td>
 <td>미선언 도구 호출, 응답의 자격증명 형태 문자열</td>
 <td>403, 응답에 자격증명 형태 문자열 없음</td>
 </tr>
 <tr>
 <td>C9</td>
+<td>platform-enforcement</td>
 <td>adapter 예외</td>
 <td>500, 예외 메시지 미포함, 실패 결과 미저장</td>
 </tr>
+<tr>
+<td>C10</td>
+<td>platform-enforcement</td>
+<td>Manifest <code>requiredScopes</code>에 호출자가 갖지 않은 scope 추가</td>
+<td>403, adapter 미실행</td>
+</tr>
+<tr>
+<td>C11</td>
+<td>platform-enforcement</td>
+<td>Manifest <code>identity.mode</code></td>
+<td><code>delegated</code>는 호출자 신원, <code>independent</code>는 사용자 principal 없는 workload 신원</td>
+</tr>
 </tbody>
 </table></div>
-<p>모든 판정은 응답, 감사 기록, 호출 횟수 등 플랫폼 경계에서 수행합니다. adapter 내부 구현에 의존하지 않습니다.</p>
+<p>모든 판정은 응답, 감사 기록, 호출 횟수 등 플랫폼 경계에서 수행합니다. 구분별 보장 범위는 다음과 같습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>PASS의 의미</th>
+<th>보장하지 않는 것</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manifest-loading</code></td>
+<td>Manifest가 유효하고 로컬 Registry가 받아들임</td>
+<td>소스·artifact의 실제 내용</td>
+</tr>
+<tr>
+<td><code>adapter-path</code></td>
+<td>이 adapter가 자기 코드 경로로 유효한 결과를 만듦</td>
+<td>응답의 정확성·업무 품질</td>
+</tr>
+<tr>
+<td><code>platform-enforcement</code></td>
+<td>이 adapter 주변에서 플랫폼 규칙이 집행되고 adapter가 규칙을 약화하지 못함</td>
+<td>adapter의 모든 실패 동작, 모든 형태의 정보 유출 탐지</td>
+</tr>
+</tbody>
+</table></div>
+<p>C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 <a href="docs--onboarding--12-observability-evaluation.html">평가 3단계</a>, 운영 승인은 <a href="docs--onboarding--06-lifecycle.html">수명주기</a>에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.</p>
+<h2 id="manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>필드</th>
+<th>처리</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apiVersion</code>, <code>kind</code>, 전체 구조</td>
+<td>검증됨</td>
+<td>JSON Schema(계약 0.1.1) 검증</td>
+</tr>
+<tr>
+<td><code>metadata.id</code>, <code>metadata.version</code></td>
+<td>실행에 사용</td>
+<td>Agent ID 라우팅, 결과의 <code>agentVersion</code>, 멱등성 키</td>
+</tr>
+<tr>
+<td><code>metadata.owner</code>, <code>metadata.name</code></td>
+<td>검증만</td>
+<td>실행 동작에 영향 없음</td>
+</tr>
+<tr>
+<td><code>source.*</code></td>
+<td>검증만</td>
+<td>불변 revision·digest 형식 검사. 실제 artifact 대조는 하지 않음</td>
+</tr>
+<tr>
+<td><code>runtime.adapter</code></td>
+<td>실행에 사용</td>
+<td><code>python-inprocess-v1</code>만 허용, 그 외 등록 거부</td>
+</tr>
+<tr>
+<td><code>runtime.entrypoint</code></td>
+<td>실행에 사용</td>
+<td><code>module:factory</code>, Agent 폴더 안의 파일만</td>
+</tr>
+<tr>
+<td><code>runtime.executionMode</code></td>
+<td>실행에 사용</td>
+<td><code>sync</code>만 허용, 그 외 등록 거부</td>
+</tr>
+<tr>
+<td><code>runtime.framework</code></td>
+<td>메타데이터만</td>
+<td>실행 동작에 영향 없음</td>
+</tr>
+<tr>
+<td><code>capabilities.type</code></td>
+<td>검증만</td>
+<td>유형별 필수 목록 검사(<code>tool</code>은 도구 1개 이상)</td>
+</tr>
+<tr>
+<td><code>capabilities.tools</code></td>
+<td>실행에 사용</td>
+<td>선언한 도구만 <code>ctx.call_tool</code> 허용, 정책과 교집합</td>
+</tr>
+<tr>
+<td><code>capabilities.knowledge</code>, <code>capabilities.agents</code></td>
+<td>미지원</td>
+<td>로컬 mock에 검색·하위 Agent 호출 경로 없음</td>
+</tr>
+<tr>
+<td><code>identity.requiredScopes</code></td>
+<td>실행에 사용</td>
+<td>호출자가 모두 보유해야 adapter 실행. <code>independent</code>에서는 정책과 교집합한 값이 Agent workload 권한</td>
+</tr>
+<tr>
+<td><code>identity.mode</code></td>
+<td>실행에 사용</td>
+<td><code>delegated</code>는 호출자 신원, <code>independent</code>는 사용자 principal 없는 Agent workload 신원으로 실행</td>
+</tr>
+<tr>
+<td><code>governance.classification</code></td>
+<td>실행에 사용</td>
+<td>서버 측 분류. 호출자 선언·정책과 비교해 가장 높은 값 적용</td>
+</tr>
+<tr>
+<td><code>governance.risk</code>, <code>policyProfile</code>, <code>evaluationProfile</code></td>
+<td>메타데이터만</td>
+<td>위험도별 승인·평가 연동은 미구현</td>
+</tr>
+<tr>
+<td><code>deployment.profile</code></td>
+<td>실행에 사용</td>
+<td><code>local</code>만 등록</td>
+</tr>
+<tr>
+<td><code>deployment.environmentRef</code></td>
+<td>메타데이터만</td>
+<td>실행 동작에 영향 없음</td>
+</tr>
+<tr>
+<td><code>contracts.inputSchema</code>, <code>outputSchema</code></td>
+<td>메타데이터만</td>
+<td>실제 입출력은 플랫폼의 invocation·result 스키마로 검증</td>
+</tr>
+</tbody>
+</table></div>
 <h2 id="제약과-한계">제약과 한계</h2>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> in-process 로딩은 격리 경계가 아닙니다</strong> 로딩된 adapter 코드는 같은 프로세스의 내부 객체에 접근할 수 있습니다. 이 방식은 로컬 학습과 적합성 확인 전용이며, 신뢰하지 않는 코드에 사용해서는 안 됩니다(MUST NOT). 격리된 실행은 후속 단계의 원격 adapter로 제공합니다.</p>
@@ -277,8 +429,8 @@ PASS  C9  Adapter failure  500 without adapter message; failure not cached, retr
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
 <details>
-<summary>Q1. adapter에서 사용자 Identity나 토큰을 읽을 수 있습니까?</summary>
-<p>읽을 수 없습니다. adapter는 <code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>만 사용하며, Identity와 자격증명은 플랫폼이 호출 내부에서 주입합니다.</p>
+<summary>Q1. adapter가 사용자 Identity나 토큰에 접근할 수 있습니까?</summary>
+<p>공개 adapter 인터페이스(<code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>)는 Identity·정책·자격증명을 제공하지 않으며, 플랫폼이 호출 내부에서 주입합니다. 다만 in-process adapter는 같은 프로세스에서 실행되므로 언어 수준의 접근(비공개 속성, closure 조사 등)을 보안적으로 차단하지 않습니다. 이 방식은 신뢰된 코드에만 사용하며, 신뢰하지 않는 코드는 별도 프로세스·원격 adapter에서 실행해야 합니다.</p>
 </details>
 <details>
 <summary>Q2. 새 Agent를 연결할 때 플랫폼 코드를 수정해야 합니까?</summary>
@@ -288,9 +440,9 @@ PASS  C9  Adapter failure  500 without adapter message; failure not cached, retr
 <div class="summary">
 <p><strong>요약</strong></p>
 <ul>
-<li>Agent는 <code>handle(ctx, message)</code>를 구현하는 adapter로 연결하며, 규칙은 플랫폼이 적용합니다.</li>
+<li>Agent는 <code>handle(ctx, message)</code>를 구현하는 adapter로 연결하며, <code>requiredScopes</code>·<code>identity.mode</code>·분류·도구 목록 등 Manifest 선언은 플랫폼이 집행합니다.</li>
 <li>템플릿 복사 → Manifest 수정 → adapter 작성 → <code>conformance</code> 통과 → 새 ID로 호출 순서로 진행합니다.</li>
 <li>in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.</li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-9항목">적합성 검사 9항목</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-11항목">적합성 검사 11항목</a><a href="#manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

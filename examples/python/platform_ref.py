@@ -73,6 +73,19 @@ def authorize(identity, policy, scope, now=None):
                 raise Fault(403, "FORBIDDEN", "Delegation scope denied")
 
 
+def agent_identity(caller, agent, policy):
+    """Identity the Agent runs with. delegated: the caller's identity. independent: the Agent's own workload
+    identity, whose grant is the Manifest requiredScopes capped by policy. It never carries the user principal."""
+    mode = agent["manifest"]["identity"]["mode"]
+    if mode == "delegated":
+        return copy.deepcopy(caller)
+    if mode == "independent":
+        grant = [s for s in agent["manifest"]["identity"]["requiredScopes"] if s in policy["allowedScopes"]]
+        return {"tenantId": caller["tenantId"], "agentId": agent["id"], "workloadId": "workload-" + agent["id"],
+                "mode": "independent", "scopes": grant, "delegation": []}
+    raise Fault(501, "NOT_IMPLEMENTED", "Unsupported identity.mode")
+
+
 def canonical_digest(value):
     return "sha256:" + hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
 
@@ -404,8 +417,16 @@ class Platform:
         authoritative = effective_classification(self.data_classification or agent["classification"], policy["classification"])
         policy["classification"] = effective_classification(body["context"]["dataClassification"], authoritative)
         authorize(identity, policy, "agents.invoke")
+        # The caller must hold every scope the Manifest declares as required, before the adapter runs.
+        for scope in agent["manifest"]["identity"]["requiredScopes"]:
+            try:
+                authorize(identity, policy, scope)
+            except Fault:
+                raise Fault(403, "FORBIDDEN", "Caller lacks a scope required by the Agent Manifest") from None
+        caller_principal = identity["principalId"]
+        identity = agent_identity(identity, agent, policy)
         # Memory-only, single-process idempotency. Real deployments need a persistent atomic effect ledger.
-        cache_key = (identity["tenantId"], identity["principalId"], agent_id, agent["version"], key)
+        cache_key = (identity["tenantId"], caller_principal, agent_id, agent["version"], key)
         digest = canonical_digest(body)
         with self.lock:
             if cache_key in self.memo:
