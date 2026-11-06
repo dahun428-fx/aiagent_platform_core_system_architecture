@@ -130,7 +130,7 @@ npm run build:client
 node examples/typescript/dist/demo.js
 ```
 
-같은 Agent를 TypeScript로 부릅니다. 계약이 언어 중립이라 클라이언트 언어가 달라도 결과 모양은 같습니다([ADR-024](../../adr/ADR-024.md)).
+같은 Agent를 TypeScript로 부릅니다. 계약이 언어 중립이라 클라이언트 언어가 달라도 결과 모양은 같습니다. Python은 참조 구현, TypeScript는 핵심 클라이언트 예제이고, 어느 언어도 강제하지 않습니다.
 
 ## 실습 5. 전체 테스트 돌리기 (선택)
 

@@ -4,7 +4,7 @@
 
 ## 개발은 지금처럼 한다 (Local-First, CLI-First)
 
-이 플랫폼은 개발 방식을 바꾸라고 하지 않습니다. 소스는 팀의 Git 저장소에 두고, 평소 쓰는 IDE와 CLI로 개발하고, 로컬에서 실험합니다. 중앙 소스 업로드나 Agent Studio 사용은 강제하지 않습니다(MUST NOT, [ADR-018](../../adr/ADR-018.md)).
+이 플랫폼은 개발 방식을 바꾸라고 하지 않습니다. 소스는 팀의 Git 저장소에 두고, 평소 쓰는 IDE와 CLI로 개발하고, 로컬에서 실험합니다. 중앙 소스 업로드나 Agent Studio 사용은 강제하지 않습니다(MUST NOT). 플랫폼은 그 대신 계약 기반 SDK, CLI, 템플릿을 제공합니다.
 
 실험 단계에서 중앙에 등록하는 것은 선택입니다. 등록이 필요해지는 것은 **다른 사람과 같이 시험하거나 production에 올릴 때**입니다.
 
@@ -41,7 +41,7 @@ production 승격에는 다음이 모두 필요합니다(MUST).
 
 코드만이 아니라 런타임 이미지, 의존성, 도구 설명, 모델 routing 정책이 바뀌어도 다시 평가합니다.
 
-평가는 셀프서비스가 기본입니다. 자동 검사를 통과하면 스스로 진행하고, 위험이 높은 경우에만 사람 승인이 들어갑니다([ADR-011](../../adr/ADR-011.md)).
+평가는 셀프서비스가 기본입니다. 자동 검사를 통과하면 스스로 진행하고, 위험이 높은 경우에만 사람 승인이 들어갑니다.
 
 ## 어디서 실행하나: 배포 프로파일 세 가지
 
@@ -69,9 +69,19 @@ cancel_requested → cancelled 또는 이미 끝난 succeeded/failed
 
 durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 아직 정하지 않았습니다(TBD). 이 패키지에는 계약만 있습니다.
 
+## 처음 만드는 것: 한 줄로 이어진 경로
+
+플랫폼은 모든 모듈을 한꺼번에 만들지 않습니다. 먼저 아래 경로 하나를 끝에서 끝까지 실제로 동작하게 만들고, 도구·RAG·durable 실행·Multi-Agent·분산 실행 환경을 그 위에 단계적으로 붙입니다.
+
+```text
+로컬 Agent → Manifest 검증 → 인증된 Agent Gateway 호출 → 신원·정책 확인
+→ Runtime adapter → Model Gateway → 외부 또는 자체 호스팅 모델
+→ trace 기록 → 평가 결과 → Registry 기록 → CI 품질 게이트 → 승인된 실행 환경
+```
+
 ## 품질 게이트는 CI에서
 
-계약 검증은 문서가 아니라 코드로 강제합니다(Contract-as-Code, [ADR-026](../../adr/ADR-026.md)). CI에서 검사가 하나라도 실패하면 결과물 업로드와 승격을 막습니다(MUST). 이 패키지는 `scripts/release.py` 하나로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 돌립니다. 회사 CI 제품은 TBD입니다.
+계약 검증은 문서가 아니라 코드로 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 결과물 업로드와 승격을 막습니다(MUST). 이 패키지는 `scripts/release.py` 하나로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 돌립니다. 회사 CI 제품은 TBD입니다.
 
 ## 더 읽을거리
 
@@ -79,6 +89,5 @@ durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 �
 - 배포 프로파일 원문: [배포 프로파일](../deployment.md)
 - 상태 전이와 승인 원문: [Durable / HITL](../execution.md)
 - CI 연결 방법: [CI 통합](../ci-integration.md)
-- 단계적 MVP 전략: [ADR-022](../../adr/ADR-022.md)
 
 이전: [네 종류 Agent와 Manifest](05-agents-and-manifest.md) · 다음: [30분 실습](07-hands-on.md)

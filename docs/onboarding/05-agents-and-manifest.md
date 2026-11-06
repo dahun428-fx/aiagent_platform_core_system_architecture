@@ -1,6 +1,6 @@
 # 네 종류 Agent와 Manifest
 
-> 온보딩 안내서입니다. 규범은 [Agent Manifest 스키마](../../contracts/agent-manifest.schema.json)와 [ADR-005](../../adr/ADR-005.md)가 기준입니다.
+> 온보딩 안내서입니다. 규범은 [Agent Manifest 스키마](../../contracts/agent-manifest.schema.json)가 기준입니다.
 
 ## 플랫폼이 처음부터 지원하는 네 가지 Agent
 
@@ -15,11 +15,11 @@
 
 ### RAG는 검색 엔진을 강제하지 않는다
 
-공통 RAG 계약만 지키면 지식 저장소는 바꿔 낄 수 있습니다([ADR-019](../../adr/ADR-019.md)). 대신 검색할 때 **사용자 권한(ACL)과 데이터 분류로 먼저 걸러야** 합니다. 볼 권한이 없는 문서는 검색 결과에 아예 나오지 않아야 합니다.
+공통 RAG 계약만 지키면 지식 저장소는 바꿔 낄 수 있습니다. 회사가 하나의 벡터 DB나 검색 엔진을 강제하지 않습니다. 대신 검색할 때 **사용자 권한(ACL)과 데이터 분류로 먼저 걸러야** 합니다. 볼 권한이 없는 문서는 검색 결과에 아예 나오지 않아야 합니다.
 
 ### Agent끼리 부를 때
 
-다른 Agent를 부를 때는 공통 통신 계약(`cross-agent.schema.json`)을 씁니다. 부모 호출 ID, 줄어든 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. A2A 같은 특정 프로토콜은 선택 사항입니다([ADR-020](../../adr/ADR-020.md)).
+다른 Agent를 부를 때는 공통 통신 계약(`cross-agent.schema.json`)을 씁니다. 부모 호출 ID, 줄어든 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하고, A2A 같은 특정 프로토콜은 선택 사항입니다.
 
 ## Manifest: Agent의 신분증
 
@@ -102,7 +102,7 @@
 
 - Manifest 스키마 원문: [agent-manifest.schema.json](../../contracts/agent-manifest.schema.json)
 - 4종 예제 Manifest: [RAG](../../examples/manifests/rag.json), [Tool](../../examples/manifests/tool.json), [Workflow](../../examples/manifests/workflow.json), [Multi-Agent](../../examples/manifests/multi-agent.json)
-- 공통 Runtime과 adapter: [ADR-006](../../adr/ADR-006.md)
+- Agent 간 통신 계약: [cross-agent.schema.json](../../contracts/cross-agent.schema.json)
 - 계약 버전 규칙: [계약 변경](../versioning.md)
 
 이전: [신뢰 경계](04-trust.md) · 다음: [내 Agent가 production까지 가는 길](06-lifecycle.md)

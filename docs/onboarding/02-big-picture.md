@@ -29,7 +29,7 @@
 | **Knowledge(RAG) Backend** | 검색 증강(RAG)에 쓰는 지식 저장소. 공통 RAG 계약만 지키면 어떤 검색 엔진·벡터 DB든 바꿔 낄 수 있습니다. | 사내 도서관 |
 | **Shared Control Plane** | Registry(Agent·Tool·Model·Environment), Policy, Identity 중개, Evaluation, Observability, Promotion. | 관제탑 |
 
-두 가지 소속 관계는 꼭 기억하세요. 검증 과정에서 정정된 부분입니다.
+두 가지 소속 관계는 꼭 기억하세요. 처음 보는 사람이 가장 많이 헷갈리는 부분입니다.
 
 - **Tool Gateway는 Agent Tools에 속합니다.**
 - **Credential Broker는 Agent Identity에 속합니다.**
@@ -46,7 +46,7 @@
 | Model Gateway | Agent → 모델 (나가는 길) | 기밀 데이터의 외부 모델 전송, 특정 모델 공급사 종속 |
 | Tool Gateway | Agent → 도구 (나가는 길) | 허가 안 된 시스템 호출, 자격증명 유출, 위조된 도구 결과 |
 
-Agent Gateway와 Model Gateway를 나눈 이유는 [ADR-012](../../adr/ADR-012.md)에 있습니다. 호출을 통제하는 일과 모델 공급사를 추상화하는 일은 책임이 다르기 때문입니다.
+Agent Gateway와 Model Gateway를 나누는 이유는 호출을 통제하는 일과 모델 공급사를 추상화하는 일이 서로 다른 책임이기 때문입니다. 셋 모두 논리적인 책임 구분이고, 특정 제품이나 프로세스 개수를 뜻하지 않습니다.
 
 ## 용어 쉽게 풀기
 
@@ -62,9 +62,36 @@ Agent Gateway와 Model Gateway를 나눈 이유는 [ADR-012](../../adr/ADR-012.m
 
 전체 정의는 [용어와 규범](../glossary.md)에 있습니다.
 
+## 이 플랫폼을 정의하는 원칙
+
+앞으로 읽을 내용을 원칙으로 모으면 다음과 같습니다. 각 원칙은 뒤의 페이지에서 자세히 풀어 설명합니다.
+
+| 영역 | 원칙 | 자세히 |
+|---|---|---|
+| 범위 | 전사가 함께 쓰는 하나의 공통 플랫폼이다. 팀마다 따로 만들지 않는다 | [왜 필요한가](01-why.md) |
+| 인프라 | 온프레미스와 퍼블릭 클라우드를 함께 쓰는 Hybrid Cloud를 전제한다. 실행 자원은 특정 서빙 제품에 묶이지 않는다 | 이 페이지 |
+| 구조 | 통제는 Shared Control Plane에 모으고, 실행은 Distributed Execution Plane에 분산한다 | 이 페이지 |
+| 모델 | 외부 상용 LLM과 자체 호스팅 오픈소스 모델을 함께 쓰고, Model Gateway가 정책으로 경로를 고른다 | [요청 하나 따라가기](03-one-request.md) |
+| 호출 경계 | Agent Gateway, Model Gateway, Tool Gateway는 서로 다른 경계를 지킨다 | 이 페이지 |
+| 실행 | 공통 Runtime 계약과 framework adapter로 어떤 프레임워크든 실행한다 | [요청 하나 따라가기](03-one-request.md) |
+| 도구 | REST/OpenAPI, MCP, 사용자 정의 adapter를 Tool Gateway 뒤에서 지원한다 | [요청 하나 따라가기](03-one-request.md) |
+| 신원 | 사용자 신원과 Agent 신원을 함께 다루고, 자격증명은 Credential Broker가 짧게 발급한다 | [신뢰 경계](04-trust.md) |
+| 테넌트 | 기본은 논리 격리이고, 민감도와 위험에 따라 물리 분리를 선택한다 | [신뢰 경계](04-trust.md) |
+| 데이터 | 데이터 분류에 따라 접근과 이동(외부 모델 전송 포함)을 통제한다 | [신뢰 경계](04-trust.md) |
+| Agent 종류 | RAG, Tool, Workflow, Multi-Agent를 처음부터 공통 계약으로 지원한다 | [네 종류 Agent와 Manifest](05-agents-and-manifest.md) |
+| 지식 | 공통 RAG 계약을 지키면 검색 저장소는 바꿔 낄 수 있다 | [네 종류 Agent와 Manifest](05-agents-and-manifest.md) |
+| Agent 간 협업 | 공통 Agent 통신 계약을 쓰고, A2A 같은 특정 프로토콜은 선택이다 | [네 종류 Agent와 Manifest](05-agents-and-manifest.md) |
+| 개발 방식 | Local-First, CLI-First. 지금 쓰는 IDE·Git·CLI를 유지하고 중앙 소스 업로드를 강제하지 않는다 | [production까지 가는 길](06-lifecycle.md) |
+| 실험 | 실험은 로컬에서 하고, 공유가 필요하면 공용 실험·평가 기록소에 남긴다 | [production까지 가는 길](06-lifecycle.md) |
+| 수명주기 | 자동 게이트를 통과하면 셀프서비스로 진행하고, 위험이 높을수록 사람 승인을 더한다 | [production까지 가는 길](06-lifecycle.md) |
+| 품질 | 관측, 자동 평가, 품질 게이트를 배포 과정에 포함한다 | [production까지 가는 길](06-lifecycle.md) |
+| 신뢰성 | 오래 걸리는 작업은 Durable 실행과 HITL 승인, 정책 통제로 다룬다 | [production까지 가는 길](06-lifecycle.md) |
+| 운영 목표 | SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정한다 | [production까지 가는 길](06-lifecycle.md) |
+| 도입 방식 | 먼저 끝에서 끝까지 이어진 한 줄의 경로를 완성하고, 기능을 단계적으로 붙인다 | [production까지 가는 길](06-lifecycle.md) |
+| 계약 | 계약은 언어 중립(OpenAPI, JSON Schema)이고, 코드로 검증하며, 버전으로 관리한다 | [규격 읽는 법](08-reading-the-spec.md) |
+
 ## 더 읽을거리
 
-- 공통 제어·분산 실행 결정: [ADR-017](../../adr/ADR-017.md)
 - 신원과 Credential Broker: [Agent Identity](../identity-and-credentials.md)
 - 도구와 Tool Gateway: [Agent Tools](../agent-tools.md)
 - 모든 도식: [아키텍처 도식](../architecture.md)

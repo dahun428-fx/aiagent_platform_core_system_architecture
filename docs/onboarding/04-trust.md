@@ -59,7 +59,7 @@ IdP, Credential Broker, 정책 조회가 실패하면 새 자격증명은 발급
 
 - 전체 위협 모델: [보안 경계](../security.md)
 - 승인과 상태 전이: [Durable / HITL](../execution.md)
-- 테넌트 격리 결정: [ADR-007](../../adr/ADR-007.md)
-- 데이터 분류 기반 정책: [ADR-013](../../adr/ADR-013.md)
+- 신원과 자격증명 규칙: [Agent Identity](../identity-and-credentials.md)
+- 도구 호출 규칙: [Agent Tools](../agent-tools.md)
 
 이전: [요청 하나 따라가기](03-one-request.md) · 다음: [네 종류 Agent와 Manifest](05-agents-and-manifest.md)

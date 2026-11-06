@@ -2,20 +2,18 @@
 
 > 온보딩 안내서의 마지막 페이지입니다. 여기부터는 원문 규격을 직접 읽게 됩니다.
 
-## 규격 문서의 네 가지 표시
+## 규격 문서의 표시
 
-원문 규격에는 문장마다 네 종류의 표시가 섞여 있습니다. 각각 다른 것을 말하므로 구분해서 읽어야 합니다.
+규격 문장에는 몇 가지 표시가 붙습니다. 각각 다른 것을 말하므로 구분해서 읽어야 합니다.
 
 | 표시 | 값 | 뜻 |
 |---|---|---|
 | 규범 수준 | MUST, MUST NOT, SHOULD, MAY | 필수, 금지, 사유를 문서화하면 예외 가능, 선택 |
-| 결정 상태 | Decided, Recommended, TBD, Optional | 기준선에서 결정됨, 권장, 회사 결정 대기, 선택 기능 |
+| 미정 | TBD | 회사 환경에 맞춰 정해야 하는 제품이나 수치 |
 | 적용 단계 | MVP, Follow-up, Optional | 언제 구현하는가 |
 | 계약 버전 | 예: `agent.platform/v1alpha1`, `/v1` | 어떤 버전의 계약인가 |
 
 가장 많이 헷갈리는 부분은 이것입니다. **MUST는 "특정 제품을 써야 한다"는 뜻이 아닙니다.** "production Agent 호출은 반드시 인증해야 한다(MUST)"는 문장이 있어도, 어떤 IdP를 쓸지는 여전히 TBD일 수 있습니다.
-
-또 **Decided는 기준선의 결정 상태**입니다. 회사가 공식으로 배포를 승인했다는 뜻과는 다릅니다.
 
 ## 버전이 세 개인 이유
 
@@ -23,20 +21,25 @@
 - Manifest 계약 버전: `agent.platform/v1alpha1`
 - HTTP API 경로 버전: `/v1`
 
-셋은 따로 움직입니다. 패키지 문서를 고쳐도 계약 버전은 그대로일 수 있습니다. 계약을 바꿀 때는 diff 검토, ADR, 마이그레이션 안내, 새 released snapshot 승인이 필요하고, 테스트가 이전 snapshot과 다른지 검사합니다. snapshot만 덮어써서 테스트를 통과시키면 안 됩니다(MUST NOT).
+셋은 따로 움직입니다. 패키지 문서를 고쳐도 계약 버전은 그대로일 수 있습니다. 계약을 바꿀 때는 diff 검토, 변경 사유 기록, 마이그레이션 안내, 새 released snapshot 승인이 필요하고, 테스트가 이전 snapshot과 다른지 검사합니다. snapshot만 덮어써서 테스트를 통과시키면 안 됩니다(MUST NOT).
 
-## ADR 읽는 법
+## 무엇이 어디에 정의되어 있나
 
-ADR(Architecture Decision Record)은 결정 하나에 문서 하나입니다. 30개 질문마다 ADR이 하나씩 있습니다. "왜 이렇게 정했지?"가 궁금할 때 해당 ADR을 열면 Context(맥락), Decision(결정), Alternatives considered(검토한 대안), Consequences(결과)가 있습니다. 전체 목록은 포털 메뉴의 "계약 · Fixture · ADR"에서 볼 수 있습니다.
+온보딩을 마친 뒤 궁금한 것이 생기면 아래 정의 문서를 여세요.
 
-처음이라면 이 순서로 읽기를 권합니다.
-
-1. [ADR-017 공통 제어·분산 실행](../../adr/ADR-017.md)
-2. [ADR-018 Local-First/CLI-First](../../adr/ADR-018.md)
-3. [ADR-012 Gateway 분리](../../adr/ADR-012.md)
-4. [ADR-009 Agent Tools](../../adr/ADR-009.md)
-5. [ADR-008 사용자·Agent Identity](../../adr/ADR-008.md)
-6. [ADR-006 공통 Runtime](../../adr/ADR-006.md)
+| 알고 싶은 것 | 정의 문서 |
+|---|---|
+| 구성요소의 책임과 신뢰 경계 | [아키텍처](../architecture.md) |
+| 도구 호출, MCP, 재시도 규칙 | [Agent Tools](../agent-tools.md) |
+| 사용자·Agent 신원, 위임, 자격증명 | [Agent Identity](../identity-and-credentials.md) |
+| 위협과 통제 | [보안 경계](../security.md) |
+| 실행 상태, 승인, durable | [Durable / HITL](../execution.md) |
+| 역할, 수명주기, 평가와 관측 | [운영·평가](../operating-model.md) |
+| 실행 환경과 승격 | [배포 프로파일](../deployment.md) |
+| 계약 버전과 호환성 | [계약 변경](../versioning.md) |
+| CI 연결 | [CI 통합](../ci-integration.md) |
+| 용어 | [용어와 규범](../glossary.md) |
+| API와 스키마 원본 | 포털 메뉴의 "계약 · Fixture" |
 
 ## 자주 묻는 질문
 
@@ -66,9 +69,7 @@ Agent 코드, Manifest, 환경 변수 어디에도 넣지 않습니다. Credenti
 
 ## 다음에 읽을 것
 
-- 전체 결정 30개: [요구사항 기준선 v0.1](../requirements/baseline-v0.1.md)
 - 회사가 정해야 할 것: [TBD 등록부](../tbd-register.md)
-- 검증된 정정 사항: [보고서 정정](../corrections.md)
-- 원본 연구: [Deep Research 출처](../../sources/README.md)
+- 이 패키지의 범위: [제공 범위와 한계](../release-scope.md)
 
 이전: [30분 실습](07-hands-on.md) · 처음으로: [왜 이 플랫폼이 필요한가](01-why.md)
