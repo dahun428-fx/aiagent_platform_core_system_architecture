@@ -11,6 +11,9 @@
 | Agent→Agent: 권한 확산·cycle | scope 축소, audience 재검증, depth/budget/cycle 제어 | cross-agent tests | adapter/A2A version TBD |
 | Retry/resume: 승인 replay·중복 write | digest/expiry/policy 확인, request key 충돌, unknown outcome | replay/idempotency tests | persistent effect ledger TBD |
 | Trace/audit: 정보 유출 | allowlist metadata, token/PII redaction, 접근통제 | redaction tests | exporter·retention TBD |
+| 입력·출력·도구·검색 결과: 간접 인젝션·민감정보·유해 콘텐츠 | 공통 검사 서비스 + 네 집행 지점, 프로덕션은 검사 후 차단 | guardrail 계약 TBD | 검사 제품·정책 TBD-03 |
+| Memory 오염 | 범위 결합, 쓰기 전 검사, 비신뢰 취급 | Memory 계약 TBD | 저장소 TBD-13 |
+| Agent Card 위조 | Registry JWS 서명, 소비 측 서명 검증, 비신뢰 취급 | Agent Card 계약 TBD | 키 관리 TBD-03 |
 | 제어-plane 장애 | 신규 권한/승격 fail closed, 캐시된 권한은 승인된 TTL 범위 | mock fail-closed tests | 장애·복구 drill TBD |
 
 ## 배포 전 기준

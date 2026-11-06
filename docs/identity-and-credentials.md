@@ -26,6 +26,10 @@ adapter는 grant_type=urn:ietf:params:oauth:grant-type:token-exchange, subject_t
 actor_token이 필요한 IdP는 workload actor를 별도 검증한다. token passthrough나 audience 없는 재사용은 금지한다.
 unsupported exchange는 장기 공유 secret fallback 대신 거부한다. RFC9700 기반 audience 제한·sender constraint 지원을 검토한다.
 
+## 외부 표준 채택 원칙
+안정 규격인 OAuth 2.0 Token Exchange(RFC 8693), OAuth Security BCP(RFC 9700), SPIFFE 계열 workload identity를 기준으로 한다.
+Agent 전용 IETF 초안(AIMS, On-Behalf-Of 확장, KAIF 등)은 참고로만 두며, RFC로 확정되기 전에는 계약에 고정하지 않는다(MUST NOT).
+
 ## 장애와 감사
 IdP/Broker/정책 조회 실패 시 credential 신규 발급은 fail closed한다.
 refresh·revocation·key rotation·clock skew·cache TTL의 회사 정책은 TBD다.
