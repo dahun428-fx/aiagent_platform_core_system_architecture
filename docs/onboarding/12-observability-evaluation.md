@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [Observability](../observability.md), [Evaluation](../evaluation.md) 기술 표준 문서가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [관측성](09-glossary.md#term-observability) [실행 추적 컨텍스트](09-glossary.md#term-trace) [OTel GenAI](09-glossary.md#term-otel-genai) [평가 3단계](09-glossary.md#term-evaluation) [Red teaming](09-glossary.md#term-red-teaming)
+<span class="label">주요 용어</span> [관측성](09-glossary.md#term-observability) [실행 추적 컨텍스트](09-glossary.md#term-trace) [OTel GenAI](09-glossary.md#term-otel-genai) [평가 3단계](09-glossary.md#term-evaluation) [Red teaming](09-glossary.md#term-red-teaming) [감사](09-glossary.md#term-audit)
 </div>
 
 <div class="goals" markdown="1">
@@ -50,7 +50,7 @@
 | Agent 호출 | `invoke_agent {gen_ai.agent.name}` | `gen_ai.agent.name`, `gen_ai.operation.name` |
 | Agent 생성 | `create_agent` | `gen_ai.agent.name` |
 | 모델 추론 | `{gen_ai.operation.name} {gen_ai.request.model}` | `gen_ai.provider.name`(필수), `gen_ai.request.model`, 토큰 사용량 |
-| 플랫폼 고유 | — | `platform.` 접두사: tenant 별칭, 정책 결정 ID, routeDecisionId, Guardrail 검사 ID |
+| 플랫폼 고유 (SHOULD) | — | `platform.` 접두사: tenant 별칭, 정책 결정 ID, routeDecisionId, Guardrail 검사 ID |
 
 <div class="point" markdown="1">
 **{{icon:warn}} 규격 버전 고정** OpenTelemetry GenAI semantic conventions는 Development 단계 규격입니다. 플랫폼은 사용하는 규격 버전을 고정하고 기록하며(MUST), 버전 전환은 계약 변경 절차를 따릅니다.

@@ -3,7 +3,7 @@
 > 개발자 가이드 문서입니다. 규범은 [Agent Manifest JSON Schema](../../contracts/agent-manifest.schema.json)가 기준입니다.
 
 <div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Agent Factory](09-glossary.md#term-factory) [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Framework adapter](09-glossary.md#term-adapter)
+<span class="label">주요 용어</span> [Agent Factory](09-glossary.md#term-factory) [Manifest](09-glossary.md#term-manifest) [RAG](09-glossary.md#term-rag) [불변 버전](09-glossary.md#term-immutable) [Delegated / Independent](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [Framework adapter](09-glossary.md#term-adapter) [Registry](09-glossary.md#term-registry) [Durable 실행](09-glossary.md#term-durable) [HITL](09-glossary.md#term-hitl)
 </div>
 
 <div class="goals" markdown="1">
@@ -61,7 +61,7 @@ Factory의 도구는 AI Platform Applications의 DevTools로 제공됩니다.
 </div>
 
 <div class="point" markdown="1">
-**{{icon:agents}} Agent 간 호출** 공통 Agent 통신 계약(`cross-agent.schema.json`)을 사용합니다. 상위 호출 ID, 축소된 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결하며, A2A 등 특정 프로토콜은 선택 사항입니다.
+**{{icon:agents}} Agent 간 호출** 공통 Agent 통신 계약(`cross-agent.schema.json`)을 사용합니다. 상위 호출 ID, 축소된 권한 범위, 호출 깊이와 예산이 함께 전달됩니다. 프레임워크 고유의 협업 방식은 adapter로 연결합니다. A2A 프로토콜로 호출하는 것은 선택이며, 발견 정보를 발행할 때는 A2A Agent Card 형식을 사용합니다([Agent Card와 Agent 간 통신](13-agent-card.md)).
 </div>
 
 ## Manifest 명세

@@ -9,7 +9,7 @@ optional request 추가도 closed schema를 쓰는 old server에 new client가 �
 따라서 additive는 무조건 안전하지 않다. request/response 방향 및 실제 소비자 조합을 CI에서 검증한다.
 새 API path/optional response 추가도 소비자 strictness와 보안 의미를 확인한다.
 
-tests/test_contracts.py는 contracts/released/0.1.0.json과 현재 snapshot의 완전 동등성을 gate한다.
+tests/test_contracts.py는 contracts/released/의 최신 snapshot(현재 0.1.1)과 현재 계약의 완전 동등성을 gate한다. 0.1.1은 0.1.0에 Manifest `capabilities.type`의 `message`를 추가한 것이다([ADR-037](../adr/ADR-037.md)).
 이는 보수적인 release freeze 검사이며 범용 semantic diff 도구는 아니다.
 변경은 diff 검토·ADR·migration note·새 released snapshot을 승인한 뒤 baseline을 갱신한다.
 임의로 snapshot만 덮어써 gate를 통과시키지 않는다(MUST NOT).

@@ -16,7 +16,7 @@
 
 | 자료 | 확인한 내용 | 플랫폼 반영 |
 |---|---|---|
-| AWS Bedrock AgentCore ([FAQ](https://aws.amazon.com/pt/bedrock/agentcore/faqs), [InfoQ 출시 기사](https://infoq.com/news/2025/07/amazon-bedrock-agentcore-launch)) | Runtime, Gateway(기존 API를 Agent용 도구로 변환), Identity(OAuth 2.0, IdP 연동), Memory(단기·장기), Observability를 개별 구성요소로 제공하며 모델에 종속되지 않음 | Core Systems 구분, Memory를 Runtime 하위 구성요소로 정의, Agent Gateway 도구 경로 |
+| AWS Bedrock AgentCore ([FAQ](https://aws.amazon.com/bedrock/agentcore/faqs/), [InfoQ 출시 기사](https://infoq.com/news/2025/07/amazon-bedrock-agentcore-launch)) | Runtime, Gateway(기존 API를 Agent용 도구로 변환), Identity(OAuth 2.0, IdP 연동), Memory(단기·장기), Observability를 개별 구성요소로 제공하며 모델에 종속되지 않음 | Core Systems 구분, Memory를 실행과 별도 책임으로 분리(플랫폼은 Runtime 하위에 배치), Agent Gateway 도구 경로 |
 | Microsoft Foundry ([Agent Factory: observability best practices](https://azure.microsoft.com/en-us/blog/agent-factory-top-5-agent-observability-best-practices-for-reliable-ai/), [평가·모니터링·추적 GA](https://techcommunity.microsoft.com/t5/microsoft-foundry-blog/generally-available-evaluations-monitoring-and-tracing-in/ba-p/4502760)) | Agent 구축 방법을 "Agent Factory" 시리즈로 정리. 평가(배포 전)·추적·모니터링을 구분하고 내장 evaluator와 red teaming을 제공 | Agent Factory 명칭, 평가 3단계, red teaming |
 | Google Agent Engine ([Memory Bank 개요](https://docs.cloud.google.com/agent-builder/agent-engine/memory-bank/overview)) | 장기 Memory를 사용자 등 특정 범위에 격리. Memory 오염(memory poisoning)을 위험으로 명시하고 IAM 조건으로 범위별 접근을 제한 | Memory 범위 결합, 쓰기 전 검사, 비신뢰 취급 |
 
@@ -29,7 +29,7 @@
 | 자료 | 확인한 내용 | 플랫폼 반영 |
 |---|---|---|
 | [Kong AI Gateway](https://developer.konghq.com/ai-gateway/) | 모델 요청·응답에 프롬프트 가드, PII 제거, 응답 검사, 토큰 기반 사용량 제한, 클라우드 guardrail 연동을 적용. AI Prompt Guard는 `user` 역할 메시지만 검사([AI Prompt Guard](https://developer.konghq.com/ai-gateway/policies/ai-prompt-guard/)) | Agent Gateway 모델 경로의 입출력 검사·사용량 기록, 도구 결과·검색 문서를 별도 지점에서 검사 |
-| AI Gateway 비교 자료(2차 자료: [Kong](https://konghq.com/performance-comparison/ai-gateway-alternatives), [Maxim](https://www.getmaxim.ai/articles/top-5-envoy-ai-gateway-alternatives-for-llm-routing.md)) | 애플리케이션과 모델 공급사 사이에서 인증, 라우팅, 캐시, 비용 추적, 사용량 제한을 수행하는 관문 패턴 | 모델 경로의 책임 범위. Envoy AI Gateway 공식 문서는 확인하지 못함 |
+| AI Gateway 비교 자료(2차 자료: [Kong](https://konghq.com/performance-comparison/ai-gateway-alternatives), [Maxim](https://www.getmaxim.ai/articles/top-5-envoy-ai-gateway-alternatives-for-llm-routing.md)) | 애플리케이션과 모델 공급사 사이에서 인증, 라우팅, 캐시, 비용 추적, 사용량 제한을 수행하는 관문 패턴 | 모델 경로의 책임 범위 |
 
 </div>
 
@@ -101,7 +101,7 @@
 
 | 자료 | 확인한 내용 | 플랫폼 반영 |
 |---|---|---|
-| [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026) | 자율 Agent의 주요 보안 위험 10개 범주(ASI01~ASI10). 공식 페이지에서는 표지와 설명만 확인했으며 항목별 본문은 확인하지 못함 | 위협 모델 보강 대상. 항목별 대응표는 본문 확인 후 작성 |
+| [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026) | 자율 Agent의 주요 보안 위험 10개 범주(ASI01~ASI10)를 제시 | 위협 모델 보강 대상 |
 | [OWASP LLM01:2025](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) | 프롬프트 인젝션 완화 권고 | Guardrails, 신뢰하지 않는 입력 규칙 |
 
 </div>

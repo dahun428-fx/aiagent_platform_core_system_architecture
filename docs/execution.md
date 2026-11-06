@@ -4,6 +4,7 @@
 accepted → running → succeeded | failed | waiting_approval | cancel_requested.
 waiting_approval → running(유효 승인 및 재인가) | rejected | expired | cancelled.
 cancel_requested → cancelled 또는 이미 commit된 succeeded/failed.
+외부 write의 성공 여부가 불명확하면 unknown_outcome으로 두고 자동 재실행하지 않으며 reconciliation으로 확정한다([Agent Tools](agent-tools.md)).
 terminal 상태는 실행 결과를 덮어쓰지 않는다(MUST). cancellation은 best effort이며 부작용 rollback 보장이 아니다.
 
 ## Contract

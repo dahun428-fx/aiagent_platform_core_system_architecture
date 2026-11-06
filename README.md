@@ -5,11 +5,27 @@
 ## 시작
 처음이라면 [개발자 가이드](docs/onboarding/01-why.md)의 학습 경로를 따른다. 포털 첫 화면도 같은 순서로 안내한다.
 
-1. docs/requirements/baseline-v0.1.md와 docs/corrections.md에서 기준선을 확인한다.
-2. docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md로 책임·신뢰 경계를 확인한다.
-3. contracts/의 OpenAPI 3.1.2 JSON과 JSON Schema 2020-12를 소비한다.
-4. 예제를 실행하고 tests/로 계약 적합성을 확인한다.
-5. docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.
+1. docs/core-systems.md에서 10개 Core System과 구현 상태를 확인한다.
+2. docs/architecture.md, docs/agent-tools.md, docs/identity-and-credentials.md, docs/guardrails.md로 책임·신뢰 경계를 확인한다.
+3. 결정 근거는 docs/requirements/baseline-v0.1.md(Q1–Q36)와 adr/에서 확인한다.
+4. contracts/의 OpenAPI 3.1.2 JSON과 JSON Schema 2020-12를 소비한다.
+5. 예제를 실행하고 tests/로 계약 적합성을 확인한다.
+6. docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.
+
+## 빠른 시작 (최소 경로)
+Python 3.11+만으로 첫 호출과 실패 응답까지 확인한다. 상세 설명과 문제 해결은 [로컬 환경 구성 및 호출 실습](docs/onboarding/07-hands-on.md)을 따른다.
+
+```sh
+git clone https://github.com/dahun428-fx/aiagent_platform_core_system_architecture.git
+cd aiagent_platform_core_system_architecture
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python examples/python/platform_ref.py   # 터미널 1
+.venv/bin/python examples/python/client.py         # 터미널 2: "status": "succeeded"
+```
+
+검증 환경: macOS·Linux(Python 3.11+), Windows 11(Python 3.12, PowerShell). Windows는 `.venv\Scripts\python`을 사용한다.
 
 ## 로컬 검증
 Python 3.11+와 Node.js 22+, TypeScript compiler가 필요하다. 최초 개발 의존성 설치에는 네트워크가 필요하다.
@@ -51,6 +67,6 @@ Python SDK 호출 예제: `python3 examples/python/client.py`.
 회사 제품, topology별 주소·수량, NFR·비용·용량·보존 수치는 모두 TBD.
 127.0.0.1:8765, fixture의 TTL·depth·평가값은 합성 예제 값이며 회사 표준 수치가 아니다.
 
-현재 폴더는 Git 저장소가 아니다. Git에 넣을 수 있는 소스를 제공하며 commit/tag/push는 수행하지 않는다.
+이 저장소의 main이 최신 표준이다. `dist/`의 ZIP과 `checksums.sha256`은 `scripts/release.py`를 실행한 시점의 스냅샷이며, 생성 commit은 `verification/results.json`과 `verification/archive-verification.json`의 `source.commit`에 기록된다. commit이 HEAD와 다르면 ZIP은 과거 스냅샷이다.
 production 구현과 검증의 잔여 범위는 docs/release-scope.md에 명시한다.
 

@@ -1,5 +1,6 @@
 """Machine-readable standard conformance; all refs resolve offline."""
 import copy
+import importlib.util
 import json
 import re
 import unittest
@@ -12,7 +13,7 @@ from referencing import Registry, Resource
 from openapi_spec_validator import validate
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS = {p.name.replace(".schema.json", ""): json.loads(p.read_text()) for p in (ROOT / "contracts").glob("*.schema.json")}
+SCHEMAS = {p.name.replace(".schema.json", ""): json.loads(p.read_text(encoding="utf-8")) for p in (ROOT / "contracts").glob("*.schema.json")}
 REGISTRY = Registry().with_resources((s["$id"], Resource.from_contents(s)) for s in SCHEMAS.values())
 
 
@@ -27,23 +28,23 @@ class Contracts(unittest.TestCase):
                 Draft202012Validator.check_schema(schema)
                 fixture = ROOT / "examples/fixtures" / (name + ".json")
                 if fixture.exists():
-                    validator(name).validate(json.loads(fixture.read_text()))
+                    validator(name).validate(json.loads(fixture.read_text(encoding="utf-8")))
                 else:
                     self.assertEqual(name, "agent-manifest")
         for path in (ROOT / "examples/manifests").glob("*.json"):
             with self.subTest(manifest=path.name):
-                validator("agent-manifest").validate(json.loads(path.read_text()))
+                validator("agent-manifest").validate(json.loads(path.read_text(encoding="utf-8")))
         self.assertEqual(len(list((ROOT / "examples/manifests").glob("*.json"))), 4)
 
     def test_negative_manifest_fixtures(self):
-        cases = json.loads((ROOT / "examples/negative/index.json").read_text())
+        cases = json.loads((ROOT / "examples/negative/index.json").read_text(encoding="utf-8"))
         self.assertGreaterEqual(len(cases), 6)
         for case in cases:
             with self.subTest(case=case["name"]):
-                self.assertTrue(list(validator(case["schema"]).iter_errors(json.loads((ROOT / case["file"]).read_text()))))
+                self.assertTrue(list(validator(case["schema"]).iter_errors(json.loads((ROOT / case["file"]).read_text(encoding="utf-8")))))
 
     def test_identity_delegation_conditions(self):
-        f = json.loads((ROOT / "examples/fixtures/identity.json").read_text())
+        f = json.loads((ROOT / "examples/fixtures/identity.json").read_text(encoding="utf-8"))
         f["delegation"] = []
         self.assertTrue(list(validator("identity").iter_errors(f)))
         f["mode"] = "independent"
@@ -54,7 +55,7 @@ class Contracts(unittest.TestCase):
     def test_openapi_documents_security_and_examples(self):
         ids = set()
         for path in (ROOT / "contracts").glob("*.openapi.json"):
-            api = json.loads(path.read_text())
+            api = json.loads(path.read_text(encoding="utf-8"))
             with self.subTest(api=path.name):
                 self.assertEqual(api["openapi"], "3.1.2")
                 validate(api)
@@ -77,23 +78,25 @@ class Contracts(unittest.TestCase):
                                     Draft202012Validator(schema, registry=reg, format_checker=FormatChecker()).validate(media["example"])
 
     def test_frozen_contract_release(self):
-        actual = {"schemas": SCHEMAS, "apis": {p.name.replace(".openapi.json", ""): json.loads(p.read_text()) for p in (ROOT / "contracts").glob("*.openapi.json")}}
-        frozen = json.loads((ROOT / "contracts/released/0.1.0.json").read_text())
+        actual = {"schemas": SCHEMAS, "apis": {p.name.replace(".openapi.json", ""): json.loads(p.read_text(encoding="utf-8")) for p in (ROOT / "contracts").glob("*.openapi.json")}}
+        snapshots = sorted((ROOT / "contracts/released").glob("*.json"),
+                           key=lambda p: tuple(int(x) for x in p.stem.split(".")))
+        frozen = json.loads(snapshots[-1].read_text(encoding="utf-8"))
         self.assertEqual(actual, frozen, "Contract changed: reviewed migration and new release snapshot required")
 
     def test_baseline_adr_traceability(self):
-        baseline = (ROOT / "docs/requirements/baseline-v0.1.md").read_text()
-        self.assertEqual(len(re.findall(r"^\| Q\d+ \|", baseline, re.M)), 30)
-        for n in range(1, 31):
-            text = (ROOT / f"adr/ADR-{n:03}.md").read_text()
+        baseline = (ROOT / "docs/requirements/baseline-v0.1.md").read_text(encoding="utf-8")
+        self.assertEqual(len(re.findall(r"^\| Q\d+ \|", baseline, re.M)), 37)
+        for n in range(1, 38):
+            text = (ROOT / f"adr/ADR-{n:03}.md").read_text(encoding="utf-8")
             for section in ["Context", "Decision", "Alternatives considered", "Consequences", "Constraints", "Related contracts", "Security impact", "Supersession / migration"]:
                 self.assertIn(section, text)
             self.assertIn("Status: Decided", text)
-        self.assertIn("명시적으로", (ROOT / "adr/ADR-030.md").read_text())
+        self.assertIn("명시적으로", (ROOT / "adr/ADR-030.md").read_text(encoding="utf-8"))
 
     def test_markdown_local_links(self):
         for p in [ROOT / "README.md", *list((ROOT / "docs").rglob("*.md")), *list((ROOT / "adr").glob("*.md"))]:
-            for target in re.findall(r"\]\(([^)]+)\)", p.read_text()):
+            for target in re.findall(r"\]\(([^)]+)\)", p.read_text(encoding="utf-8")):
                 parts = urlsplit(target)
                 if not parts.scheme and not target.startswith("#"):
                     with self.subTest(file=p.name, target=target):
@@ -113,17 +116,41 @@ class Contracts(unittest.TestCase):
         self.assertGreater(len(pages), 30)
         for p in pages:
             parser = Links()
-            parser.feed(p.read_text())
+            parser.feed(p.read_text(encoding="utf-8"))
             for tag, attr, target in parser.links:
                 parts = urlsplit(target)
                 if parts.scheme in ("http", "https"):
                     self.assertEqual((tag, attr), ("a", "href"), "No network-loaded asset allowed")
                 elif parts.path:
                     self.assertTrue((p.parent / unquote(parts.path)).resolve().exists(), str((p, target)))
-        scripts = (ROOT / "portal/app.js").read_text()
+        scripts = (ROOT / "portal/app.js").read_text(encoding="utf-8")
         self.assertNotRegex(scripts, r"\bfetch\s*\(|XMLHttpRequest|https?://")
-        index = (ROOT / "portal/search-index.js").read_text()
+        index = (ROOT / "portal/search-index.js").read_text(encoding="utf-8")
         entries = json.loads(index.removeprefix("window.PLATFORM_SEARCH = ").strip().removesuffix(";"))
         self.assertGreater(len(entries), 30)
         self.assertTrue(all((ROOT / "portal" / e["href"]).exists() for e in entries))
+
+
+class PackagingTests(unittest.TestCase):
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location("release", ROOT / "scripts/release.py")
+        self.release = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.release)
+
+    def test_sensitive_files_fail_packaging(self):
+        for bad in [".env", "config/.env.local", "keys/service.pem", "deploy/private.key", "certs/client.p12", "home/id_rsa"]:
+            with self.subTest(bad=bad), self.assertRaises(RuntimeError):
+                self.release.select_package_files(["README.md", bad])
+
+    def test_generated_and_junk_files_are_excluded_and_order_is_stable(self):
+        names = ["docs/b.md", "README.md", "checksums.sha256", "dist/x.zip", "verification/archive-verification.json",
+                 "docs/.DS_Store", "docs/a.md", "scripts/x.pyc", "verification/results.json"]
+        self.assertEqual(self.release.select_package_files(names),
+                         ["README.md", "docs/a.md", "docs/b.md", "verification/results.json"])
+
+    def test_tracked_files_include_current_guide(self):
+        names = self.release.select_package_files(self.release.tracked_files())
+        for required in ["docs/core-systems.md", "docs/onboarding/01-why.md", "portal/index.html"]:
+            self.assertIn(required, names)
+        self.assertFalse(any("\\" in n for n in names))
 

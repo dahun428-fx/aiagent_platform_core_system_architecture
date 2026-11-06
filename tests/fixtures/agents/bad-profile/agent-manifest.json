@@ -1,0 +1,49 @@
+{
+  "apiVersion": "agent.platform/v1alpha1",
+  "kind": "Agent",
+  "metadata": {
+    "id": "bad-profile",
+    "name": "Broken: production profile",
+    "version": "0.1.0",
+    "owner": {
+      "team": "TBD"
+    }
+  },
+  "source": {
+    "repository": "https://example.invalid/agents/bad-profile.git",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifactDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "runtime": {
+    "framework": "custom",
+    "adapter": "python-inprocess-v1",
+    "entrypoint": "agent:create",
+    "executionMode": "sync"
+  },
+  "capabilities": {
+    "type": "message",
+    "tools": [],
+    "knowledge": [],
+    "agents": []
+  },
+  "identity": {
+    "mode": "delegated",
+    "requiredScopes": [
+      "agents.invoke"
+    ]
+  },
+  "governance": {
+    "classification": "internal",
+    "risk": "low",
+    "policyProfile": "policy-demo",
+    "evaluationProfile": "eval-demo"
+  },
+  "deployment": {
+    "profile": "production",
+    "environmentRef": "environment-demo"
+  },
+  "contracts": {
+    "inputSchema": "https://agent.example.invalid/contracts/invocation.schema.json",
+    "outputSchema": "https://agent.example.invalid/contracts/result.schema.json"
+  }
+}

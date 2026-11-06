@@ -112,7 +112,8 @@
             "rag",
             "tool",
             "workflow",
-            "multi-agent"
+            "multi-agent",
+            "message"
           ]
         },
         "tools": {

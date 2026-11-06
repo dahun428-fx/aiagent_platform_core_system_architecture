@@ -16,7 +16,7 @@ from test_contracts import validator
 
 
 def fixture(name):
-    return json.loads((ROOT / "examples/fixtures" / (name + ".json")).read_text())
+    return json.loads((ROOT / "examples/fixtures" / (name + ".json")).read_text(encoding="utf-8"))
 
 
 class RuntimeTests(unittest.TestCase):
@@ -94,6 +94,34 @@ class RuntimeTests(unittest.TestCase):
         self.platform.model.available = set()
         with self.assertRaises(ref.Fault):
             self.platform.model.invoke("hello", self.identity, self.policy, self.trace)
+
+    def test_caller_cannot_downgrade_classification(self):
+        # Server-side classification is restricted and only an external model is available.
+        self.platform.data_classification = "restricted"
+        self.platform.model.available = {"external"}
+        self.request["context"]["dataClassification"] = "public"
+        with self.assertRaises(ref.Fault) as e:
+            self.invoke()
+        self.assertEqual(e.exception.status, 503)
+        self.assertEqual(self.platform.model.calls, 0)
+        self.assertEqual(ref.effective_classification("public", "restricted"), "restricted")
+        self.assertEqual(ref.effective_classification("confidential", "internal"), "confidential")
+
+    def test_tool_retry_with_new_trace_returns_cached_result(self):
+        first = self.platform.tools.invoke(fixture("tool-invoke"))
+        retry = fixture("tool-invoke")
+        retry["traceparent"] = "00-" + "a" * 32 + "-" + "b" * 16 + "-01"
+        self.assertEqual(self.platform.tools.invoke(retry), first)
+        self.assertEqual(sum(e["component"] == "credential-broker" for e in self.platform.audit), 1)
+        changed = fixture("tool-invoke")
+        changed["arguments"]["query"] = "different"
+        with self.assertRaises(ref.Fault) as e:
+            self.platform.tools.invoke(changed)
+        self.assertEqual(e.exception.status, 409)
+        revoked = fixture("tool-invoke")
+        revoked["identity"]["scopes"] = ["agents.invoke"]
+        with self.assertRaises(ref.Fault):
+            self.platform.tools.invoke(revoked)
 
     def test_policy_unavailable_and_expired(self):
         self.platform.policy_available = False
