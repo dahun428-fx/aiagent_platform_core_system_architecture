@@ -117,4 +117,4 @@ Agent 코드, Manifest, 환경 변수에 저장하지 않습니다. Credential B
 - 용어 확인: [주요 용어 정의](09-glossary.md)
 </div>
 
-<nav class="pager"><a href="07-hands-on.md"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="10-references.md"><small>다음</small><b>근거와 참고 자료</b></a></nav>
+<nav class="pager"><a href="14-connect-your-agent.md"><small>이전</small><b>내 Agent 연결과 적합성 검증</b></a><a class="next" href="10-references.md"><small>다음</small><b>근거와 참고 자료</b></a></nav>

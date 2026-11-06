@@ -2,6 +2,8 @@
 from __future__ import annotations
 import copy
 import hashlib
+import importlib.util
+import os
 import json
 import re
 import threading
@@ -211,35 +213,166 @@ class ToolGateway:
             return copy.deepcopy(result)
 
 
-class RuntimeAdapter(Protocol):
-    def execute(self, envelope: dict) -> dict: ...
+ADAPTER_ID = "python-inprocess-v1"
+IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+BUILTIN_AGENTS = ROOT / "examples/agents"
+
+
+class AgentAdapter(Protocol):
+    """What an Agent implements: business logic only. See docs/onboarding/14-connect-your-agent.md."""
+    def handle(self, ctx: "AgentContext", message: dict) -> dict: ...
+
+
+class ContextError(Exception):
+    """A platform decision raised inside an AgentContext call. The Runtime re-raises the original Fault."""
+    def __init__(self, fault):
+        self.fault = fault
+        super().__init__(fault.detail)
+
+
+class AgentContext:
+    """The only capabilities an adapter receives. Identity, policy, credentials and platform objects stay with
+    the platform and are injected inside these calls. In-process loading is not an isolation boundary."""
+    def __init__(self, generate, call_tool, log):
+        self._generate, self._call_tool, self._log = generate, call_tool, log
+
+    def generate(self, prompt: str) -> str:
+        return self._generate(prompt)
+
+    def call_tool(self, tool_id: str, version: str, arguments: dict) -> str:
+        return self._call_tool(tool_id, version, arguments)
+
+    def log(self, event: str, **fields) -> None:
+        self._log(event, fields)
+
+
+class AgentLoadError(ValueError):
+    pass
+
+
+def _inside(child, parent):
+    child, parent = os.path.normcase(str(child)), os.path.normcase(str(parent))
+    return os.path.dirname(child) == parent
+
+
+def load_agent(agent_dir):
+    """Load one local Agent folder: agent-manifest.json plus the module named by runtime.entrypoint."""
+    base = Path(agent_dir).resolve(strict=True)
+    try:
+        manifest = json.loads((base / "agent-manifest.json").read_text(encoding="utf-8"))
+        validate("agent-manifest", manifest)
+    except (OSError, ValueError, Fault) as exc:
+        raise AgentLoadError("Invalid or unreadable Agent Manifest") from exc
+    runtime = manifest["runtime"]
+    if runtime["adapter"] != ADAPTER_ID:
+        raise AgentLoadError("Unsupported runtime.adapter; this kit supports " + ADAPTER_ID)
+    if runtime["executionMode"] != "sync":
+        raise AgentLoadError("Only sync execution is supported locally")
+    if manifest["deployment"]["profile"] != "local":
+        raise AgentLoadError("The local Registry only accepts deployment.profile = local")
+    module_name, _, factory_name = runtime["entrypoint"].partition(":")
+    if not (IDENTIFIER.fullmatch(module_name) and IDENTIFIER.fullmatch(factory_name)):
+        raise AgentLoadError("runtime.entrypoint must be module:factory with plain identifiers")
+    try:
+        path = (base / (module_name + ".py")).resolve(strict=True)
+    except OSError as exc:
+        raise AgentLoadError("Entrypoint module not found in the Agent folder") from exc
+    if not _inside(path, base):
+        raise AgentLoadError("Entrypoint must be a file directly inside the Agent folder")
+    agent_id = manifest["metadata"]["id"]
+    unique = "agent_" + hashlib.sha256(str(base).encode()).hexdigest()[:12] + "_" + module_name
+    spec = importlib.util.spec_from_file_location(unique, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    factory = getattr(module, factory_name, None)
+    if not callable(factory):
+        raise AgentLoadError("Entrypoint factory not found")
+    adapter = factory()
+    if not callable(getattr(adapter, "handle", None)):
+        raise AgentLoadError("Adapter must implement handle(ctx, message)")
+    return {"id": agent_id, "version": manifest["metadata"]["version"], "manifest": manifest, "adapter": adapter,
+            "classification": manifest["governance"]["classification"],
+            "tools": set(manifest["capabilities"]["tools"]), "dir": base}
 
 
 class Runtime:
-    def __init__(self, model, record):
-        self.model, self.record = model, record
+    def __init__(self, model, tools, record):
+        self.model, self.tools, self.record = model, tools, record
 
-    def execute(self, envelope):
+    def execute(self, envelope, agent, request_key):
         validate("runtime", envelope)
         self.record("runtime", envelope["traceparent"], {"invocationId": envelope["invocationId"]})
-        out = self.model.invoke(envelope["request"]["input"]["content"], envelope["identity"], envelope["policy"], envelope["traceparent"])
-        return {"invocationId": envelope["invocationId"], "agentVersion": envelope["agentVersion"], "status": "succeeded",
-                "output": {"type": "message", "content": out["content"]}, "traceparent": out["traceparent"],
-                "routeDecisionId": out["routeDecisionId"], "usage": out["usage"]}
+        identity, policy, trace = envelope["identity"], envelope["policy"], envelope["traceparent"]
+        routes, usage, tool_calls = [], {"inputTokens": 0, "outputTokens": 0}, [0]
+
+        def generate(prompt):
+            try:
+                out = self.model.invoke(prompt, identity, policy, trace)
+            except Fault as fault:
+                raise ContextError(fault) from None
+            routes.append(out["routeDecisionId"])
+            for k in usage:
+                usage[k] += out["usage"][k]
+            return out["content"]
+
+        def call_tool(tool_id, version, arguments):
+            if tool_id not in agent["tools"]:
+                raise ContextError(Fault(403, "FORBIDDEN", "Tool is not declared in the Agent Manifest"))
+            tool_calls[0] += 1
+            request = {"invocationId": envelope["invocationId"], "toolId": tool_id, "version": version,
+                       "arguments": arguments, "identity": identity, "policy": policy,
+                       "idempotencyKey": request_key + ":tool-" + str(tool_calls[0]), "traceparent": trace}
+            try:
+                return self.tools.invoke(request)["output"]["content"]
+            except Fault as fault:
+                raise ContextError(fault) from None
+
+        def log(event, fields):
+            self.record("agent-log", trace, {"invocationId": envelope["invocationId"], **fields})
+
+        try:
+            output = agent["adapter"].handle(AgentContext(generate, call_tool, log), copy.deepcopy(envelope["request"]["input"]))
+        except ContextError as exc:
+            raise exc.fault from None
+        except Exception:
+            # Any adapter failure, including a Fault the adapter raises itself, is reported without its message.
+            raise Fault(500, "UPSTREAM_UNAVAILABLE", "Agent adapter failed") from None
+        result = {"invocationId": envelope["invocationId"], "agentVersion": envelope["agentVersion"], "status": "succeeded",
+                  "output": output, "traceparent": trace,
+                  "routeDecisionId": routes[-1] if routes else "route-none", "usage": usage}
+        try:
+            validate("result", result)
+        except Fault:
+            raise Fault(500, "UPSTREAM_UNAVAILABLE", "Agent adapter returned an invalid result") from None
+        return result
 
 
 class Platform:
-    def __init__(self):
+    def __init__(self, agents_dir=None):
         self.audit = []
         self.model = ModelGateway(self.record)
-        self.runtime = Runtime(self.model, self.record)
         self.broker = CredentialBroker(self.record)
         self.tools = ToolGateway(self.broker, self.record)
+        self.runtime = Runtime(self.model, self.tools, self.record)
+        self.agents = {}
+        self.register(BUILTIN_AGENTS / "agent-demo")
+        if agents_dir:
+            for child in sorted(Path(agents_dir).iterdir(), key=lambda c: c.name):
+                if (child / "agent-manifest.json").is_file():
+                    self.register(child)
         self.policy_available = True
         # Classification of the data this Agent handles, decided server-side (policy/data source), not by the caller.
         self.data_classification = None
         self.memo = {}
         self.lock = threading.Lock()
+
+    def register(self, agent_dir):
+        agent = load_agent(agent_dir)
+        existing = self.agents.get(agent["id"])
+        if existing and existing["dir"] != agent["dir"]:
+            raise AgentLoadError("Duplicate Agent id: " + agent["id"])
+        self.agents[agent["id"]] = agent
+        return agent["id"]
 
     def record(self, component, traceparent, fields):
         allowed = {"tenantId", "invocationId", "decisionId", "toolId", "provider"}
@@ -254,8 +387,10 @@ class Platform:
             raise Fault(503, "UPSTREAM_UNAVAILABLE", "Policy service unavailable")
         identity, policy = load("identity"), load("policy")
         validate("invocation", body)
-        if agent_id != "agent-demo":
+        agent = self.agents.get(agent_id)
+        if agent is None:
             raise Fault(404, "NOT_FOUND", "Unknown Agent")
+        identity["agentId"] = agent_id
         if body["context"]["tenantId"] != identity["tenantId"]:
             raise Fault(403, "FORBIDDEN", "Tenant assertion does not match authenticated identity")
         if body["execution"]["mode"] != "sync":
@@ -266,11 +401,11 @@ class Platform:
             traceparent = "00-" + uuid.uuid4().hex + "-" + uuid.uuid4().hex[:16] + "-01"
         if not TRACE.fullmatch(traceparent):
             raise Fault(422, "VALIDATION_ERROR", "Invalid traceparent")
-        authoritative = self.data_classification or policy["classification"]
+        authoritative = effective_classification(self.data_classification or agent["classification"], policy["classification"])
         policy["classification"] = effective_classification(body["context"]["dataClassification"], authoritative)
         authorize(identity, policy, "agents.invoke")
         # Memory-only, single-process idempotency. Real deployments need a persistent atomic effect ledger.
-        cache_key = (identity["tenantId"], identity["principalId"], agent_id, "0.1.0", key)
+        cache_key = (identity["tenantId"], identity["principalId"], agent_id, agent["version"], key)
         digest = canonical_digest(body)
         with self.lock:
             if cache_key in self.memo:
@@ -280,15 +415,16 @@ class Platform:
                 return copy.deepcopy(old_result)
             invocation_id = "inv-" + uuid.uuid4().hex
             self.record("agent-gateway", traceparent, {"tenantId": identity["tenantId"], "invocationId": invocation_id})
-            result = self.runtime.execute({"invocationId": invocation_id, "agentId": agent_id, "agentVersion": "0.1.0",
-                                           "request": body, "identity": identity, "policy": policy, "traceparent": traceparent})
+            result = self.runtime.execute({"invocationId": invocation_id, "agentId": agent_id, "agentVersion": agent["version"],
+                                           "request": body, "identity": identity, "policy": policy, "traceparent": traceparent},
+                                          agent, key)
             validate("result", result)
             self.memo[cache_key] = (digest, result)
             return copy.deepcopy(result)
 
 
-def make_server(port=8765):
-    platform = Platform()
+def make_server(port=8765, agents_dir=None):
+    platform = Platform(agents_dir)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -331,16 +467,26 @@ def make_server(port=8765):
             except Exception:
                 self.send_json(500, Fault(500, "UPSTREAM_UNAVAILABLE", "Internal reference error").problem(), "application/problem+json")
 
+    Handler.platform = platform
     return ThreadingHTTPServer(("127.0.0.1", port), Handler)
 
 
-if __name__ == "__main__":
-    server = make_server()
-    print("Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop", flush=True)
+def serve(port=8765, agents_dir=None):
+    server = make_server(port, agents_dir)
+    print("Local synthetic Agent Gateway: http://127.0.0.1:%d ; agents: %s ; Ctrl-C to stop"
+          % (server.server_address[1], ", ".join(sorted(platform_of(server).agents))), flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+
+
+def platform_of(server):
+    return server.RequestHandlerClass.platform
+
+
+if __name__ == "__main__":
+    serve()
 

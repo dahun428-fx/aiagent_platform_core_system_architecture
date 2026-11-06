@@ -79,13 +79,15 @@ class Contracts(unittest.TestCase):
 
     def test_frozen_contract_release(self):
         actual = {"schemas": SCHEMAS, "apis": {p.name.replace(".openapi.json", ""): json.loads(p.read_text(encoding="utf-8")) for p in (ROOT / "contracts").glob("*.openapi.json")}}
-        frozen = json.loads((ROOT / "contracts/released/0.1.0.json").read_text(encoding="utf-8"))
+        snapshots = sorted((ROOT / "contracts/released").glob("*.json"),
+                           key=lambda p: tuple(int(x) for x in p.stem.split(".")))
+        frozen = json.loads(snapshots[-1].read_text(encoding="utf-8"))
         self.assertEqual(actual, frozen, "Contract changed: reviewed migration and new release snapshot required")
 
     def test_baseline_adr_traceability(self):
         baseline = (ROOT / "docs/requirements/baseline-v0.1.md").read_text(encoding="utf-8")
-        self.assertEqual(len(re.findall(r"^\| Q\d+ \|", baseline, re.M)), 36)
-        for n in range(1, 37):
+        self.assertEqual(len(re.findall(r"^\| Q\d+ \|", baseline, re.M)), 37)
+        for n in range(1, 38):
             text = (ROOT / f"adr/ADR-{n:03}.md").read_text(encoding="utf-8")
             for section in ["Context", "Decision", "Alternatives considered", "Consequences", "Constraints", "Related contracts", "Security impact", "Supersession / migration"]:
                 self.assertIn(section, text)

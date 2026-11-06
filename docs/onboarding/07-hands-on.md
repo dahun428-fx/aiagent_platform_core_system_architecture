@@ -229,4 +229,4 @@ JSON Schema, API, 인가, 멱등성, 승인, 모델 정책, 평가, 포털 정�
 - 기본 거부 원칙에 따라 토큰 누락이나 멱등성 키 재사용 요청은 실행되지 않습니다.
 </div>
 
-<nav class="pager"><a href="06-lifecycle.md"><small>이전</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a><a class="next" href="08-reading-the-spec.md"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav>
+<nav class="pager"><a href="06-lifecycle.md"><small>이전</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a><a class="next" href="14-connect-your-agent.md"><small>다음</small><b>내 Agent 연결과 적합성 검증</b></a></nav>

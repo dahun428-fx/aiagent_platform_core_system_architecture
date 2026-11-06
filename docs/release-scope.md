@@ -7,6 +7,7 @@ TypeScript client/typecheck, 계약/보안/통합 smoke tests, 모듈형 오프�
 
 ## 실제 실행과 설계의 경계
 Python mock은 Agent Platform APIs(Agent 호출 API)→Runtime→Agent Gateway 모델 경로 및 도구 경로→Credential Broker의 동기 흐름을 실행한다. 출력과 감사 기록의 `agent-gateway`, `model-gateway`, `tool-gateway`는 legacy component 이름이다.
+로컬 Registry는 Python in-process adapter만 지원하며 격리 경계가 아니다(로컬 학습·적합성 확인 전용). adapter에는 `timeoutMs`가 적용되지 않는다.
 mock 한계: 데이터 분류는 정책 값보다 낮출 수 없지만 실제 데이터 원천 분류는 없다. retrieval helper는 `agents.invoke` scope로 인가하고, 위임 체인의 마지막이 상위 Agent인지 검증하지 않으며, 멱등성 메모리는 크기 제한이 없다.
 RAG ACL filtering·cross-Agent envelope validation·approval verifier는 deterministic helper로 검증한다.
 실제 외부 상용/자체호스팅 모델, REST/MCP tool server, IdP/STS, workflow engine, vector DB, OTel collector에는 연결하지 않는다.

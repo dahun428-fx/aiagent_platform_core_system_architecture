@@ -32,6 +32,7 @@ onboarding = [
     ("docs/onboarding/13-agent-card.md", "Agent Card와 Agent 간 통신", "10분", "A2A 1.0.0 Agent Card의 필드, 확장 카드, 서명과 Registry 발행 규칙", "agents"),
     ("docs/onboarding/06-lifecycle.md", "Agent 수명주기·Tuning과 프로덕션 승인", "10분", "등록·검증·평가·승인 단계, 승인 요건, FastTrack 개선 흐름", "rocket"),
     ("docs/onboarding/07-hands-on.md", "로컬 환경 구성 및 호출 실습", "30분", "로컬 mock 환경에서 Manifest 검증, Agent 호출 및 오류 응답 확인", "code"),
+    ("docs/onboarding/14-connect-your-agent.md", "내 Agent 연결과 적합성 검증", "30분", "템플릿으로 adapter와 Manifest를 작성해 새 Agent ID로 호출하고 적합성 9항목 통과", "agent"),
     ("docs/onboarding/08-reading-the-spec.md", "기술 표준 해석과 FAQ", "10분", "MUST·SHOULD·MAY, TBD 및 버전 표기의 의미", "question"),
     ("docs/onboarding/10-references.md", "근거와 참고 자료", "참조용", "클라우드 Agent 플랫폼, OpenTelemetry, MCP, A2A, IETF, OWASP 등 외부 근거", "book"),
     ("docs/onboarding/09-glossary.md", "주요 용어 정의", "참조용", "Core Systems, 실행 모델 및 기술 계약의 주요 용어", "book"),

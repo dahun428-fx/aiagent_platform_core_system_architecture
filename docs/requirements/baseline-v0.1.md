@@ -53,6 +53,7 @@ Q1–Q30 이후 Core Systems 정합화를 위해 추가로 확정한 결정이�
 | Q33 | Guardrails | MUST: Guardrail은 공통 검사 서비스와 네 집행 지점(Agent Gateway 모델 경로의 모델 입출력, 도구 경로의 도구 호출·결과, RAG 검색 결과, Agent Runtime의 실행 제어)으로 구성한다. | [ADR-033](../../adr/ADR-033.md) | [Guardrails](../guardrails.md) |
 | Q34 | Observability 규격 | MUST: 실행 추적은 W3C Trace Context로 전파하고, span 이름과 속성은 OpenTelemetry GenAI semantic conventions를 따른다. | [ADR-034](../../adr/ADR-034.md) | [Observability](../observability.md) |
 | Q35 | Evaluation과 Agent Tuning | MUST: Evaluation은 배포 전 평가·실행 추적 분석·운영 모니터링 3단계로 수행하고, 위험도 high Agent는 red teaming을 포함한다. | [ADR-035](../../adr/ADR-035.md) | [Evaluation](../evaluation.md), [Agent Tuning](../agent-tuning.md) |
+| Q37 | Agent Adapter와 로컬 적합성 | MUST: Agent는 AgentContext만 사용하는 adapter로 연결하고, 로컬 Registry와 9개 적합성 검사로 검증한다. | [ADR-037](../../adr/ADR-037.md) | [Core Systems](../core-systems.md) |
 | Q36 | Agent Card | MUST: A2A 프로토콜을 채택하거나 Agent를 다른 팀·외부에 노출할 때, Registry가 Manifest와 등록 정보에서 A2A 1.0.0 Agent Card를 생성하고 조직 키로 JWS(JCS 정규화) 서명해 발행한다. | [ADR-036](../../adr/ADR-036.md) | [Agent Card](../agent-card.md) |
 
 ## 승인과 변경
