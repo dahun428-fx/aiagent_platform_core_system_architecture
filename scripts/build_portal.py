@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, unquote
 import markdown
 from markdown.extensions.toc import TocExtension, slugify_unicode
+from portal_icons import expand as expand_icons, svg as icon_svg
 
 ROOT = Path(__file__).resolve().parents[1]
 P = ROOT / "portal"
@@ -21,17 +22,18 @@ def link(p):
 
 
 onboarding = [
-    ("docs/onboarding/01-why.md", "왜 이 플랫폼이 필요한가", "5분", "팀마다 따로 풀던 신원·데이터·비밀값·추적 문제를 공통 경계에서 해결합니다"),
-    ("docs/onboarding/02-big-picture.md", "한 장으로 보는 전체 구조", "10분", "통제는 모으고 실행은 흩는 두 평면과 구성요소 아홉 개"),
-    ("docs/onboarding/03-one-request.md", "요청 하나 따라가기", "15분", "Agent Gateway에서 모델·도구 호출과 기록까지 한 요청의 길"),
-    ("docs/onboarding/04-trust.md", "신뢰 경계: 무엇을 믿지 않는가", "10분", "요청 본문, 도구 결과, 비밀값, 승인 표시를 믿지 않는 이유"),
-    ("docs/onboarding/05-agents-and-manifest.md", "네 종류 Agent와 Manifest", "10분", "RAG·Tool·Workflow·Multi-Agent와 Agent의 신분증"),
-    ("docs/onboarding/06-lifecycle.md", "내 Agent가 production까지 가는 길", "10분", "로컬 실험에서 승인까지 일곱 단계와 필요한 증거"),
-    ("docs/onboarding/07-hands-on.md", "30분 실습", "30분", "로컬 mock으로 Manifest 검증, 호출, 거부를 직접 확인"),
-    ("docs/onboarding/08-reading-the-spec.md", "규격 읽는 법과 자주 묻는 질문", "10분", "MUST·TBD·버전 표시 읽는 법과 흔한 오해"),
+    ("docs/onboarding/01-why.md", "왜 이 플랫폼이 필요한가", "5분", "팀마다 따로 풀던 신원·데이터·비밀값·추적 문제를 공통 경계에서 해결합니다", "target"),
+    ("docs/onboarding/02-big-picture.md", "한 장으로 보는 전체 구조", "10분", "통제는 모으고 실행은 흩는 두 평면과 구성요소 아홉 개", "map"),
+    ("docs/onboarding/03-one-request.md", "요청 하나 따라가기", "15분", "Agent Gateway에서 모델·도구 호출과 기록까지 한 요청의 길", "trace"),
+    ("docs/onboarding/04-trust.md", "신뢰 경계: 무엇을 믿지 않는가", "10분", "요청 본문, 도구 결과, 비밀값, 승인 표시를 믿지 않는 이유", "shield"),
+    ("docs/onboarding/05-agents-and-manifest.md", "네 종류 Agent와 Manifest", "10분", "RAG·Tool·Workflow·Multi-Agent와 Agent의 신분증", "manifest"),
+    ("docs/onboarding/06-lifecycle.md", "내 Agent가 production까지 가는 길", "10분", "로컬 실험에서 승인까지 일곱 단계와 필요한 증거", "rocket"),
+    ("docs/onboarding/07-hands-on.md", "30분 실습", "30분", "로컬 mock으로 Manifest 검증, 호출, 거부를 직접 확인", "code"),
+    ("docs/onboarding/08-reading-the-spec.md", "규격 읽는 법과 자주 묻는 질문", "10분", "MUST·TBD·버전 표시 읽는 법과 흔한 오해", "question"),
+    ("docs/onboarding/09-glossary.md", "핵심 용어 사전", "필요할 때", "온보딩에 나오는 용어를 한곳에 모은 사전", "book"),
 ]
 navigation = [
-    ("온보딩", [("index.html", "시작하기")] + [(p, t) for p, t, _, _ in onboarding]),
+    ("온보딩", [("index.html", "시작하기")] + [(p, t) for p, t, _, _, _ in onboarding]),
     ("설계 정의", [("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/execution.md", "Durable / HITL")]),
     ("운영 정의", [("docs/operating-model.md", "운영·평가"), ("docs/deployment.md", "배포 프로파일"), ("docs/versioning.md", "계약 변경"), ("docs/ci-integration.md", "CI 통합"), ("docs/glossary.md", "용어와 규범")]),
     ("레퍼런스", [("catalog.html", "계약 · 예제"), ("diagrams.html", "아키텍처 도식 9종"), ("docs/tbd-register.md", "TBD 등록부"), ("docs/release-scope.md", "제공 범위와 한계")]),
@@ -67,7 +69,7 @@ def rewrite_links(body, source):
             return m.group(0)
         resolved = (source.parent / unquote(parts.path)).resolve()
         if resolved in mapping:
-            href = mapping[resolved]
+            href = mapping[resolved] + ("#" + parts.fragment if parts.fragment else "")
             # Generated Markdown heading IDs are not stable across languages. Link to module top.
         else:
             try:
@@ -87,9 +89,10 @@ for source in sources:
     if source.suffix == ".json" or relative.startswith("sources/") and source.name != "README.md":
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
     else:
-        body = markdown.markdown(text, extensions=["tables", "fenced_code", TocExtension(slugify=slugify_unicode, toc_depth="2")])
+        body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", TocExtension(slugify=slugify_unicode, toc_depth="2")])
         body = rewrite_links(body, source)
         body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+        body = expand_icons(body)
     out = mapping[source.resolve()]
     toc = ""
     sections = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body)
@@ -103,8 +106,8 @@ home = """<h1>AI Agent Platform 온보딩</h1>
 <p class="actions"><a class="button" href="docs--onboarding--01-why.html">처음부터 읽기</a><a class="button secondary" href="docs--onboarding--07-hands-on.html">바로 실습하기</a></p>
 <div class="notice"><strong>핵심 한 문장</strong><br>개발자는 지금 쓰는 도구와 프레임워크를 그대로 쓰고, 신원·정책·관측·평가·배포 통제는 플랫폼의 공통 경계에서 적용합니다.</div>
 <h2>읽는 순서</h2><ol class="index-list path">"""
-for p, title, minutes, detail in onboarding:
-    home += f'<li><div><a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">{minutes}</p></div></li>'
+for p, title, minutes, detail, icon in onboarding:
+    home += f'<li><div>{icon_svg(icon, "icon tile-icon")}<a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">{minutes}</p></div></li>'
 home += '</ol><h2>공통 제어, 분산 실행</h2><a href="diagrams.html"><img class="diagram" src="../diagrams/c4-container.svg" alt="C4 Container: Shared Control Plane과 Distributed Execution Plane"></a><p>구성요소별 설명은 <a href="docs--onboarding--02-big-picture.html">한 장으로 보는 전체 구조</a>에 있습니다.</p>'
 home += """<h2>정의 문서로 바로 가기</h2><p>온보딩을 마쳤거나 특정 규칙을 찾는다면 정의 문서로 바로 가세요. 규범(MUST·SHOULD)은 정의 문서가 기준입니다.</p><ul>"""
 for p, title, detail in [

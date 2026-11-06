@@ -1,55 +1,104 @@
 # 왜 이 플랫폼이 필요한가
 
-> 이 페이지는 온보딩 안내서입니다. 규범(MUST/SHOULD)은 링크된 원문 규격이 기준이며, 이 안내서와 다르면 원문이 맞습니다.
+> 온보딩 안내서입니다. 규범(MUST/SHOULD)은 링크된 정의 문서가 기준이며, 안내서와 다르면 정의 문서가 맞습니다.
 
-## 지금 회사에서 벌어지는 일
+<div class="terms" markdown="1">
+<span class="label">핵심 용어</span> [AI Agent](09-glossary.md#term-agent) [공통 경계](09-glossary.md#term-boundary) [계약](09-glossary.md#term-contract) [TBD](09-glossary.md#term-tbd)
+</div>
 
-여러 팀이 각자 AI Agent를 만들기 시작했다고 해 봅시다. 어떤 팀은 LangGraph를, 어떤 팀은 직접 짠 Python 코드를 씁니다. 모델도 제각각이라 외부 상용 LLM을 부르는 팀도 있고, 사내 장비에 올린 오픈소스 모델을 쓰는 팀도 있습니다.
+<div class="goals" markdown="1">
+**{{icon:target}} 이 페이지에서 배울 것**
 
-처음에는 잘 돌아갑니다. 그런데 Agent가 늘어나면 같은 질문이 팀마다 반복됩니다.
+- 팀마다 Agent를 따로 만들 때 생기는 문제 다섯 가지
+- 이 플랫폼이 그 문제를 푸는 방식을 한 문장으로 말하기
+- 이 플랫폼이 하는 일과 하지 않는 일 구분하기
+</div>
 
-- 이 Agent를 호출한 사람이 **누구인지** 어떻게 확인하지?
-- 기밀 문서가 **외부 모델로 나가지 않는다**는 걸 어떻게 보장하지?
-- Agent가 사내 시스템(ERP, 메일, 저장소)을 부를 때 쓰는 **비밀번호·토큰은 어디에** 두지?
-- 문제가 생겼을 때 어떤 요청이 **어디를 거쳐** 무엇을 했는지 어떻게 추적하지?
-- 이 Agent를 실제 업무에 써도 될 만큼 **품질이 검증됐는지** 누가 판단하지?
+## 들어가며
 
-팀마다 이걸 따로 풀면 비용이 겹치고, 보안 수준도 팀마다 달라집니다. 한 팀이 API 키를 코드에 넣어 두는 순간 회사 전체의 위험이 됩니다.
+<div class="opener" markdown="1">
+<span class="tag">{{icon:question}} 질문</span> Agent를 잘 만드는 팀이 이미 있는데, 왜 회사 공통 플랫폼이 필요할까요?
 
-## 이 플랫폼이 하려는 것
+<span class="tag">{{icon:eye}} 관찰</span> Agent가 늘어날수록 팀마다 같은 고민을 다시 풉니다. 누가 불렀는지, 데이터가 밖으로 나가는지, 비밀값은 어디 두는지, 무슨 일이 있었는지. 답이 팀마다 다르면 회사 전체의 보안 수준은 가장 약한 팀에 맞춰집니다.
 
-전사 공통 AI Agent Platform은 위 질문들을 **공통 경계에서 한 번에** 해결하려는 기술 표준입니다. 핵심 주장은 한 문장입니다.
+<span class="tag">{{icon:bulb}} 해결책</span> 이 고민들을 **공통 경계에서 한 번에** 풉니다. 개발은 각 팀이 하던 대로 하고, 통제만 플랫폼이 맡습니다.
+</div>
 
-**개발자는 지금 쓰는 도구와 프레임워크를 그대로 쓰고, 신원·정책·관측·평가·배포 통제는 플랫폼의 공통 경계에서 적용한다.**
+## 팀마다 따로 만들면 생기는 다섯 가지 문제
 
-그래서 이 플랫폼은 "모두 이 Agent Studio에서 개발하세요"라고 하지 않습니다. 소스 코드는 지금처럼 각 팀의 Git 저장소에 있고, 개발도 각자의 IDE와 CLI에서 합니다. 플랫폼이 요구하는 것은 **약속(계약)을 지키는 것**뿐입니다.
+<div class="cards">
+<div class="card">{{icon:user}}<b>누가 불렀나</b><p>호출한 사람과 권한을 팀마다 다르게 확인합니다.</p></div>
+<div class="card">{{icon:cloud}}<b>데이터가 나가나</b><p>기밀 문서가 외부 모델로 전송되지 않는다는 보장이 없습니다.</p></div>
+<div class="card">{{icon:key}}<b>비밀값은 어디에</b><p>ERP·메일·저장소 토큰이 코드나 설정 파일에 남습니다.</p></div>
+<div class="card">{{icon:trace}}<b>무슨 일이 있었나</b><p>요청이 어디를 거쳐 무엇을 했는지 끝까지 추적하기 어렵습니다.</p></div>
+<div class="card">{{icon:test}}<b>써도 되나</b><p>실제 업무에 쓸 만큼 품질이 검증됐는지 판단 기준이 없습니다.</p></div>
+<div class="card">{{icon:warn}}<b>결과</b><p>비용은 겹치고, 한 팀의 실수가 회사 전체의 위험이 됩니다.</p></div>
+</div>
 
-- Agent가 무엇이고 무엇이 필요한지 적은 신분증(Manifest)을 낸다.
-- 모델은 직접 부르지 않고 Model Gateway를 통해 부른다.
-- 사내 도구는 직접 부르지 않고 Tool Gateway를 통해 부른다.
-- 요청 추적 정보(trace)를 끊지 않고 전달한다.
+## 이 플랫폼이 하는 방식
 
-## 이 플랫폼이 하지 않는 것
+<div class="point" markdown="1">
+**{{icon:bulb}} 핵심 포인트** 개발자는 지금 쓰는 도구와 프레임워크를 그대로 쓰고, 신원·정책·관측·평가·배포 통제는 플랫폼의 공통 경계에서 적용합니다.
+</div>
 
-처음 보는 분들이 자주 오해하는 부분입니다.
+소스 코드는 지금처럼 각 팀의 Git 저장소에 있고, 개발도 각자의 IDE와 CLI에서 합니다. 플랫폼이 요구하는 것은 네 가지 **약속(계약)**입니다.
 
-| 오해 | 실제 |
-|---|---|
-| 모든 Agent가 중앙 서버 한 곳에서 실행된다 | 실행은 분산됩니다. 개발자 PC, 사내 서버, 클라우드 어디서든 같은 계약으로 돕니다. 중앙에서 하는 것은 **통제**입니다. |
-| 특정 프레임워크(LangGraph 등)를 써야 한다 | 공통 Runtime 계약과 framework adapter로 연결합니다. 프레임워크는 팀이 고릅니다. |
-| 특정 제품(IdP, CI, 벡터 DB 등)이 정해져 있다 | 정해지지 않았습니다. 회사 결정이 필요한 것은 모두 **TBD**로 남겨 두었습니다. |
-| 소스 코드를 중앙에 업로드해야 한다 | 강제하지 않습니다(MUST NOT). 중앙에는 불변 버전 참조와 검증 증거만 등록합니다. |
+<ol class="flow">
+<li>{{icon:manifest}}<b>신분증을 낸다</b><span>Agent가 무엇이고 무엇이 필요한지 Manifest에 적는다</span></li>
+<li>{{icon:model}}<b>모델은 관문으로</b><span>모델은 Model Gateway를 통해 부른다</span></li>
+<li>{{icon:tools}}<b>도구도 관문으로</b><span>사내 도구는 Tool Gateway를 통해 부른다</span></li>
+<li>{{icon:trace}}<b>추적을 잇는다</b><span>trace 정보를 끊지 않고 전달한다</span></li>
+</ol>
+
+## 하는 일과 하지 않는 일
+
+<div class="compare" markdown="1">
+<div class="bad" markdown="1">
+**{{icon:cross}} 이 플랫폼이 아닌 것**
+
+- 모든 Agent를 중앙 서버 한 곳에서 실행하는 시스템
+- 특정 프레임워크(LangGraph 등)를 강제하는 SDK
+- 특정 IdP·CI·벡터 DB 제품을 정해 둔 패키지
+- 소스 코드를 중앙에 올려야 쓰는 Agent Studio
+</div>
+<div class="good" markdown="1">
+**{{icon:check}} 이 플랫폼인 것**
+
+- 개발자 PC·사내 서버·클라우드 어디서든 같은 계약으로 실행
+- 공통 Runtime 계약과 adapter로 프레임워크는 팀이 선택
+- 회사가 정할 제품과 수치는 **TBD**로 분리
+- 중앙에는 불변 버전 참조와 검증 증거만 등록
+</div>
+</div>
 
 ## 이 패키지에 들어 있는 것
 
-이 패키지는 **구현을 시작하기 위한 기술 표준**입니다. 플랫폼의 구조와 규칙을 정의한 문서, 기계가 읽는 계약 파일(OpenAPI, JSON Schema), 네 종류 Agent의 예제 Manifest, 로컬에서 돌려 볼 수 있는 Python mock과 TypeScript 클라이언트, 그리고 계약을 지키는지 검사하는 테스트가 들어 있습니다.
+<div class="cards">
+<div class="card">{{icon:book}}<b>정의 문서</b><p>구조, 신뢰 경계, 운영 규칙을 정의한 한국어 문서</p></div>
+<div class="card">{{icon:manifest}}<b>계약 파일</b><p>OpenAPI와 JSON Schema로 된 기계가 읽는 계약</p></div>
+<div class="card">{{icon:code}}<b>실행 예제</b><p>4종 Agent Manifest, Python mock, TypeScript 클라이언트, 테스트</p></div>
+</div>
 
-실제 회사 IdP나 운영 환경에 연결된 production 시스템은 아닙니다. 회사 환경에 맞춰 정해야 하는 제품과 수치는 TBD로 표시되어 있습니다.
+실제 회사 IdP나 운영 환경에 연결된 production 시스템은 아닙니다. 구현을 시작하기 위한 기술 표준입니다.
 
-## 더 읽을거리
+<div class="check" markdown="1">
+**{{icon:question}} 스스로 점검**
 
-- 플랫폼 구조 정의: [아키텍처](../architecture.md)
-- 개발과 운영의 역할: [운영·평가](../operating-model.md)
-- 이 패키지가 제공하는 것과 아닌 것: [제공 범위와 한계](../release-scope.md)
+<details markdown="1"><summary>Q1. 이 플랫폼을 쓰려면 개발 프레임워크를 바꿔야 하나요?</summary>
+아닙니다. 공통 Runtime 계약과 framework adapter로 연결하므로 프레임워크는 팀이 고릅니다.
+</details>
 
-다음: [한 장으로 보는 전체 구조](02-big-picture.md)
+<details markdown="1"><summary>Q2. 플랫폼의 중앙에서 하는 일은 실행인가요, 통제인가요?</summary>
+통제입니다. 실행은 여러 환경에 분산되고, 신원·정책·관측·평가·배포 통제를 공통 경계에서 적용합니다.
+</details>
+</div>
+
+<div class="summary" markdown="1">
+**정리**
+
+- 팀마다 따로 풀던 신원·데이터·비밀값·추적·품질 문제를 공통 경계에서 해결합니다.
+- 개발 방식은 그대로 두고, Manifest·Model Gateway·Tool Gateway·trace라는 약속만 지킵니다.
+- 정해지지 않은 제품과 수치는 TBD로 남겨 두고 임의로 정하지 않습니다.
+</div>
+
+<nav class="pager"><a class="next" href="02-big-picture.md"><small>다음</small><b>한 장으로 보는 전체 구조</b></a></nav>
