@@ -69,6 +69,6 @@ Python SDK 호출 예제: `python3 examples/python/client.py`.
 회사 제품, topology별 주소·수량, NFR·비용·용량·보존 수치는 모두 TBD.
 127.0.0.1:8765, fixture의 TTL·depth·평가값은 합성 예제 값이며 회사 표준 수치가 아니다.
 
-이 저장소의 main이 최신 표준이다. `dist/`의 ZIP과 `checksums.sha256`은 `scripts/release.py`를 실행한 시점의 스냅샷이며, 생성 commit은 `verification/results.json`과 `verification/archive-verification.json`의 `source.commit`에 기록된다. commit이 HEAD와 다르면 ZIP은 과거 스냅샷이다.
+이 저장소의 main이 최신 표준이다. `dist/`의 ZIP과 `checksums.sha256`은 `scripts/release.py`를 실행한 시점의 스냅샷이며, 생성 commit은 `verification/results.json`과 `verification/archive-verification-v<버전>.json`의 `source.commit`에 기록된다. commit이 HEAD와 다르면 ZIP은 과거 스냅샷이다. ZIP 이름은 `package.json` 버전을 따르며(`dist/enterprise-ai-agent-platform-v<버전>.zip`), `release.py`는 추적 파일에 커밋하지 않은 변경이 있으면 실행을 거부한다.
 production 구현과 검증의 잔여 범위는 docs/release-scope.md에 명시한다.
 

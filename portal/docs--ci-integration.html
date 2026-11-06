@@ -10,7 +10,7 @@
 <p>회사 CI 제품은 TBD. 이 패키지는 특정 서비스 설정을 선정하지 않고 같은 검증 entrypoint를 제공한다.
 CI는 최소 권한의 ephemeral runner에서 source checkout→고정 개발 의존성 설치→TypeScript 설치→브라우저 준비→scripts/release.py 순서로 실행한다.
 각 명령 exit code가 0이 아니면 release artifact 업로드·승격을 차단해야 한다(MUST).
-verification/results.json, browser-results.json, checksums.sha256, ZIP 및 외부 archive-verification.json을 보존한다.</p>
+verification/results.json, browser-results.json, checksums.sha256, 버전별 ZIP 및 외부 archive-verification-v&lt;버전&gt;.json을 보존한다.</p>
 <h2 id="환경-변수">환경 변수</h2>
 <ul>
 <li>TSC_PATH: TypeScript compiler의 JS 파일. 생략하면 프로젝트 node_modules/typescript/bin/tsc.</li>

@@ -272,6 +272,75 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 </tbody>
 </table></div>
 <p>C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 <a href="docs--onboarding--12-observability-evaluation.html">평가 3단계</a>, 운영 승인은 <a href="docs--onboarding--06-lifecycle.html">수명주기</a>에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.</p>
+<h2 id="신원-모드-delegated와-independent">신원 모드: delegated와 independent</h2>
+<p><code>identity.mode</code>는 adapter가 누구의 권한으로 모델과 도구를 호출하는지 정합니다. 두 모드 모두 호출자는 <code>requiredScopes</code>를 모두 보유해야 하며, 차이는 adapter 실행 중에 쓰이는 신원과 권한입니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th><code>delegated</code></th>
+<th><code>independent</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>실행 신원</td>
+<td>호출자 신원</td>
+<td>Agent workload 신원</td>
+</tr>
+<tr>
+<td>사용자 principal</td>
+<td>포함</td>
+<td>포함하지 않음</td>
+</tr>
+<tr>
+<td>위임 체인(delegation)</td>
+<td>호출자의 위임 그대로</td>
+<td>빈 목록</td>
+</tr>
+<tr>
+<td>모델·도구 호출 권한</td>
+<td>호출자 권한과 정책의 교집합</td>
+<td>Manifest <code>requiredScopes</code>와 정책의 교집합</td>
+</tr>
+<tr>
+<td>적합한 용도</td>
+<td>사용자를 대신해 그 사용자의 데이터에 접근</td>
+<td>사용자와 무관한 배치·집계 작업</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>independent</code> Agent의 권한은 Manifest에 선언한 scope에서만 나옵니다. 따라서 adapter가 쓰는 경로의 scope를 모두 선언해야 합니다(MUST).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>adapter가 호출하는 경로</th>
+<th>필요한 scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 호출 자체</td>
+<td><code>agents.invoke</code></td>
+</tr>
+<tr>
+<td><code>ctx.generate</code> (모델 경로)</td>
+<td><code>models.invoke</code></td>
+</tr>
+<tr>
+<td><code>ctx.call_tool</code> (도구 경로)</td>
+<td><code>tools.read</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>tool</code> 템플릿을 <code>independent</code>로 바꾼 예입니다. 도구와 모델을 모두 호출하므로 세 scope가 필요합니다.</p>
+<pre><code class="language-json">&quot;identity&quot;: {
+  &quot;mode&quot;: &quot;independent&quot;,
+  &quot;requiredScopes&quot;: [&quot;agents.invoke&quot;, &quot;models.invoke&quot;, &quot;tools.read&quot;]
+}
+</code></pre>
+<p>음성 예입니다. 같은 Agent에서 <code>tools.read</code>를 빼면 adapter는 실행되지만 <code>ctx.call_tool</code>에서 403으로 실패합니다. <code>models.invoke</code>를 빼면 <code>ctx.generate</code>에서 같은 이유로 실패합니다. <code>delegated</code> 모드에서는 호출자가 해당 scope를 보유하므로 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 발생하면 먼저 이 표와 <code>requiredScopes</code>를 대조합니다.</p>
+<p>신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(<code>tests/test_conformance.py</code>의 <code>ManifestEnforcementTests</code>: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.</p>
 <h2 id="manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -424,6 +493,11 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 <td>Manifest에 도구 미선언</td>
 <td><code>capabilities.tools</code>에 추가</td>
 </tr>
+<tr>
+<td><code>independent</code>로 바꾼 뒤 403</td>
+<td>workload 권한에 경로 scope 없음</td>
+<td><code>requiredScopes</code>에 <code>models.invoke</code>·<code>tools.read</code> 선언</td>
+</tr>
 </tbody>
 </table></div>
 <div class="check">
@@ -445,4 +519,4 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 <li>in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.</li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-11항목">적합성 검사 11항목</a><a href="#manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-11항목">적합성 검사 11항목</a><a href="#신원-모드-delegated와-independent">신원 모드: delegated와 independent</a><a href="#manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -74,6 +74,16 @@ class ManifestEnforcementTests(unittest.TestCase):
         self.assertEqual(e.exception.status, 403)
 
 
+    def test_independent_tool_agent_needs_its_own_tool_scope(self):
+        agent = self.platform.agents["my-tool-agent"]
+        agent["manifest"]["identity"] = {"mode": "independent", "requiredScopes": ["agents.invoke", "models.invoke"]}
+        with self.assertRaises(ref.Fault) as e:
+            self.platform.invoke("my-tool-agent", self.body, "Bearer mock-user", "s4", TRACE)
+        self.assertEqual(e.exception.status, 403)
+        agent["manifest"]["identity"]["requiredScopes"].append("tools.read")
+        result = self.platform.invoke("my-tool-agent", self.body, "Bearer mock-user", "s5", TRACE)
+        self.assertEqual(result["status"], "succeeded")
+
 class LocalRegistryTests(unittest.TestCase):
     def body(self):
         return ref.load("invocation")

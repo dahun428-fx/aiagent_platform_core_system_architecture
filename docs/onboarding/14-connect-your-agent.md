@@ -164,6 +164,39 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 
 C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 [평가 3단계](12-observability-evaluation.md), 운영 승인은 [수명주기](06-lifecycle.md)에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.
 
+## 신원 모드: delegated와 independent
+
+`identity.mode`는 adapter가 누구의 권한으로 모델과 도구를 호출하는지 정합니다. 두 모드 모두 호출자는 `requiredScopes`를 모두 보유해야 하며, 차이는 adapter 실행 중에 쓰이는 신원과 권한입니다.
+
+| 항목 | `delegated` | `independent` |
+|---|---|---|
+| 실행 신원 | 호출자 신원 | Agent workload 신원 |
+| 사용자 principal | 포함 | 포함하지 않음 |
+| 위임 체인(delegation) | 호출자의 위임 그대로 | 빈 목록 |
+| 모델·도구 호출 권한 | 호출자 권한과 정책의 교집합 | Manifest `requiredScopes`와 정책의 교집합 |
+| 적합한 용도 | 사용자를 대신해 그 사용자의 데이터에 접근 | 사용자와 무관한 배치·집계 작업 |
+
+`independent` Agent의 권한은 Manifest에 선언한 scope에서만 나옵니다. 따라서 adapter가 쓰는 경로의 scope를 모두 선언해야 합니다(MUST).
+
+| adapter가 호출하는 경로 | 필요한 scope |
+|---|---|
+| Agent 호출 자체 | `agents.invoke` |
+| `ctx.generate` (모델 경로) | `models.invoke` |
+| `ctx.call_tool` (도구 경로) | `tools.read` |
+
+`tool` 템플릿을 `independent`로 바꾼 예입니다. 도구와 모델을 모두 호출하므로 세 scope가 필요합니다.
+
+```json
+"identity": {
+  "mode": "independent",
+  "requiredScopes": ["agents.invoke", "models.invoke", "tools.read"]
+}
+```
+
+음성 예입니다. 같은 Agent에서 `tools.read`를 빼면 adapter는 실행되지만 `ctx.call_tool`에서 403으로 실패합니다. `models.invoke`를 빼면 `ctx.generate`에서 같은 이유로 실패합니다. `delegated` 모드에서는 호출자가 해당 scope를 보유하므로 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 발생하면 먼저 이 표와 `requiredScopes`를 대조합니다.
+
+신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(`tests/test_conformance.py`의 `ManifestEnforcementTests`: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.
+
 ## Manifest 필드 지원 범위 (로컬 mock)
 
 | 필드 | 처리 | 내용 |
@@ -208,6 +241,7 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 | C2 `invalid result` | `content`가 비었거나 형식이 다름 | `{"type": "message", "content": "<비어 있지 않은 텍스트>"}` 반환 |
 | C8 `credential-like text` | 응답에 토큰·lease 형태 문자열 포함 | 응답에서 해당 문자열 제거 |
 | 호출 시 403 `Tool is not declared` | Manifest에 도구 미선언 | `capabilities.tools`에 추가 |
+| `independent`로 바꾼 뒤 403 | workload 권한에 경로 scope 없음 | `requiredScopes`에 `models.invoke`·`tools.read` 선언 |
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
