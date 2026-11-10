@@ -59,7 +59,7 @@ def layout(title, body, current="", source=None, toc=""):
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>{html.escape(title)} · Agent Platform</title><link rel="stylesheet" href="styles.css">
-<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script></head>
 <body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색">{nav}</nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
@@ -124,7 +124,7 @@ home = f"""<h1>AI Agent Platform 개발자 가이드</h1>
 <a href="{G}02-big-picture.html" class="s-ext-tool"><b>{{{{icon:cloud}}}} External Tools and Models</b><small>Agent Gateway로만 접근</small></a>
 <a href="{G}02-big-picture.html" class="s-infra"><b>{{{{icon:server}}}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></a>
 </div>
-<p class="caption">블록을 선택하면 해당 Core System을 설명하는 장으로 이동합니다. 전체 설명은 <a href="{G}02-big-picture.html">Core Systems 아키텍처</a>에 있습니다.</p>
+<p class="caption">블록을 선택하면 해당 Core System을 설명하는 장으로 이동합니다. 전체 설명은 <a href="{G}02-big-picture.html">Core Systems 아키텍처</a>에 있습니다. 본문에서 점선으로 표시된 용어를 선택하면 정의가 바로 표시되며, 화면 오른쪽 아래 <b>용어</b> 버튼(단축키 <kbd>?</kbd>)으로 어느 페이지에서나 용어를 검색할 수 있습니다.</p>
 <h2>이 구조가 보장하는 네 가지</h2>
 <div class="cards">
 <div class="card">{{{{icon:control}}}}<b>개발 방식은 자유, 통제는 공통</b><p>Agent 개발에는 팀별 프레임워크와 도구를 사용합니다. 인증·인가, 정책, 관측, 평가, 배포 통제는 모든 Agent에 플랫폼이 동일하게 적용합니다.</p><span class="sub"><a href="{G}01-why.html">도입 배경과 설계 원칙</a></span></div>
@@ -174,6 +174,30 @@ for svg in sorted((ROOT / "diagrams").glob("*.svg"), key=Path.as_posix):
     diagrams += f'<h2>{html.escape(svg.stem)}</h2><img class="diagram" src="../diagrams/{svg.name}" alt="{html.escape(svg.stem)} 아키텍처 도식"><p><a href="../diagrams/{svg.stem}.mmd">Mermaid 원문</a> · <a href="../diagrams/{svg.name}">SVG 원본</a></p>'
 files["portal/diagrams.html"] = layout("아키텍처 도식", diagrams, "diagrams.html")
 files["portal/search-index.js"] = "window.PLATFORM_SEARCH = " + json.dumps(index, ensure_ascii=False).replace("</", "<\\/") + ";\n"
+# Glossary terms for in-page term help (popover on first mention, searchable term panel).
+GLOSSARY = ROOT / "docs/onboarding/09-glossary.md"
+GLOSSARY_HREF = link("docs/onboarding/09-glossary.md")
+# Keys too generic to mark in running text.
+GENERIC_KEYS = {"Agent", "AI Agent", "Runtime", "Adapter", "Space", "DevTools", "Contract", "mock", "Mock implementation",
+                "production", "Core Systems", "Agent Tools", "Agent Factory", "Agent Identity", "Credential Broker", "Registry",
+                "Guardrails", "AgentContext", "Red teaming", "Contract-as-Code", "등록", "승인", "배포", "deployment"}
+
+
+def glossary_terms():
+    terms = []
+    pattern = r'<div class="term" id="(term-[^"]+)">.*?<b>(.*?) <small>(.*?)</small></b><p>(.*?)</p>'
+    for term_id, name, alt, definition in re.findall(pattern, GLOSSARY.read_text(encoding="utf-8")):
+        name, alt = re.sub(r"<[^>]+>", "", name).strip(), re.sub(r"<[^>]+>", "", alt).strip()
+        keys = [k.strip() for k in re.split(r" / | · ", name)]
+        keys += [k.strip() for k in re.split(r" / |, | · ", alt.split(" · 계약")[0])
+                 if re.fullmatch(r"[A-Za-z][A-Za-z0-9 ()\-]{2,}", k.strip())]
+        keys = sorted({k for k in keys if len(k) >= 2 and k not in GENERIC_KEYS}, key=len, reverse=True)
+        terms.append({"id": term_id, "name": name, "alt": alt if alt != name else "", "keys": keys,
+                      "def": re.sub(r"<[^>]+>", "", definition).strip(), "href": GLOSSARY_HREF + "#" + term_id})
+    return terms
+
+
+files["portal/glossary-index.js"] = "window.PLATFORM_TERMS = " + json.dumps(glossary_terms(), ensure_ascii=False).replace("</", "<" + chr(92) + "/") + ";\n"
 if "--write" in sys.argv:
     for p, content in files.items():
         (ROOT / p).parent.mkdir(parents=True, exist_ok=True)

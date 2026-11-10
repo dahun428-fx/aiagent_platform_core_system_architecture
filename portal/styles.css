@@ -425,3 +425,24 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
 .card .sub a { color: inherit; }
 .stack > a > b { overflow-wrap: normal; word-break: keep-all; }
 .stack .s-ext-app > b, .stack .s-ext-tool > b { font-size: 13px; }
+
+/* Term help */
+.gloss { border-bottom: 1px dashed var(--accent); cursor: help; border-radius: 2px; }
+.gloss:hover, .gloss:focus-visible { background: var(--accent-wash); outline: none; }
+.gloss-pop { position: absolute; z-index: 60; padding: 14px 16px; background: var(--ground); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(0, 0, 0, .14); font-size: 14px; line-height: 1.6; }
+.gloss-name { margin: 0 0 4px; font-weight: 700; color: var(--ink); }
+.gloss-name small { margin-left: 8px; font-weight: 500; font-size: 12px; color: var(--ink-2); }
+.gloss-def { margin: 0 0 8px; color: var(--ink-2); }
+.gloss-more { font-size: 13px; font-weight: 600; color: var(--accent); }
+.gloss-open { position: fixed; right: 20px; bottom: 20px; z-index: 50; min-height: 44px; padding: 10px 18px; font: inherit; font-size: 14px; font-weight: 700; color: var(--ground); background: var(--accent); border: 0; border-radius: 999px; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); cursor: pointer; }
+.gloss-open:hover { background: var(--ink); }
+.gloss-panel { position: fixed; right: 20px; bottom: 76px; z-index: 55; width: min(420px, calc(100vw - 40px)); max-height: min(70vh, 640px); display: flex; flex-direction: column; background: var(--ground); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 40px rgba(0, 0, 0, .2); }
+.gloss-panel[hidden] { display: none; }
+.gloss-top { display: flex; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
+.gloss-top input { flex: 1; min-width: 0; min-height: 40px; padding: 8px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 0; border-radius: var(--radius); }
+.gloss-close { padding: 8px 12px; font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 0; border-radius: var(--radius); cursor: pointer; }
+.gloss-list { overflow: auto; padding: 4px 12px 12px; font-size: 14px; line-height: 1.6; }
+.gloss-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.gloss-item:last-child { border-bottom: 0; }
+.gloss-empty { color: var(--ink-2); }
+@media print { .gloss-open, .gloss-panel, .gloss-pop { display: none !important; } .gloss { border: 0; } }
