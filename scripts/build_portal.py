@@ -187,13 +187,13 @@ def glossary_terms():
     terms = []
     pattern = r'<div class="term" id="(term-[^"]+)">.*?<b>(.*?) <small>(.*?)</small></b><p>(.*?)</p>'
     for term_id, name, alt, definition in re.findall(pattern, GLOSSARY.read_text(encoding="utf-8")):
-        name, alt = re.sub(r"<[^>]+>", "", name).strip(), re.sub(r"<[^>]+>", "", alt).strip()
+        name, alt = html.unescape(re.sub(r"<[^>]+>", "", name)).strip(), html.unescape(re.sub(r"<[^>]+>", "", alt)).strip()
         keys = [k.strip() for k in re.split(r" / | · ", name)]
         keys += [k.strip() for k in re.split(r" / |, | · ", alt.split(" · 계약")[0])
                  if re.fullmatch(r"[A-Za-z][A-Za-z0-9 ()\-]{2,}", k.strip())]
         keys = sorted({k for k in keys if len(k) >= 2 and k not in GENERIC_KEYS}, key=lambda k: (-len(k), k))
         terms.append({"id": term_id, "name": name, "alt": alt if alt != name else "", "keys": keys,
-                      "def": re.sub(r"<[^>]+>", "", definition).strip(), "href": GLOSSARY_HREF + "#" + term_id})
+                      "def": html.unescape(re.sub(r"<[^>]+>", "", definition)).strip(), "href": GLOSSARY_HREF + "#" + term_id})
     return terms
 
 
