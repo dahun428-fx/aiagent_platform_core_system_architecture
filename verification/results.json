@@ -1,29 +1,37 @@
 {
-  "packageVersion": "0.1.0",
+  "packageVersion": "0.1.1",
   "status": "passed",
-  "date": "2026-10-30T16:27:52.595459+09:00",
+  "date": "2026-11-10T14:45:12.119747+09:00",
   "runtime": {
-    "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
-    "node": "v22.22.2",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "node": "v24.16.0",
     "jsonschema": "4.24.0",
-    "openapi-spec-validator": "0.8.0"
+    "openapi-spec-validator": "0.7.2"
+  },
+  "source": {
+    "commit": "69b04fa972db98cdad4e89f252a1197ad8484b0f",
+    "dirtyTrackedFiles": [],
+    "lockfiles": {
+      "package-lock.json": "dccaa7afd54be390aee0901378e681a2432596e7f80c7d79b7306ebb1612c1a2",
+      "requirements-dev.txt": "a88db8cee737fbb2838d4864d75d9594437d65fada7e026955c3d4d5c63256de"
+    }
   },
   "checks": [
     {
       "check": "portal-rebuild",
       "command": [
-        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "C:\\Users\\jungdahun\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe",
         "scripts/build_portal.py",
         "--write"
       ],
       "exitCode": 0,
-      "stdout": "Built 87 offline portal files\n",
+      "stdout": "Built 117 offline portal files\n",
       "stderr": ""
     },
     {
       "check": "contract-and-runtime-tests",
       "command": [
-        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "C:\\Users\\jungdahun\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe",
         "-m",
         "unittest",
         "discover",
@@ -33,13 +41,13 @@
       ],
       "exitCode": 0,
       "stdout": "",
-      "stderr": "test_four_manifests_validate_locally (test_cli.CLITests.test_four_manifests_validate_locally) ... ok\ntest_invalid_manifest_and_missing_file_return_nonzero (test_cli.CLITests.test_invalid_manifest_and_missing_file_return_nonzero) ... ok\ntest_baseline_adr_traceability (test_contracts.Contracts.test_baseline_adr_traceability) ... ok\ntest_frozen_contract_release (test_contracts.Contracts.test_frozen_contract_release) ... ok\ntest_identity_delegation_conditions (test_contracts.Contracts.test_identity_delegation_conditions) ... ok\ntest_markdown_local_links (test_contracts.Contracts.test_markdown_local_links) ... ok\ntest_metaschemas_and_all_positive_fixtures (test_contracts.Contracts.test_metaschemas_and_all_positive_fixtures) ... ok\ntest_negative_manifest_fixtures (test_contracts.Contracts.test_negative_manifest_fixtures) ... ok\ntest_offline_portal_assets_and_links (test_contracts.Contracts.test_offline_portal_assets_and_links) ... ok\ntest_openapi_documents_security_and_examples (test_contracts.Contracts.test_openapi_documents_security_and_examples) ... ok\ntest_approval_replay_and_expiry (test_runtime.RuntimeTests.test_approval_replay_and_expiry) ... ok\ntest_broker_trace_follows_tool_invocation (test_runtime.RuntimeTests.test_broker_trace_follows_tool_invocation) ... ok\ntest_classification_routing_fail_closed (test_runtime.RuntimeTests.test_classification_routing_fail_closed) ... ok\ntest_concurrent_idempotency (test_runtime.RuntimeTests.test_concurrent_idempotency) ... ok\ntest_cross_agent_cycles_depth_scope_and_tenant (test_runtime.RuntimeTests.test_cross_agent_cycles_depth_scope_and_tenant) ... ok\ntest_evaluation_and_redaction (test_runtime.RuntimeTests.test_evaluation_and_redaction) ... ok\ntest_http_contract_smoke (test_runtime.RuntimeTests.test_http_contract_smoke) ... ok\ntest_idempotency_replay_and_body_conflict (test_runtime.RuntimeTests.test_idempotency_replay_and_body_conflict) ... ok\ntest_input_validation_and_trace_validation (test_runtime.RuntimeTests.test_input_validation_and_trace_validation) ... ok\ntest_lease_binding_expiry_audience_scope (test_runtime.RuntimeTests.test_lease_binding_expiry_audience_scope) ... ok\ntest_missing_auth_and_tenant_spoof_denied (test_runtime.RuntimeTests.test_missing_auth_and_tenant_spoof_denied) ... ok\ntest_policy_unavailable_and_expired (test_runtime.RuntimeTests.test_policy_unavailable_and_expired) ... ok\ntest_retrieval_acl_and_classification_before_context (test_runtime.RuntimeTests.test_retrieval_acl_and_classification_before_context) ... ok\ntest_tool_broker_and_no_credential_leak (test_runtime.RuntimeTests.test_tool_broker_and_no_credential_leak) ... ok\ntest_tool_unknown_scope_tenant_and_write_denied (test_runtime.RuntimeTests.test_tool_unknown_scope_tenant_and_write_denied) ... ok\ntest_unknown_agent_and_unsupported_async (test_runtime.RuntimeTests.test_unknown_agent_and_unsupported_async) ... ok\ntest_vertical_flow_and_output_contract (test_runtime.RuntimeTests.test_vertical_flow_and_output_contract) ... ok\n\n----------------------------------------------------------------------\nRan 27 tests in 0.670s\n\nOK\n"
+      "stderr": "test_four_manifests_validate_locally (test_cli.CLITests.test_four_manifests_validate_locally) ... ok\ntest_invalid_manifest_and_missing_file_return_nonzero (test_cli.CLITests.test_invalid_manifest_and_missing_file_return_nonzero) ... ok\ntest_broken_adapters_fail_the_matching_check (test_conformance.ConformanceTests.test_broken_adapters_fail_the_matching_check) ... ok\ntest_builtin_agent_demo_passes (test_conformance.ConformanceTests.test_builtin_agent_demo_passes) ... ok\ntest_cli_exit_codes (test_conformance.ConformanceTests.test_cli_exit_codes) ... ok\ntest_templates_pass_every_check (test_conformance.ConformanceTests.test_templates_pass_every_check) ... ok\ntest_agent_without_model_call_gets_valid_result (test_conformance.LocalRegistryTests.test_agent_without_model_call_gets_valid_result) ... ok\ntest_duplicate_agent_id_is_rejected (test_conformance.LocalRegistryTests.test_duplicate_agent_id_is_rejected) ... ok\ntest_entrypoint_and_profile_rules (test_conformance.LocalRegistryTests.test_entrypoint_and_profile_rules) ... ok\ntest_entrypoint_outside_folder_is_rejected (test_conformance.LocalRegistryTests.test_entrypoint_outside_folder_is_rejected) ... ok\ntest_new_agent_id_is_callable_without_core_changes (test_conformance.LocalRegistryTests.test_new_agent_id_is_callable_without_core_changes) ... ok\ntest_same_module_name_loads_independently (test_conformance.LocalRegistryTests.test_same_module_name_loads_independently) ... ok\ntest_independent_mode_runs_as_workload (test_conformance.ManifestEnforcementTests.test_independent_mode_runs_as_workload) ... ok\ntest_independent_mode_without_grant_cannot_call_model (test_conformance.ManifestEnforcementTests.test_independent_mode_without_grant_cannot_call_model) ... ok\ntest_independent_tool_agent_needs_its_own_tool_scope (test_conformance.ManifestEnforcementTests.test_independent_tool_agent_needs_its_own_tool_scope) ... ok\ntest_missing_required_scope_blocks_adapter (test_conformance.ManifestEnforcementTests.test_missing_required_scope_blocks_adapter) ... ok\ntest_baseline_adr_traceability (test_contracts.Contracts.test_baseline_adr_traceability) ... ok\ntest_frozen_contract_release (test_contracts.Contracts.test_frozen_contract_release) ... ok\ntest_identity_delegation_conditions (test_contracts.Contracts.test_identity_delegation_conditions) ... ok\ntest_markdown_local_links (test_contracts.Contracts.test_markdown_local_links) ... ok\ntest_metaschemas_and_all_positive_fixtures (test_contracts.Contracts.test_metaschemas_and_all_positive_fixtures) ... ok\ntest_negative_manifest_fixtures (test_contracts.Contracts.test_negative_manifest_fixtures) ... ok\ntest_offline_portal_assets_and_links (test_contracts.Contracts.test_offline_portal_assets_and_links) ... ok\ntest_openapi_documents_security_and_examples (test_contracts.Contracts.test_openapi_documents_security_and_examples) ... ok\ntest_generated_and_junk_files_are_excluded_and_order_is_stable (test_contracts.PackagingTests.test_generated_and_junk_files_are_excluded_and_order_is_stable) ... ok\ntest_release_name_follows_package_version (test_contracts.PackagingTests.test_release_name_follows_package_version) ... ok\ntest_release_refuses_changed_source_but_not_earlier_outputs (test_contracts.PackagingTests.test_release_refuses_changed_source_but_not_earlier_outputs) ... ok\ntest_sensitive_files_fail_packaging (test_contracts.PackagingTests.test_sensitive_files_fail_packaging) ... ok\ntest_tracked_files_include_current_guide (test_contracts.PackagingTests.test_tracked_files_include_current_guide) ... ok\ntest_approval_replay_and_expiry (test_runtime.RuntimeTests.test_approval_replay_and_expiry) ... ok\ntest_broker_trace_follows_tool_invocation (test_runtime.RuntimeTests.test_broker_trace_follows_tool_invocation) ... ok\ntest_caller_cannot_downgrade_classification (test_runtime.RuntimeTests.test_caller_cannot_downgrade_classification) ... ok\ntest_classification_routing_fail_closed (test_runtime.RuntimeTests.test_classification_routing_fail_closed) ... ok\ntest_concurrent_idempotency (test_runtime.RuntimeTests.test_concurrent_idempotency) ... ok\ntest_cross_agent_cycles_depth_scope_and_tenant (test_runtime.RuntimeTests.test_cross_agent_cycles_depth_scope_and_tenant) ... ok\ntest_evaluation_and_redaction (test_runtime.RuntimeTests.test_evaluation_and_redaction) ... ok\ntest_http_contract_smoke (test_runtime.RuntimeTests.test_http_contract_smoke) ... ok\ntest_idempotency_replay_and_body_conflict (test_runtime.RuntimeTests.test_idempotency_replay_and_body_conflict) ... ok\ntest_input_validation_and_trace_validation (test_runtime.RuntimeTests.test_input_validation_and_trace_validation) ... ok\ntest_lease_binding_expiry_audience_scope (test_runtime.RuntimeTests.test_lease_binding_expiry_audience_scope) ... ok\ntest_missing_auth_and_tenant_spoof_denied (test_runtime.RuntimeTests.test_missing_auth_and_tenant_spoof_denied) ... ok\ntest_policy_unavailable_and_expired (test_runtime.RuntimeTests.test_policy_unavailable_and_expired) ... ok\ntest_retrieval_acl_and_classification_before_context (test_runtime.RuntimeTests.test_retrieval_acl_and_classification_before_context) ... ok\ntest_tool_broker_and_no_credential_leak (test_runtime.RuntimeTests.test_tool_broker_and_no_credential_leak) ... ok\ntest_tool_retry_with_new_trace_returns_cached_result (test_runtime.RuntimeTests.test_tool_retry_with_new_trace_returns_cached_result) ... ok\ntest_tool_unknown_scope_tenant_and_write_denied (test_runtime.RuntimeTests.test_tool_unknown_scope_tenant_and_write_denied) ... ok\ntest_unknown_agent_and_unsupported_async (test_runtime.RuntimeTests.test_unknown_agent_and_unsupported_async) ... ok\ntest_vertical_flow_and_output_contract (test_runtime.RuntimeTests.test_vertical_flow_and_output_contract) ... ok\n\n----------------------------------------------------------------------\nRan 48 tests in 5.395s\n\nOK\n"
     },
     {
       "check": "typescript-typecheck",
       "command": [
         "node",
-        "/tmp/agent-platform-tools/node_modules/typescript/bin/tsc",
+        "E:\\aiagent_platform_core_system_architecture\\node_modules\\typescript\\bin\\tsc",
         "--noEmit",
         "-p",
         "examples/typescript/tsconfig.json"
@@ -52,7 +60,7 @@
       "check": "typescript-build",
       "command": [
         "node",
-        "/tmp/agent-platform-tools/node_modules/typescript/bin/tsc",
+        "E:\\aiagent_platform_core_system_architecture\\node_modules\\typescript\\bin\\tsc",
         "-p",
         "examples/typescript/tsconfig.json"
       ],
@@ -63,11 +71,11 @@
     {
       "check": "python-typescript-http-smoke",
       "command": [
-        "/Users/2302-n0214/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "C:\\Users\\jungdahun\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\python.exe",
         "scripts/smoke_clients.py"
       ],
       "exitCode": 0,
-      "stdout": "[\n  {\n    \"check\": \"python-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-f52f19bf92db49c2b9f4e5fc45542af9\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-630ad4d22b614fad98ea2067b6b8a18e-bb41831215b14329-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  },\n  {\n    \"check\": \"typescript-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-210d009f2cf14714ba8b14d47e1eb126\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-55e878a3666943e2bfc229cd4b0efce4-5834a36849954129-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  }\n]\n",
+      "stdout": "[\n  {\n    \"check\": \"python-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-79ea615ec43547a397ae61e11e27b65d\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-dcb3ceab994944939ca9e94c5da4b6fe-e068394177ad4521-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  },\n  {\n    \"check\": \"typescript-http-client\",\n    \"passed\": true,\n    \"result\": {\n      \"invocationId\": \"inv-8893a983a75444b1accf66438aa9a0c6\",\n      \"agentVersion\": \"0.1.0\",\n      \"status\": \"succeeded\",\n      \"output\": {\n        \"type\": \"message\",\n        \"content\": \"mock:hello\"\n      },\n      \"traceparent\": \"00-f17cd72b25c44cffb8400ef6c6e46b46-ff1cd39df2a1479e-01\",\n      \"routeDecisionId\": \"route-self-hosted\",\n      \"usage\": {\n        \"inputTokens\": 1,\n        \"outputTokens\": 1\n      }\n    }\n  }\n]\n",
       "stderr": ""
     },
     {
@@ -77,8 +85,13 @@
         "scripts/browser-check.cjs"
       ],
       "exitCode": 0,
-      "stdout": "{\n  \"status\": \"passed\",\n  \"browser\": \"151.0.7922.34\",\n  \"mode\": \"file:// + offline:true\",\n  \"checks\": [\n    {\n      \"check\": \"desktop-file-offline\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"local-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"empty-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"all-nine-local-svg\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"baseline-table\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"broker-module\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-menu\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-no-page-overflow\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"console-clean\",\n      \"passed\": true,\n      \"errors\": []\n    },\n    {\n      \"check\": \"zero-network-dependency\",\n      \"passed\": true,\n      \"network\": []\n    }\n  ]\n}\n",
+      "stdout": "{\n  \"status\": \"passed\",\n  \"browser\": \"151.0.7922.34\",\n  \"mode\": \"file:// + offline:true\",\n  \"checks\": [\n    {\n      \"check\": \"desktop-file-offline\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"local-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"empty-search\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"all-nine-local-svg\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"baseline-table\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"term-help\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"step-player\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"request-simulator\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"broker-module\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-menu\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"mobile-no-page-overflow\",\n      \"passed\": true\n    },\n    {\n      \"check\": \"console-clean\",\n      \"passed\": true,\n      \"errors\": []\n    },\n    {\n      \"check\": \"zero-network-dependency\",\n      \"passed\": true,\n      \"network\": []\n    }\n  ]\n}\n",
       "stderr": ""
+    },
+    {
+      "check": "source-unchanged",
+      "exitCode": 0,
+      "changed": []
     }
   ],
   "scope": "Standards and local mock validation only; production integrations / numeric company SLOs TBD."

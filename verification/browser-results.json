@@ -24,6 +24,18 @@
       "passed": true
     },
     {
+      "check": "term-help",
+      "passed": true
+    },
+    {
+      "check": "step-player",
+      "passed": true
+    },
+    {
+      "check": "request-simulator",
+      "passed": true
+    },
+    {
       "check": "broker-module",
       "passed": true
     },
