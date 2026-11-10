@@ -191,7 +191,7 @@ def glossary_terms():
         keys = [k.strip() for k in re.split(r" / | · ", name)]
         keys += [k.strip() for k in re.split(r" / |, | · ", alt.split(" · 계약")[0])
                  if re.fullmatch(r"[A-Za-z][A-Za-z0-9 ()\-]{2,}", k.strip())]
-        keys = sorted({k for k in keys if len(k) >= 2 and k not in GENERIC_KEYS}, key=len, reverse=True)
+        keys = sorted({k for k in keys if len(k) >= 2 and k not in GENERIC_KEYS}, key=lambda k: (-len(k), k))
         terms.append({"id": term_id, "name": name, "alt": alt if alt != name else "", "keys": keys,
                       "def": re.sub(r"<[^>]+>", "", definition).strip(), "href": GLOSSARY_HREF + "#" + term_id})
     return terms
