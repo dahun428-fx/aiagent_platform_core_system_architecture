@@ -372,7 +372,7 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
 
 /* Core Systems stack diagram */
 .stack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 0.9fr); grid-auto-rows: minmax(56px, auto); gap: 8px; margin: 28px 0; }
-.stack > div { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 14px; border-radius: var(--radius); background: var(--surface); min-width: 0; }
+.stack > div, .stack > a { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 14px; border-radius: var(--radius); background: var(--surface); min-width: 0; }
 .stack > div > b { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.35; }
 .stack > div > b .icon { width: 20px; height: 20px; color: var(--accent); flex: none; }
 .stack > div > small { font-size: 12px; line-height: 1.4; color: var(--ink-2); }
@@ -407,8 +407,21 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
 
 @media (max-width: 760px) {
   .stack { grid-template-columns: 1fr; }
-  .stack > div { grid-column: 1 !important; grid-row: auto !important; }
+  .stack > div, .stack > a { grid-column: 1 !important; grid-row: auto !important; }
 }
-.stack { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(128px, 1fr); }
+@media (min-width: 761px) { .stack { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(128px, 1fr); } }
 .stack > div > b { overflow-wrap: normal; }
+.stack .s-ext-app > b, .stack .s-ext-tool > b { font-size: 13px; }
+
+/* Home: architecture first */
+.thesis b { color: var(--ink); }
+.home-stack { margin: 24px 0 8px; }
+.stack > a { color: inherit; text-decoration: none; transition: box-shadow .15s, transform .15s; }
+.stack > a > b { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.35; }
+.stack > a > b .icon { width: 20px; height: 20px; color: var(--accent); flex: none; }
+.stack > a > small { font-size: 12px; line-height: 1.4; color: var(--ink-2); }
+.stack > a:hover, .stack > a:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.caption { margin: 0 0 32px; font-size: 13px; color: var(--ink-2); }
+.card .sub a { color: inherit; }
+.stack > a > b { overflow-wrap: normal; word-break: keep-all; }
 .stack .s-ext-app > b, .stack .s-ext-tool > b { font-size: 13px; }

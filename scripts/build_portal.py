@@ -106,14 +106,37 @@ for source in sources:
     files["portal/" + out] = layout(title, body, out, relative, toc)
     index.append({"title": title, "href": out, "text": text})
 
-home = """<h1>AI Agent Platform 개발자 가이드</h1>
-<p class="lead">전사 공통 AI Agent Platform의 아키텍처, 보안 모델, Agent 개발 및 승인 절차를 설명합니다.<br>학습 경로에 따라 주요 기술 계약을 이해하고, 로컬 mock 환경에서 Manifest 검증과 Agent 호출을 실습할 수 있습니다.</p>
-<p class="actions"><a class="button" href="docs--onboarding--01-why.html">가이드 시작</a><a class="button secondary" href="docs--onboarding--07-hands-on.html">로컬 실습 시작</a></p>
-<div class="notice"><strong>핵심 설계 원칙</strong><br>Agent 개발에는 팀별 도구와 프레임워크를 사용하며, 플랫폼은 공통 제어·연계 지점에서 인증·인가, 정책 적용, 관측성, 평가 및 배포 통제를 수행합니다.</div>
+G = "docs--onboarding--"
+home = f"""<h1>AI Agent Platform 개발자 가이드</h1>
+<p class="lead thesis">팀은 원하는 프레임워크와 도구로 Agent를 만들고, 플랫폼은 그 Agent를 <b>등록·실행·통제·관측·평가</b>하는 공통 계층을 제공합니다. 아래 10개 Core System이 그 공통 계층이며, 이 가이드는 각 Core System의 책임과 Agent가 이 구조 위에서 실행되는 방식을 정의합니다.</p>
+<div class="stack home-stack" aria-label="AI Agent Platform Core Systems 구성도">
+<a href="{G}07-hands-on.html" class="s-app"><b>{{{{icon:laptop}}}} AI Platform Applications</b><small>DevTools(CLI · SDK · 템플릿) · Space(공유 작업 공간)</small></a>
+<a href="{G}03-one-request.html" class="s-api"><b>{{{{icon:gateway}}}} Agent Platform APIs</b><small>모든 진입의 단일 관문: 인증 · 테넌트 인가 · Agent 해석 · 멱등성</small></a>
+<a href="{G}05-agents-and-manifest.html" class="s-factory"><b>{{{{icon:manifest}}}} Agent Factory</b><small>생성 · Manifest 선언 · 검증 · 등록</small></a>
+<a href="{G}11-runtime-memory.html" class="s-runtime"><b>{{{{icon:runtime}}}} Agent Runtime</b><small>framework adapter · Durable 실행 · Memory</small></a>
+<a href="{G}04-trust.html" class="s-tools"><b>{{{{icon:tools}}}} Agent Tools</b><small>Tool Registry · 도구 정책</small></a>
+<a href="{G}04-trust.html" class="s-identity"><b>{{{{icon:identity}}}} Agent Identity</b><small>사용자·workload Identity · Credential Broker</small></a>
+<a href="{G}12-observability-evaluation.html" class="s-obs"><b>{{{{icon:eye}}}} Agent Observability</b><small>실행 추적 · 지표 · 로그</small></a>
+<a href="{G}12-observability-evaluation.html" class="s-eval"><b>{{{{icon:test}}}} Agent Evaluation</b><small>배포 전 평가 · 운영 모니터링</small></a>
+<a href="{G}04-trust.html" class="s-gateway"><b>{{{{icon:gateway}}}} Agent Gateway</b><small>모든 반출의 단일 관문: 모델 경로 · 도구 경로 · Guardrail 집행</small></a>
+<a href="{G}06-lifecycle.html" class="s-tuning"><b>{{{{icon:rocket}}}} Agent Tuning (FastTrack)</b><small>평가 기반 개선</small></a>
+<a href="{G}02-big-picture.html" class="s-ext-app"><b>{{{{icon:user}}}} External Applications and Solutions</b><small>Agent Platform APIs로만 접근</small></a>
+<a href="{G}02-big-picture.html" class="s-ext-tool"><b>{{{{icon:cloud}}}} External Tools and Models</b><small>Agent Gateway로만 접근</small></a>
+<a href="{G}02-big-picture.html" class="s-infra"><b>{{{{icon:server}}}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></a>
+</div>
+<p class="caption">블록을 선택하면 해당 Core System을 설명하는 장으로 이동합니다. 전체 설명은 <a href="{G}02-big-picture.html">Core Systems 아키텍처</a>에 있습니다.</p>
+<h2>이 구조가 보장하는 네 가지</h2>
+<div class="cards">
+<div class="card">{{{{icon:control}}}}<b>개발 방식은 자유, 통제는 공통</b><p>Agent 개발에는 팀별 프레임워크와 도구를 사용합니다. 인증·인가, 정책, 관측, 평가, 배포 통제는 모든 Agent에 플랫폼이 동일하게 적용합니다.</p><span class="sub"><a href="{G}01-why.html">도입 배경과 설계 원칙</a></span></div>
+<div class="card">{{{{icon:gateway}}}}<b>들어오고 나가는 길은 두 관문뿐</b><p>외부 앱은 Agent Platform APIs로만 들어오고, Agent는 Agent Gateway를 거쳐서만 모델과 도구를 호출합니다. 경계가 두 곳이므로 통제와 기록이 빠지지 않습니다.</p><span class="sub"><a href="{G}03-one-request.html">Agent 요청 처리 흐름</a></span></div>
+<div class="card">{{{{icon:manifest}}}}<b>Manifest에 선언한 만큼만 실행</b><p>Agent는 Manifest에 선언한 도구·scope·신원 모드로만 실행됩니다. 실제 권한은 호출자·Agent·정책의 교집합이고, 자격증명은 Agent에 노출되지 않습니다.</p><span class="sub"><a href="{G}05-agents-and-manifest.html">Agent Factory와 Manifest</a></span></div>
+<div class="card">{{{{icon:test}}}}<b>평가를 통과해야 프로덕션</b><p>실행은 모두 추적되고, 평가 결과가 프로덕션 승인의 근거가 됩니다. 개선(Tuning)한 Agent도 새 버전으로 다시 평가받습니다.</p><span class="sub"><a href="{G}06-lifecycle.html">수명주기와 프로덕션 승인</a></span></div>
+</div>
+<p class="actions"><a class="button" href="{G}01-why.html">가이드 시작</a><a class="button secondary" href="{G}07-hands-on.html">로컬 실습 시작</a><a class="button secondary" href="{G}14-connect-your-agent.html">내 Agent 연결</a></p>
 <h2>학습 경로</h2><ol class="index-list path">"""
 for p, title, minutes, detail, icon in onboarding:
     home += f'<li><div>{icon_svg(icon, "icon tile-icon")}<a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">예상 소요 시간 {minutes}</p></div></li>' if minutes != "참조용" else f'<li><div>{icon_svg(icon, "icon tile-icon")}<a href="{link(p)}">{title}</a><p>{detail}</p><p class="time">참조용</p></div></li>'
-home += '</ol><h2>Core Systems</h2><p>플랫폼은 AI Platform Applications, Agent Platform APIs, Agent Factory, Agent Runtime, Agent Tools, Agent Identity, Agent Observability, Agent Evaluation, Agent Gateway, Agent Tuning의 10개 Core System으로 구성됩니다. 층 구조와 책임은 <a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a>를, 외부 근거는 <a href="docs--onboarding--10-references.html">근거와 참고 자료</a>를 참고하십시오.</p>'
+home += '</ol>'
 home += """<h2>기술 표준 및 참조 명세</h2><p>특정 규칙이나 계약을 확인하려면 기술 표준 문서를 참조합니다. 규범(MUST·SHOULD)은 기술 표준 문서가 기준입니다.</p><ul>"""
 for p, title, detail in [
     ("docs/core-systems.md", "Core Systems", "10개 Core System의 책임과 제공 범위"),
@@ -125,7 +148,7 @@ for p, title, detail in [
 ]:
     home += f'<li><a href="{link(p)}">{title}</a> · {detail}</li>'
 home += '</ul><p>회사 환경·제품·운영 수치는 TBD입니다. 이 패키지는 기술 표준과 로컬 mock 예제를 제공하며, production 배포 전 회사 통합과 운영 검증이 필요합니다.</p>'
-files["portal/index.html"] = layout("개발자 가이드 개요", home, "index.html")
+files["portal/index.html"] = layout("개발자 가이드 개요", expand_icons(home), "index.html")
 catalog = "<h1>계약 · 예제</h1><p>Machine-readable 원본과 읽기용 페이지를 함께 제공합니다. 예제는 합성 데이터입니다.</p>"
 for prefix, label in [("contracts/", "API / JSON Schema"), ("examples/manifests/", "4종 Agent Manifest")]:
     catalog += "<h2>" + label + "</h2><ul>"
