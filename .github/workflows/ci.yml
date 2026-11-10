@@ -35,3 +35,9 @@ jobs:
         run: |
           python scripts/agentctl.py conformance templates/agents/message
           python scripts/agentctl.py conformance templates/agents/tool
+      - name: Offline portal browser check (term help, step player, simulator)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/browser-check.cjs
+          git checkout -- verification
