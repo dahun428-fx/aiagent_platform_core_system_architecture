@@ -17,6 +17,10 @@ HTTP API 문서는 목표 인터페이스다. mock은 Agent invoke / health만 �
 mock lease는 외부 credential이 아니며 실전 cryptography·federation·persistency를 제공하지 않는다.
 프로덕션 TLS, quota, audit store, queue, retry ledger, approval service, artifact signature는 회사 결정 후 구현해야 한다.
 
+## 구현 코드(impl/)
+`impl/`는 [구현 로드맵](implementation-roadmap.md)의 조각을 구현하는 코드이며 표준 패키지 ZIP과 checksums에 포함하지 않는다.
+현재 Agent Gateway 모델 경로만 별도 HTTP 서비스로 분리돼 있고, upstream은 로컬 가짜 모델이다. 나머지 한계는 위 참조 구현과 같다.
+
 ## 검증 주장
 verification/results.json의 각 검사는 실행된 도구·exit code·출력을 기록한다.
 표준 검증은 machine-readable 문법·fixture·예제·명시된 거부 동작의 범위이며 production 보안 인증이 아니다.

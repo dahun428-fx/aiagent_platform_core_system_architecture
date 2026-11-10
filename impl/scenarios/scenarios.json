@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "normal-call",
+      "title": "정상 호출",
+      "slice": "S0",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-normal-call",
+        "body": {
+          "input": {"type": "message", "content": "hello"},
+          "context": {"tenantId": "tenant-demo", "dataClassification": "internal"},
+          "execution": {"mode": "sync", "timeoutMs": 5000}
+        }
+      },
+      "expect": {
+        "status": 200,
+        "outputContent": "mock:hello",
+        "upstreamCalls": {"fake-model": 1},
+        "auditComponents": {
+          "platform-api": ["agent-gateway", "runtime"],
+          "model-route": ["model-gateway"]
+        }
+      }
+    }
+  ]
+}
