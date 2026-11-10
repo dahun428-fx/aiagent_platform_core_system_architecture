@@ -37,7 +37,7 @@
 <div class="s-obs"><b>{{icon:eye}} Agent Observability</b><small>실행 추적 · 지표 · 로그</small><span class="st impl">trace 전파 구현</span></div>
 <div class="s-eval"><b>{{icon:test}} Agent Evaluation</b><small>배포 전 평가 · 추적 분석 · 운영 모니터링</small><span class="st contract">계약</span></div>
 <div class="s-gateway"><b>{{icon:gateway}} Agent Gateway</b><small>모델 경로 · 도구 경로 · Guardrail 집행</small><span class="st impl">mock 구현</span></div>
-<div class="s-tuning"><b>{{icon:rocket}} Agent Tuning (FastTrack)</b><small>평가 기반 개선 흐름</small><span class="st">정의</span></div>
+<div class="s-tuning"><b>{{icon:rocket}} Agent Tuning</b><small>평가 기반 개선 흐름</small><span class="st">정의</span></div>
 <div class="s-ext-app"><b>{{icon:user}} External Applications and Solutions</b><small>Agent Platform APIs로만 접근</small></div>
 <div class="s-ext-tool"><b>{{icon:cloud}} External Tools and Models</b><small>Agent Gateway로만 접근</small></div>
 <div class="s-infra"><b>{{icon:server}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></div>
@@ -57,7 +57,7 @@
 <div class="card">{{icon:eye}}<b>Agent Observability</b><p>실행 추적·지표·로그를 수집합니다. span은 OpenTelemetry GenAI semantic conventions를 따릅니다.</p><span class="sub">W3C Trace Context · OTel GenAI</span></div>
 <div class="card">{{icon:test}}<b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 측정하고 승격 판단 근거를 제공합니다.</p><span class="sub">evaluation.schema</span></div>
 <div class="card">{{icon:gateway}}<b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류 기반 라우팅, 도구 경로는 승인된 endpoint와 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
-<div class="card">{{icon:rocket}}<b>Agent Tuning (FastTrack)</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
+<div class="card">{{icon:rocket}}<b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
 </div>
 
 <div class="point" markdown="1">
@@ -67,9 +67,9 @@
 ## 진입 경계와 반출 경계
 
 <div class="lanes">
-<div class="lane"><div>{{icon:user}} 업무 앱 · Applications</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Platform APIs<small>진입: Identity 위조, 미인가 접근, 중복 실행 차단</small></span></div><i>&#8594;</i><div>{{icon:runtime}} Agent Runtime</div></div>
-<div class="lane"><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Agent Gateway · 모델 경로<small>반출: 분류 위반 외부 전송, 공급사 종속 차단</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 · 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:tools}}<span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div>{{icon:server}} 사내 · 외부 도구</div></div>
+<div class="lane" data-say="업무 앱이 Agent를 부르는 길입니다. 정문인 Agent Platform APIs가 호출자 신원을 확인하고, 권한이 없거나 같은 요청이 중복되면 Agent Runtime에 닿기 전에 막습니다."><div>{{icon:user}} 업무 앱 · Applications</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Platform APIs<small>진입: Identity 위조, 미인가 접근, 중복 실행 차단</small></span></div><i>&#8594;</i><div>{{icon:runtime}} Agent Runtime</div></div>
+<div class="lane" data-say="Agent가 모델을 부르는 길입니다. Agent Gateway의 모델 경로가 데이터 분류를 보고, 밖으로 나가면 안 되는 데이터가 외부 모델로 가지 않게 막습니다."><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Agent Gateway · 모델 경로<small>반출: 분류 위반 외부 전송, 공급사 종속 차단</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 · 자체 호스팅 모델</div></div>
+<div class="lane" data-say="Agent가 사내·외부 도구를 부르는 길입니다. Agent Gateway의 도구 경로가 승인된 도구인지 확인하고, 자격증명이 Agent에 노출되지 않게 대신 연결합니다."><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:tools}}<span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div>{{icon:server}} 사내 · 외부 도구</div></div>
 </div>
 
 진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 호출 통제와 모델 공급사 추상화는 서로 다른 책임이기 때문입니다. 논리적 분리이므로 물리적으로 통합 배포할 수 있으나, Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).

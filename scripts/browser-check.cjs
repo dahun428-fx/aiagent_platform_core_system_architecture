@@ -17,7 +17,7 @@ async function main() {
   const checks = [];
   try {
     await page.goto(url("index.html"));
-    checks.push({ check: "desktop-file-offline", passed: (await page.locator("h1").innerText()).includes("공통 기준") });
+    checks.push({ check: "desktop-file-offline", passed: (await page.locator("h1").innerText()).includes("개발자 가이드") });
     fs.mkdirSync(path.join(root, "verification"), { recursive: true });
     await page.screenshot({ path: path.join(root, "verification/portal-desktop.png") });
     await page.locator("#search").fill("Credential Broker");
@@ -27,7 +27,15 @@ async function main() {
     await page.goto(url("diagrams.html"));
     checks.push({ check: "all-nine-local-svg", passed: await page.locator("img").evaluateAll(xs => xs.length === 9 && xs.every(x => x.complete && x.naturalWidth > 0)) });
     await page.goto(url("docs--requirements--baseline-v0.1.html"));
-    checks.push({ check: "baseline-table", passed: await page.locator("tbody tr").count() === 30 });
+    checks.push({ check: "baseline-table", passed: await page.locator("tbody tr").count() === 37 });
+    await page.goto(url("docs--onboarding--03-one-request.html"));
+    checks.push({ check: "term-help", passed: await page.locator(".gloss").count() > 0 && await page.locator(".gloss-open").count() === 1 });
+    await page.locator(".ix-bar .primary").first().click();
+    checks.push({ check: "step-player", passed: await page.locator(".ix-flow li.on").count() === 1 });
+    await page.locator('.ix-sim input[name="noToken"]').check();
+    await page.locator(".ix-sim .ix-actions .primary").first().click();
+    await page.waitForFunction(() => document.querySelector(".ix-sim .ix-result.bad"), null, { timeout: 5000 });
+    checks.push({ check: "request-simulator", passed: (await page.locator(".ix-sim .ix-result b").first().innerText()).includes("401") });
     await page.goto(url("docs--identity-and-credentials.html"));
     checks.push({ check: "broker-module", passed: (await page.locator("main").innerText()).includes("RFC8693") });
     await page.setViewportSize({ width: 390, height: 844 });

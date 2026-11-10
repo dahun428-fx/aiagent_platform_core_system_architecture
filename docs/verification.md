@@ -16,6 +16,6 @@ scripts/browser-check.cjs는 Playwright가 설치된 환경에서 file:// 및 ne
 - ZIP CRC 및 archive 내 manifest SHA256 일치
 
 실제 결과는 [검증 결과](../verification/results.json)와 [브라우저 결과](../verification/browser-results.json)를 확인한다.
-[생성·검증 요약](validation-results.md)을 확인한다. ZIP 검증 결과 verification/archive-verification.json은 ZIP 외부에 별도로 제공한다.
+[생성·검증 요약](validation-results.md)을 확인한다. ZIP 검증 결과 verification/archive-verification-v<버전>.json은 ZIP 외부에 별도로 제공한다.
 브라우저나 도구가 실행되지 않은 검사를 통과했다고 표시해서는 안 된다(MUST NOT).
 

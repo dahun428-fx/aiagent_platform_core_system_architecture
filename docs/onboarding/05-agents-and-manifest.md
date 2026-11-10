@@ -30,11 +30,11 @@
 Agent Factory는 Agent를 만들고, 선언하고, 검증하고, 등록하는 개발 흐름을 담당하는 Core System입니다. 소스는 개발자 저장소에 두며, Factory는 소스 업로드를 요구하지 않습니다(MUST NOT).
 
 <ol class="flow">
-<li>{{icon:code}}<b>생성</b><span>Agent 유형별 템플릿<br>(후속 단계)</span></li>
-<li>{{icon:manifest}}<b>선언</b><span>Manifest 작성</span></li>
-<li>{{icon:test}}<b>로컬 검증</b><span><code>agentctl validate</code></span></li>
-<li>{{icon:shield}}<b>CI 게이트</b><span>계약·보안·평가 검증</span></li>
-<li class="hi">{{icon:control}}<b>Registry 등록</b><span>불변 revision · artifact digest</span></li>
+<li data-say="Agent 유형에 맞는 템플릿에서 시작합니다. 빈 화면 대신 동작하는 뼈대를 받아 고치는 방식입니다.">{{icon:code}}<b>생성</b><span>Agent 유형별 템플릿<br>(후속 단계)</span></li>
+<li data-say="Manifest에 이 Agent가 무엇이고 어떤 도구·권한·데이터 분류가 필요한지 적습니다.">{{icon:manifest}}<b>선언</b><span>Manifest 작성</span></li>
+<li data-say="내 PC에서 agentctl validate로 Manifest 형식이 맞는지 바로 확인합니다. 잘못된 부분은 여기서 먼저 잡힙니다.">{{icon:test}}<b>로컬 검증</b><span><code>agentctl validate</code></span></li>
+<li data-say="CI가 계약, 보안, 평가 기준을 자동으로 다시 확인합니다. 사람 손을 거치지 않아도 같은 기준이 적용됩니다.">{{icon:shield}}<b>CI 게이트</b><span>계약·보안·평가 검증</span></li>
+<li data-say="통과한 버전이 Registry에 등록됩니다. 등록된 버전은 내용이 바뀌지 않는 고정 버전(불변)이라 나중에 무엇이 실행됐는지 정확히 추적할 수 있습니다." class="hi">{{icon:control}}<b>Registry 등록</b><span>불변 revision · artifact digest</span></li>
 </ol>
 
 <div class="cards">
@@ -69,13 +69,13 @@ Factory의 도구는 AI Platform Applications의 DevTools로 제공됩니다.
 Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보만 선언하는 JSON 문서입니다. 프레임워크 내부 구현은 포함하지 않습니다. Manifest는 인증 수단이 아니며, 실행 주체의 Identity나 자격증명과 구분됩니다.
 
 <ol class="flow">
-<li>{{icon:identity}}<b>메타데이터</b><span>apiVersion · kind<br>metadata</span></li>
-<li>{{icon:code}}<b>소스 참조</b><span>source</span></li>
-<li>{{icon:runtime}}<b>런타임 설정</b><span>runtime</span></li>
-<li>{{icon:tools}}<b>기능 및 의존 리소스</b><span>capabilities</span></li>
-<li>{{icon:user}}<b>실행 주체와 권한 모드</b><span>identity</span></li>
-<li>{{icon:shield}}<b>데이터 분류·위험도·정책</b><span>governance</span></li>
-<li>{{icon:cloud}}<b>배포 설정과 입출력 계약</b><span>deployment · contracts</span></li>
+<li data-say="이 Agent의 이름, ID, 버전, 담당 팀을 적는 부분입니다.">{{icon:identity}}<b>메타데이터</b><span>apiVersion · kind<br>metadata</span></li>
+<li data-say="소스가 어느 저장소의 어느 커밋인지, 빌드 결과물의 지문(digest)이 무엇인지 적습니다. 실행된 코드가 등록한 코드와 같은지 확인하는 근거입니다.">{{icon:code}}<b>소스 참조</b><span>source</span></li>
+<li data-say="어떤 프레임워크와 adapter로, 어느 진입 함수부터 실행하는지 적습니다.">{{icon:runtime}}<b>런타임 설정</b><span>runtime</span></li>
+<li data-say="이 Agent가 쓰는 도구, 지식 저장소, 하위 Agent를 적습니다. 여기 적지 않은 도구는 실행 중에 쓸 수 없습니다.">{{icon:tools}}<b>기능 및 의존 리소스</b><span>capabilities</span></li>
+<li data-say="누구의 권한으로 실행할지(호출자 대신인지, Agent 자신인지)와 필요한 권한(scope)을 적습니다.">{{icon:user}}<b>실행 주체와 권한 모드</b><span>identity</span></li>
+<li data-say="다루는 데이터가 얼마나 민감한지, 위험도는 어느 정도인지, 어떤 정책과 평가 기준을 따를지 적습니다.">{{icon:shield}}<b>데이터 분류·위험도·정책</b><span>governance</span></li>
+<li data-say="어디에 배포할지와 입력·출력 형식이 무엇인지 적습니다.">{{icon:cloud}}<b>배포 설정과 입출력 계약</b><span>deployment · contracts</span></li>
 </ol>
 
 이 패키지의 tool Agent 예제(`examples/manifests/tool.json`)입니다.
@@ -155,6 +155,8 @@ Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보
 항상 동일한 코드와 산출물을 가리킵니다.
 </div>
 </div>
+
+<div class="sim" data-sim="permission"></div>
 
 ## 검증 실패 사례
 

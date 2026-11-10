@@ -144,9 +144,24 @@ class PackagingTests(unittest.TestCase):
 
     def test_generated_and_junk_files_are_excluded_and_order_is_stable(self):
         names = ["docs/b.md", "README.md", "checksums.sha256", "dist/x.zip", "verification/archive-verification.json",
-                 "docs/.DS_Store", "docs/a.md", "scripts/x.pyc", "verification/results.json"]
+                 "verification/archive-verification-v0.1.1.json", "docs/.DS_Store", "docs/a.md", "scripts/x.pyc",
+                 "verification/results.json"]
         self.assertEqual(self.release.select_package_files(names),
                          ["README.md", "docs/a.md", "docs/b.md", "verification/results.json"])
+
+    def test_release_name_follows_package_version(self):
+        version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+        self.assertEqual(self.release.package_version(), version)
+        self.assertEqual(self.release.release_name("0.1.1"), "enterprise-ai-agent-platform-v0.1.1")
+        # The 0.1.0 archive keeps its own path; a newer version never writes over it.
+        self.assertNotEqual(self.release.release_name(version) + ".zip", "enterprise-ai-agent-platform-v0.1.zip")
+
+    def test_release_refuses_changed_source_but_not_earlier_outputs(self):
+        changed = ["verification/results.json", "dist/a.zip", "checksums.sha256", "docs/guide.md"]
+        self.assertEqual(self.release.source_changes(changed), ["docs/guide.md"])
+        self.assertEqual(self.release.unexpected_changes([], ["portal/index.html", "verification/results.json"]),
+                         ["portal/index.html"])
+        self.assertEqual(self.release.unexpected_changes(["docs/guide.md"], ["docs/guide.md"]), [])
 
     def test_tracked_files_include_current_guide(self):
         names = self.release.select_package_files(self.release.tracked_files())

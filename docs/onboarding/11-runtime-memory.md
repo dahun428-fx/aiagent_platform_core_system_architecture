@@ -66,6 +66,8 @@ Agent Runtime은 실행 제어 Guardrail의 집행 지점입니다. 권한 최�
 </div>
 </div>
 
+<div class="sim" data-sim="memory"></div>
+
 ## 제공 범위
 
 v0.1은 Memory의 규칙을 정의합니다. Memory 저장소 제품과 API 구현은 제공하지 않으며, Manifest의 Memory 선언 확장은 후속 계약 버전에서 정의합니다.

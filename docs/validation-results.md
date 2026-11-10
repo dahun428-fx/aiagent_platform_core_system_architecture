@@ -18,8 +18,8 @@
 Contract/Runtime/CLI 단위 테스트의 정확한 개수와 실행 로그, TypeScript typecheck·build 결과,
 Python 및 TypeScript 클라이언트가 반환한 실제 HTTP response를 기록한다.
 [브라우저 결과](../verification/browser-results.json)는 Chromium file:// + offline 모드에서 10개 검사를 수행한다.
-ZIP 외부의 verification/archive-verification.json은 ZIP CRC·모든 파일의 SHA256·entry count·압축 내 HTML 링크를 확인한다.
-ZIP 자체의 SHA256은 dist/enterprise-ai-agent-platform-v0.1.zip.sha256에 제공한다.
+ZIP 외부의 verification/archive-verification-v<버전>.json은 ZIP CRC·모든 파일의 SHA256·entry count·압축 내 HTML 링크를 확인한다.
+ZIP 자체의 SHA256은 dist/enterprise-ai-agent-platform-v<버전>.zip.sha256에 제공한다. 산출물 이름은 package.json 버전에서 파생하며, 0.1.0 산출물(enterprise-ai-agent-platform-v0.1.zip, archive-verification.json)은 그대로 보존한다.
 
 ## 발견·수정한 문제
 - Q30을 추론으로 기록한 원문 오류를 Decided로 정정.

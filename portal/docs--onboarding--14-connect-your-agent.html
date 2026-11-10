@@ -2,7 +2,7 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>내 Agent 연결과 적합성 검증 · Agent Platform</title><link rel="stylesheet" href="styles.css">
-<script defer src="search-index.js"></script><script defer src="app.js"></script></head>
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="interactive.js"></script></head>
 <body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html" aria-current="page">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
@@ -65,12 +65,14 @@ def create():
 </div>
 <h2 id="연결-절차">연결 절차</h2>
 <ol class="flow">
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>템플릿 복사</b><span><code>templates/agents/</code></span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Manifest 수정</b><span>ID·이름·도구</span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>adapter 작성</b><span><code>agent.py</code>의 <code>handle</code></span></li>
-<li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>검증·적합성</b><span><code>validate</code> · <code>conformance</code></span></li>
-<li class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>호출</b><span>새 Agent ID로 실행</span></li>
+<li data-say="templates/agents/ 아래 템플릿 폴더를 통째로 복사해 시작합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>템플릿 복사</b><span><code>templates/agents/</code></span></li>
+<li data-say="Manifest에서 Agent ID, 이름, 사용할 도구를 내 Agent에 맞게 바꿉니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Manifest 수정</b><span>ID·이름·도구</span></li>
+<li data-say="agent.py의 handle 함수에 Agent가 할 일을 작성합니다. 모델과 도구는 ctx로만 부릅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>adapter 작성</b><span><code>agent.py</code>의 <code>handle</code></span></li>
+<li data-say="validate로 Manifest를, conformance로 플랫폼 규칙 11가지를 확인합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>검증·적합성</b><span><code>validate</code> · <code>conformance</code></span></li>
+<li data-say="로컬 플랫폼을 띄우고 새 Agent ID로 호출해 응답을 확인합니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>호출</b><span>새 Agent ID로 실행</span></li>
 </ol>
+
+<div class="sim" data-sim="conformance"></div>
 
 <h3 id="1-템플릿-복사">1. 템플릿 복사</h3>
 <pre><code class="language-sh">mkdir -p my-agents
@@ -272,6 +274,77 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 </tbody>
 </table></div>
 <p>C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 <a href="docs--onboarding--12-observability-evaluation.html">평가 3단계</a>, 운영 승인은 <a href="docs--onboarding--06-lifecycle.html">수명주기</a>에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.</p>
+<h2 id="신원-모드-delegated와-independent">신원 모드: delegated와 independent</h2>
+<p><code>identity.mode</code>는 adapter가 누구의 권한으로 모델과 도구를 호출하는지 정합니다. 두 모드 모두 호출자는 <code>requiredScopes</code>를 모두 보유해야 하며, 차이는 adapter 실행 중에 쓰이는 신원과 권한입니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th><code>delegated</code></th>
+<th><code>independent</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>실행 신원</td>
+<td>호출자 신원</td>
+<td>Agent workload 신원</td>
+</tr>
+<tr>
+<td>사용자 principal</td>
+<td>포함</td>
+<td>포함하지 않음</td>
+</tr>
+<tr>
+<td>위임 체인(delegation)</td>
+<td>호출자의 위임 그대로</td>
+<td>빈 목록</td>
+</tr>
+<tr>
+<td>모델·도구 호출 권한</td>
+<td>호출자 권한과 정책의 교집합</td>
+<td>Manifest <code>requiredScopes</code>와 정책의 교집합</td>
+</tr>
+<tr>
+<td>적합한 용도</td>
+<td>사용자를 대신해 그 사용자의 데이터에 접근</td>
+<td>사용자와 무관한 배치·집계 작업</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>independent</code> Agent의 권한은 Manifest에 선언한 scope에서만 나옵니다. 따라서 adapter가 쓰는 경로의 scope를 모두 선언해야 합니다(MUST).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>adapter가 호출하는 경로</th>
+<th>필요한 scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 호출 자체</td>
+<td><code>agents.invoke</code></td>
+</tr>
+<tr>
+<td><code>ctx.generate</code> (모델 경로)</td>
+<td><code>models.invoke</code></td>
+</tr>
+<tr>
+<td><code>ctx.call_tool</code> (도구 경로)</td>
+<td><code>tools.read</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>tool</code> 템플릿을 <code>independent</code>로 바꾼 예입니다. 도구와 모델을 모두 호출하므로 세 scope가 필요합니다.</p>
+<pre><code class="language-json">&quot;identity&quot;: {
+  &quot;mode&quot;: &quot;independent&quot;,
+  &quot;requiredScopes&quot;: [&quot;agents.invoke&quot;, &quot;models.invoke&quot;, &quot;tools.read&quot;]
+}
+</code></pre>
+<p>음성 예입니다. 같은 Agent에서 <code>tools.read</code>를 빼면 adapter는 실행되지만 <code>ctx.call_tool</code>에서 403으로 실패합니다. <code>models.invoke</code>를 빼면 <code>ctx.generate</code>에서 같은 이유로 실패합니다. <code>delegated</code> 모드에서는 호출자가 해당 scope를 보유하므로 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 발생하면 먼저 이 표와 <code>requiredScopes</code>를 대조합니다.</p>
+<p>신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(<code>tests/test_conformance.py</code>의 <code>ManifestEnforcementTests</code>: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.</p>
+<div class="sim" data-sim="permission"></div>
+
 <h2 id="manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -424,6 +497,11 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 <td>Manifest에 도구 미선언</td>
 <td><code>capabilities.tools</code>에 추가</td>
 </tr>
+<tr>
+<td><code>independent</code>로 바꾼 뒤 403</td>
+<td>workload 권한에 경로 scope 없음</td>
+<td><code>requiredScopes</code>에 <code>models.invoke</code>·<code>tools.read</code> 선언</td>
+</tr>
 </tbody>
 </table></div>
 <div class="check">
@@ -445,4 +523,4 @@ NOTE  Local conformance covers Manifest loading, this adapter's basic path and p
 <li>in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.</li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-11항목">적합성 검사 11항목</a><a href="#manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--07-hands-on.html"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="docs--onboarding--08-reading-the-spec.html"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/14-connect-your-agent.md">docs/onboarding/14-connect-your-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#adapter-인터페이스">Adapter 인터페이스</a><a href="#연결-절차">연결 절차</a><a href="#적합성-검사-11항목">적합성 검사 11항목</a><a href="#신원-모드-delegated와-independent">신원 모드: delegated와 independent</a><a href="#manifest-필드-지원-범위-로컬-mock">Manifest 필드 지원 범위 (로컬 mock)</a><a href="#제약과-한계">제약과 한계</a><a href="#문제-해결">문제 해결</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

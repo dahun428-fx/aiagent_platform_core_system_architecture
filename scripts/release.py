@@ -30,8 +30,12 @@ def run(name, command):
 
 
 # Release outputs are never packaged into themselves.
-GENERATED = {"checksums.sha256", "verification/archive-verification.json"}
-GENERATED_PREFIXES = ("dist/",)
+GENERATED = {"checksums.sha256"}
+GENERATED_PREFIXES = ("dist/", "verification/archive-verification")
+# Tracked paths a release run may rewrite. Any other change during the run means the packaged source moved.
+RELEASE_OUTPUTS = ("checksums.sha256",)
+RELEASE_OUTPUT_PREFIXES = ("dist/", "verification/")
+LOCKFILES = ("package-lock.json", "requirements-dev.txt")
 # Files that must never ship. Packaging fails instead of silently dropping them, so the leak is noticed.
 SENSITIVE_NAMES = {".env", ".npmrc", ".pypirc", "id_rsa", "id_ed25519", "credentials.json"}
 SENSITIVE_SUFFIXES = (".pem", ".key", ".p12", ".pfx", ".jks", ".kdbx")
@@ -56,14 +60,47 @@ def select_package_files(names):
     return sorted(keep)
 
 
-def source_commit():
+def package_version():
+    return json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+
+
+def release_name(version):
+    """Every versioned output (ZIP, ZIP root, sidecar, archive evidence) derives from this one name."""
+    return f"enterprise-ai-agent-platform-v{version}"
+
+
+def changed_tracked_files():
+    """Tracked paths that differ from HEAD, staged or not."""
+    out = subprocess.run(["git", "diff", "--name-only", "-z", "HEAD"], cwd=ROOT, capture_output=True, check=True).stdout
+    return sorted(name for name in out.decode("utf-8").split("\0") if name)
+
+
+def source_changes(changed):
+    """Changed paths that are source, not outputs of an earlier release run."""
+    return sorted(p for p in changed if p not in RELEASE_OUTPUTS and not p.startswith(RELEASE_OUTPUT_PREFIXES))
+
+
+def unexpected_changes(before, after):
+    """Source paths changed during the run."""
+    return source_changes(set(after) - set(before))
+
+
+def source_state():
+    """Taken before any output is written, so it describes the source the release was built from."""
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT,
-                           capture_output=True, text=True).stdout.strip()
-    return {"commit": head or None, "dirtyTrackedFiles": bool(dirty)}
+    return {"commit": head or None, "dirtyTrackedFiles": source_changes(changed_tracked_files()),
+            "lockfiles": {n: hashlib.sha256((ROOT / n).read_bytes()).hexdigest() for n in LOCKFILES if (ROOT / n).exists()}}
 
 
-def main():
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    version = package_version()
+    name = release_name(version)
+    source = source_state()
+    if source["dirtyTrackedFiles"] and "--allow-dirty" not in argv:
+        print(json.dumps({"status": "refused", "reason": "tracked files differ from HEAD; commit or stash them, "
+                          "or pass --allow-dirty for a non-release trial", "files": source["dirtyTrackedFiles"]}))
+        return 2
     VERIFY.mkdir(exist_ok=True)
     DIST.mkdir(exist_ok=True)
     try:
@@ -74,15 +111,20 @@ def main():
         run("python-typescript-http-smoke", [sys.executable, "scripts/smoke_clients.py"])
         # A fresh browser check is mandatory; stale cached evidence does not pass a release.
         run("browser-offline", ["node", "scripts/browser-check.cjs"])
+        # The portal rebuild and checks must not change the source being released.
+        moved = unexpected_changes(source["dirtyTrackedFiles"], changed_tracked_files())
+        checks.append({"check": "source-unchanged", "exitCode": 1 if moved else 0, "changed": moved})
+        if moved:
+            raise RuntimeError("source changed during release: " + ", ".join(moved))
         status = "passed"
     except Exception as exc:
         checks.append({"check": "release", "exitCode": 1, "error": str(exc)})
         status = "failed"
-    report = {"packageVersion": "0.1.1", "status": status, "date": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(),
+    report = {"packageVersion": version, "status": status, "date": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(),
               "runtime": {"python": sys.version, "node": subprocess.run(["node", "--version"], capture_output=True, text=True).stdout.strip(),
                           "jsonschema": importlib.metadata.version("jsonschema"),
                           "openapi-spec-validator": importlib.metadata.version("openapi-spec-validator")},
-              "source": source_commit(),
+              "source": source,
               "checks": checks,
               "scope": "Standards and local mock validation only; production integrations / numeric company SLOs TBD."}
     (VERIFY / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -95,18 +137,18 @@ def main():
     sums = {n: hashlib.sha256((ROOT / n).read_bytes()).hexdigest() for n in names}
     manifest = "".join(f"{digest}  {name}\n" for name, digest in sums.items())
     (ROOT / "checksums.sha256").write_text(manifest, encoding="utf-8", newline="\n")
-    target = DIST / "enterprise-ai-agent-platform-v0.1.zip"
+    target = DIST / (name + ".zip")
+    prefix = name + "/"
     def write_zip():
         with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
             for p in package_files + [ROOT / "checksums.sha256"]:
-                info = zipfile.ZipInfo("enterprise-ai-agent-platform-v0.1/" + p.relative_to(ROOT).as_posix(), date_time=(2026, 10, 30, 0, 0, 0))
+                info = zipfile.ZipInfo(prefix + p.relative_to(ROOT).as_posix(), date_time=(2026, 10, 30, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
                 archive.writestr(info, p.read_bytes())
     write_zip()
     with zipfile.ZipFile(target) as archive:
         assert archive.testzip() is None, "ZIP CRC failure"
-        prefix = "enterprise-ai-agent-platform-v0.1/"
         assert len(archive.namelist()) == len(package_files) + 1
         for name, digest in sums.items():
             assert hashlib.sha256(archive.read(prefix + name)).hexdigest() == digest, name
@@ -130,12 +172,13 @@ def main():
                         resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), unquote(parts.path)))
                         assert resolved in names, f"Archive link missing: {name} -> {value}"
                         checked_links += 1
-    evidence = {"status": "passed", "archive": target.name, "source": source_commit(), "files": len(package_files) + 1,
+    evidence = {"status": "passed", "packageVersion": version, "archive": target.name, "source": source,
+                "files": len(package_files) + 1,
                 "bytes": target.stat().st_size, "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
                 "checks": ["zip CRC", "every archived file SHA256", "expected entry count", "all archive HTML local links"],
                 "checkedHtmlLinks": checked_links,
                 "note": "This report is external to ZIP to avoid self-referential archive hashes."}
-    (VERIFY / "archive-verification.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
+    (VERIFY / f"archive-verification-v{version}.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
     (DIST / (target.name + ".sha256")).write_text(evidence["sha256"] + "  " + target.name + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(evidence))
     return 0
