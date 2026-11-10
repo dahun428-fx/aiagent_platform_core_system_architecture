@@ -12,6 +12,8 @@
 5. 예제를 실행하고 tests/로 계약 적합성을 확인한다.
 6. docs/tbd-register.md의 회사별 결정을 완료하고 production 통합·부하·보안 검증을 수행한다.
 
+실제 서비스 구현 순서와 조각별 완료 기준은 [구현 로드맵](docs/implementation-roadmap.md)을 따른다.
+
 버전별 포함 기능과 검증 방법은 [CHANGELOG](CHANGELOG.md)를 따른다.
 
 ## 빠른 시작 (최소 경로)
