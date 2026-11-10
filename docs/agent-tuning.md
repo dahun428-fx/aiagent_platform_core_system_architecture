@@ -1,6 +1,6 @@
-# Agent Tuning (FastTrack)
+# Agent Tuning
 
-Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System이다. FastTrack은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 개선 흐름이다.
+Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System이다. 개선은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 개선 흐름으로 수행한다.
 
 ## 개선 대상
 
@@ -11,7 +11,7 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 | 모델 선택 | 논리 모델 capability 변경 | Manifest 변경 |
 | 모델 미세조정(fine-tuning) | 평가 데이터 기반 모델 조정 | 새 모델 endpoint 등록 |
 
-## FastTrack 흐름
+## 개선 흐름
 
 1. 평가 결과·실행 추적에서 개선 대상을 선정한다.
 2. 개선안을 개발자 저장소에 새 revision으로 작성한다(Local-First).
@@ -21,7 +21,7 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 
 ## 규칙
 
-- Tuning은 승인 절차를 생략해서는 안 된다(MUST NOT). FastTrack은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않는다.
+- Tuning은 승인 절차를 생략해서는 안 된다(MUST NOT). 개선 흐름은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않는다.
 - Tuning 결과는 항상 새 불변 버전으로 등록한다(MUST). 기존 버전을 덮어쓰지 않는다.
 - 미세조정에 사용하는 데이터는 데이터 분류와 egress 정책을 따른다(MUST). 외부 튜닝 서비스는 Agent Gateway 모델 경로 정책을 적용한다.
 - 미세조정으로 만든 모델은 Agent Gateway 모델 경로에 새 endpoint로 등록한 뒤 사용한다(MUST).

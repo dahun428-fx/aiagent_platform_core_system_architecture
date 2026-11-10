@@ -19,7 +19,7 @@
 <li>로컬 실험부터 폐기까지 Agent 수명주기 7단계를 설명할 수 있습니다.</li>
 <li>프로덕션 승인에 필요한 검증 근거 6가지를 나열할 수 있습니다.</li>
 <li>배포 프로파일 3가지와 실행 상태 전이를 설명할 수 있습니다.</li>
-<li>Agent Tuning(FastTrack)의 개선 흐름과 승인 요건의 관계를 설명할 수 있습니다.</li>
+<li>Agent Tuning의 개선 흐름과 승인 요건의 관계를 설명할 수 있습니다.</li>
 </ul>
 </div>
 <h2 id="배경">배경</h2>
@@ -102,8 +102,8 @@
 <li>재개 시 승인 대상 digest, 테넌트, 정책 버전, 만료, 취소 여부를 모두 재검증합니다.</li>
 </ul>
 <p>Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TBD이며, 이 패키지는 계약만 제공합니다.</p>
-<h2 id="agent-tuning-fasttrack">Agent Tuning (FastTrack)</h2>
-<p>Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. FastTrack은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름입니다.</p>
+<h2 id="agent-tuning">Agent Tuning</h2>
+<p>Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. 개선은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름으로 수행합니다.</p>
 <ol class="flow">
 <li data-say="평가 결과와 실행 기록을 보고 어디를 고칠지 고릅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
 <li data-say="내 PC에서 고친 새 버전을 만듭니다. 기존 버전은 그대로 둡니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>개선안 작성</b><span>새 revision (Local-First)</span></li>
@@ -144,7 +144,7 @@
 </tbody>
 </table></div>
 <ul>
-<li>FastTrack은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).</li>
+<li>개선 흐름은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).</li>
 <li>Tuning 결과는 항상 새 불변 버전으로 등록하며, 기존 버전을 덮어쓰지 않습니다(MUST).</li>
 <li>미세조정 데이터는 데이터 분류와 반출 정책을 따르며, 외부 튜닝 서비스도 Agent Gateway 모델 경로 정책을 적용합니다(MUST).</li>
 <li>v0.1은 흐름과 규칙을 정의하며, 자동 개선안 생성과 미세조정 파이프라인은 후속 단계에서 구현합니다.</li>
@@ -192,4 +192,4 @@
 <li>평가 기반 개선과 운영 모니터링: <a href="docs--onboarding--10-references.html#ref-industry">클라우드 Agent 플랫폼</a></li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--13-agent-card.html"><small>이전</small><b>Agent Card와 Agent 간 통신</b></a><a class="next" href="docs--onboarding--07-hands-on.html"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#장시간-실행과-사람의-승인-durable-hitl">장시간 실행과 사람의 승인 (Durable, HITL)</a><a href="#agent-tuning-fasttrack">Agent Tuning (FastTrack)</a><a href="#초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--13-agent-card.html"><small>이전</small><b>Agent Card와 Agent 간 통신</b></a><a class="next" href="docs--onboarding--07-hands-on.html"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#장시간-실행과-사람의-승인-durable-hitl">장시간 실행과 사람의 승인 (Durable, HITL)</a><a href="#agent-tuning">Agent Tuning</a><a href="#초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

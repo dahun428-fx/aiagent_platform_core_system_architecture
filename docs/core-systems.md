@@ -9,7 +9,7 @@ AI Agent Platform은 10개 Core System으로 구성한다. 이 문서는 각 Cor
 | 응용 | AI Platform Applications (DevTools, Space) | 개발자·운영자 |
 | API | Agent Platform APIs | External Applications and Solutions |
 | 핵심 | Agent Factory, Agent Runtime, Agent Tools, Agent Identity, Agent Observability, Agent Evaluation | |
-| 관문·개선 | Agent Gateway, Agent Tuning (FastTrack) | External Tools and Models (Agent Gateway 경유) |
+| 관문·개선 | Agent Gateway, Agent Tuning | External Tools and Models (Agent Gateway 경유) |
 | 실행 인프라 | Distributed Execution Plane: 개발자 로컬, 워크스테이션·Mac mini 계열 자원, 사내·클라우드 실행 환경, 모델 endpoint | |
 
 ## 명칭 대응
@@ -86,7 +86,7 @@ Agent가 외부 모델과 도구에 접근하는 관문(egress)이다.
 - 모델 입출력·도구 호출·도구 결과 guardrail의 집행 지점이다([Guardrails](guardrails.md)).
 - 토큰 사용량 한도와 비용 귀속(tenant·Agent 단위)을 기록한다(SHOULD). 한도 수치는 TBD-07이다.
 
-## 10. Agent Tuning (FastTrack)
+## 10. Agent Tuning
 
 평가 결과와 실행 추적을 근거로 Agent를 개선하는 영역이다. 규칙은 [Agent Tuning](agent-tuning.md)을 따른다.
 

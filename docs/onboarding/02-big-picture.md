@@ -37,7 +37,7 @@
 <div class="s-obs"><b>{{icon:eye}} Agent Observability</b><small>실행 추적 · 지표 · 로그</small><span class="st impl">trace 전파 구현</span></div>
 <div class="s-eval"><b>{{icon:test}} Agent Evaluation</b><small>배포 전 평가 · 추적 분석 · 운영 모니터링</small><span class="st contract">계약</span></div>
 <div class="s-gateway"><b>{{icon:gateway}} Agent Gateway</b><small>모델 경로 · 도구 경로 · Guardrail 집행</small><span class="st impl">mock 구현</span></div>
-<div class="s-tuning"><b>{{icon:rocket}} Agent Tuning (FastTrack)</b><small>평가 기반 개선 흐름</small><span class="st">정의</span></div>
+<div class="s-tuning"><b>{{icon:rocket}} Agent Tuning</b><small>평가 기반 개선 흐름</small><span class="st">정의</span></div>
 <div class="s-ext-app"><b>{{icon:user}} External Applications and Solutions</b><small>Agent Platform APIs로만 접근</small></div>
 <div class="s-ext-tool"><b>{{icon:cloud}} External Tools and Models</b><small>Agent Gateway로만 접근</small></div>
 <div class="s-infra"><b>{{icon:server}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></div>
@@ -57,7 +57,7 @@
 <div class="card">{{icon:eye}}<b>Agent Observability</b><p>실행 추적·지표·로그를 수집합니다. span은 OpenTelemetry GenAI semantic conventions를 따릅니다.</p><span class="sub">W3C Trace Context · OTel GenAI</span></div>
 <div class="card">{{icon:test}}<b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 측정하고 승격 판단 근거를 제공합니다.</p><span class="sub">evaluation.schema</span></div>
 <div class="card">{{icon:gateway}}<b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류 기반 라우팅, 도구 경로는 승인된 endpoint와 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
-<div class="card">{{icon:rocket}}<b>Agent Tuning (FastTrack)</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
+<div class="card">{{icon:rocket}}<b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
 </div>
 
 <div class="point" markdown="1">

@@ -30,7 +30,7 @@ onboarding = [
     ("docs/onboarding/04-trust.md", "신뢰 경계와 Guardrails", "15분", "신뢰하지 않는 입력, Guardrail의 공통 검사 서비스와 네 집행 지점", "shield"),
     ("docs/onboarding/12-observability-evaluation.md", "Agent Observability와 Agent Evaluation", "10분", "OpenTelemetry GenAI 실행 추적과 평가 3단계", "eye"),
     ("docs/onboarding/13-agent-card.md", "Agent Card와 Agent 간 통신", "10분", "A2A 1.0.0 Agent Card의 필드, 확장 카드, 서명과 Registry 발행 규칙", "agents"),
-    ("docs/onboarding/06-lifecycle.md", "Agent 수명주기·Tuning과 프로덕션 승인", "10분", "등록·검증·평가·승인 단계, 승인 요건, FastTrack 개선 흐름", "rocket"),
+    ("docs/onboarding/06-lifecycle.md", "Agent 수명주기·Tuning과 프로덕션 승인", "10분", "등록·검증·평가·승인 단계, 승인 요건, Agent Tuning 개선 흐름", "rocket"),
     ("docs/onboarding/07-hands-on.md", "로컬 환경 구성 및 호출 실습", "30분", "로컬 mock 환경에서 Manifest 검증, Agent 호출 및 오류 응답 확인", "code"),
     ("docs/onboarding/14-connect-your-agent.md", "내 Agent 연결과 적합성 검증", "30분", "템플릿으로 adapter와 Manifest를 작성해 새 Agent ID로 호출하고 적합성 9항목 통과", "agent"),
     ("docs/onboarding/08-reading-the-spec.md", "기술 표준 해석과 FAQ", "10분", "MUST·SHOULD·MAY, TBD 및 버전 표기의 의미", "question"),
@@ -119,7 +119,7 @@ home = f"""<h1>AI Agent Platform 개발자 가이드</h1>
 <a href="{G}12-observability-evaluation.html" class="s-obs"><b>{{{{icon:eye}}}} Agent Observability</b><small>실행 추적 · 지표 · 로그</small></a>
 <a href="{G}12-observability-evaluation.html" class="s-eval"><b>{{{{icon:test}}}} Agent Evaluation</b><small>배포 전 평가 · 운영 모니터링</small></a>
 <a href="{G}04-trust.html" class="s-gateway"><b>{{{{icon:gateway}}}} Agent Gateway</b><small>모든 반출의 단일 관문: 모델 경로 · 도구 경로 · Guardrail 집행</small></a>
-<a href="{G}06-lifecycle.html" class="s-tuning"><b>{{{{icon:rocket}}}} Agent Tuning (FastTrack)</b><small>평가 기반 개선</small></a>
+<a href="{G}06-lifecycle.html" class="s-tuning"><b>{{{{icon:rocket}}}} Agent Tuning</b><small>평가 기반 개선</small></a>
 <a href="{G}02-big-picture.html" class="s-ext-app"><b>{{{{icon:user}}}} External Applications and Solutions</b><small>Agent Platform APIs로만 접근</small></a>
 <a href="{G}02-big-picture.html" class="s-ext-tool"><b>{{{{icon:cloud}}}} External Tools and Models</b><small>Agent Gateway로만 접근</small></a>
 <a href="{G}02-big-picture.html" class="s-infra"><b>{{{{icon:server}}}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></a>
