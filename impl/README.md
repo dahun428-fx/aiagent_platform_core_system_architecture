@@ -16,14 +16,15 @@ Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 
 ## 확인 방법
 
 ```sh
-make scenarios                 # 또는: python3 impl/scenarios/run.py
+make setup                     # 처음 한 번: .venv 생성 + requirements-dev.txt 설치(jsonschema 등)
+make scenarios                 # .venv가 있으면 그 Python을 자동으로 쓴다
 ```
 
 출력 마지막 줄이 `초록 N개, 빨강 0개`이면 통과다. 각 시나리오의 trace id와, 같은 trace id로 남은 감사 기록이 서비스별로 출력된다.
 
 - `make stack`: 스택을 띄운 채로 두고 각 서비스 주소를 출력한다.
 - `make test-impl`: 같은 시나리오 정의를 자동 테스트로 실행한다.
-- `PYTHON=.venv/bin/python make scenarios`처럼 인터프리터를 지정할 수 있다. Windows는 `python impl/scenarios/run.py`를 직접 실행한다.
+- 다른 인터프리터는 `PYTHON=... make scenarios`로 지정한다. Windows는 `python impl/scenarios/run.py`를 직접 실행한다.
 
 ## 시나리오 정의
 
