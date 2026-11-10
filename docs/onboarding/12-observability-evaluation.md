@@ -35,12 +35,14 @@
 ## 실행 추적 규격
 
 <ol class="flow">
-<li>{{icon:gateway}}<b>Agent Platform APIs</b><span>traceparent 수신·생성</span></li>
-<li>{{icon:agent}}<b>invoke_agent</b><span>Agent 호출 span</span></li>
-<li>{{icon:model}}<b>모델 추론 span</b><span>operation + model</span></li>
-<li>{{icon:tools}}<b>도구 호출 span</b><span>도구 경로</span></li>
-<li>{{icon:agents}}<b>하위 Agent</b><span>traceparent 전파</span></li>
+<li data-say="요청이 들어오면 Agent Platform APIs가 추적 번호(traceparent)를 받거나 새로 만듭니다.">{{icon:gateway}}<b>Agent Platform APIs</b><span>traceparent 수신·생성</span></li>
+<li data-say="Agent 호출 전체를 하나의 구간(span)으로 기록합니다.">{{icon:agent}}<b>invoke_agent</b><span>Agent 호출 span</span></li>
+<li data-say="모델을 부를 때마다 어떤 모델로 무엇을 했는지 구간으로 기록합니다.">{{icon:model}}<b>모델 추론 span</b><span>operation + model</span></li>
+<li data-say="도구를 부를 때마다 구간으로 기록합니다.">{{icon:tools}}<b>도구 호출 span</b><span>도구 경로</span></li>
+<li data-say="하위 Agent를 부르면 같은 추적 번호를 넘겨 줍니다. 그래서 여러 Agent를 거친 요청도 하나의 이야기로 이어서 볼 수 있습니다.">{{icon:agents}}<b>하위 Agent</b><span>traceparent 전파</span></li>
 </ol>
+
+<div class="sim" data-sim="trace"></div>
 
 - W3C Trace Context(`traceparent`, `tracestate`)를 모든 구간에 전파합니다(MUST).
 - span 이름과 속성은 OpenTelemetry GenAI semantic conventions를 따릅니다(MUST).
@@ -72,10 +74,10 @@
 ## 평가 3단계
 
 <ol class="flow">
-<li>{{icon:test}}<b>배포 전 평가</b><span>CI·승격 전<br>평가 데이터셋으로 기준 충족 확인</span></li>
-<li>{{icon:trace}}<b>실행 추적 분석</b><span>실행 후<br>처리 경로와 실패 원인 분석</span></li>
-<li>{{icon:eye}}<b>운영 모니터링</b><span>프로덕션 운영 중<br>추세와 회귀 감지</span></li>
-<li class="hi">{{icon:rocket}}<b>Agent Tuning</b><span>평가 결과를 근거로 개선<br>새 버전은 다시 배포 전 평가</span></li>
+<li data-say="배포하기 전에 정해 둔 평가 데이터로 기준을 넘는지 확인합니다.">{{icon:test}}<b>배포 전 평가</b><span>CI·승격 전<br>평가 데이터셋으로 기준 충족 확인</span></li>
+<li data-say="실행이 끝난 뒤 기록을 보며 어디서 왜 실패했는지 분석합니다.">{{icon:trace}}<b>실행 추적 분석</b><span>실행 후<br>처리 경로와 실패 원인 분석</span></li>
+<li data-say="운영 중에는 품질 추세를 지켜보다가 나빠지는 순간을 잡아냅니다.">{{icon:eye}}<b>운영 모니터링</b><span>프로덕션 운영 중<br>추세와 회귀 감지</span></li>
+<li data-say="평가 결과를 근거로 Agent를 개선하고, 새 버전은 다시 배포 전 평가를 거칩니다." class="hi">{{icon:rocket}}<b>Agent Tuning</b><span>평가 결과를 근거로 개선<br>새 버전은 다시 배포 전 평가</span></li>
 </ol>
 
 <div class="cards">

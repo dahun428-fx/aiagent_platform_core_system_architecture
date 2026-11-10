@@ -44,11 +44,13 @@
 소스 코드는 각 팀의 Git 저장소에서 관리하고, 개발은 각자의 IDE와 CLI에서 수행합니다. 플랫폼이 요구하는 것은 다음 네 가지 **기술 계약** 준수입니다.
 
 <ol class="flow">
-<li>{{icon:manifest}}<b>Manifest 제출</b><span>Agent의 메타데이터, 런타임 설정, 권한 요구사항을 선언</span></li>
-<li>{{icon:gateway}}<b>Agent Platform APIs 진입</b><span>Agent 호출은 Agent Platform APIs로 수행</span></li>
-<li>{{icon:model}}<b>Agent Gateway 경유</b><span>외부 모델·도구 호출은 Agent Gateway를 통해 수행</span></li>
-<li>{{icon:trace}}<b>추적 컨텍스트 전파</b><span>trace 정보를 모든 구간에 전달</span></li>
+<li data-say="Agent를 만든 팀은 먼저 Manifest라는 선언 명세를 제출합니다. 이 Agent가 무엇이고, 어떤 도구와 권한이 필요한지 미리 적어 두는 단계입니다.">{{icon:manifest}}<b>Manifest 제출</b><span>Agent의 메타데이터, 런타임 설정, 권한 요구사항을 선언</span></li>
+<li data-say="누가 Agent를 부르든 정문은 하나, Agent Platform APIs입니다. 여기서 호출한 사람이 누구인지와 호출할 권한이 있는지를 확인합니다.">{{icon:gateway}}<b>Agent Platform APIs 진입</b><span>Agent 호출은 Agent Platform APIs로 수행</span></li>
+<li data-say="Agent가 모델이나 외부 도구를 쓰려면 반드시 Agent Gateway를 거칩니다. 나가는 문이 하나이므로 무엇이 밖으로 나가는지 통제할 수 있습니다.">{{icon:model}}<b>Agent Gateway 경유</b><span>외부 모델·도구 호출은 Agent Gateway를 통해 수행</span></li>
+<li data-say="모든 구간에 같은 추적 번호(trace)가 따라다닙니다. 나중에 한 요청이 어디를 거쳐 어떻게 처리됐는지 처음부터 끝까지 이어서 볼 수 있습니다.">{{icon:trace}}<b>추적 컨텍스트 전파</b><span>trace 정보를 모든 구간에 전달</span></li>
 </ol>
+
+<div class="sim" data-sim="before-after"></div>
 
 ## 제공 범위
 

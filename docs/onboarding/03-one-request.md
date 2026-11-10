@@ -27,12 +27,14 @@
 ## 처리 단계
 
 <ol class="flow">
-<li>{{icon:gateway}}<b>1. 진입</b><span>Agent Platform APIs<br>인증 · 해석 · 인가 · 멱등성</span></li>
-<li>{{icon:runtime}}<b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
-<li>{{icon:tools}}<b>3. 도구 호출</b><span>Agent Gateway 도구 경로<br>+ Credential Broker</span></li>
-<li>{{icon:model}}<b>4. 모델 호출</b><span>Agent Gateway 모델 경로<br>분류 기반 라우팅</span></li>
-<li>{{icon:trace}}<b>5. 기록</b><span>Agent Observability<br>종단 간 실행 추적</span></li>
+<li data-say="정문 단계입니다. 토큰으로 호출자가 누구인지 확인하고(인증), 어떤 Agent를 부르는지 찾고, 그 Agent를 부를 권한이 있는지(인가), 같은 요청이 이미 처리됐는지(멱등성)를 봅니다.">{{icon:gateway}}<b>1. 진입</b><span>Agent Platform APIs<br>인증 · 해석 · 인가 · 멱등성</span></li>
+<li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 팀이 만든 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다.">{{icon:runtime}}<b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
+<li data-say="Agent가 ERP 같은 도구를 써야 하면 Agent Gateway의 도구 경로에 요청합니다. 실제 접속 정보는 Credential Broker가 그 호출 한 번에만 쓸 수 있게 발급합니다.">{{icon:tools}}<b>3. 도구 호출</b><span>Agent Gateway 도구 경로<br>+ Credential Broker</span></li>
+<li data-say="Agent가 모델에게 묻는 단계입니다. 모델 경로가 데이터 분류를 보고 갈 수 있는 모델만 고릅니다. 기밀 데이터는 외부 모델로 보내지 않습니다.">{{icon:model}}<b>4. 모델 호출</b><span>Agent Gateway 모델 경로<br>분류 기반 라우팅</span></li>
+<li data-say="처음부터 끝까지 같은 추적 번호로 기록이 남고, 결과가 호출자에게 돌아갑니다. 문제가 생기면 이 기록으로 원인을 찾습니다.">{{icon:trace}}<b>5. 기록</b><span>Agent Observability<br>종단 간 실행 추적</span></li>
 </ol>
+
+<div class="sim" data-sim="request"></div>
 
 ## 1단계. Agent Platform APIs 진입
 
@@ -88,11 +90,11 @@ Runtime은 Manifest에 선언된 framework adapter로 Agent를 실행합니다. 
 Agent가 ERP에서 청구서를 조회하는 단계입니다. 각 구간이 보유하는 정보를 확인하십시오.
 
 <ol class="flow">
-<li>{{icon:runtime}}<b>Runtime</b><span>도구 ID · 버전 · 인자<br><strong>자격증명 없음</strong></span></li>
-<li>{{icon:gateway}}<b>도구 경로</b><span>승인된 endpoint 해석<br>입력 스키마 · 정책 · 승인</span></li>
-<li class="hi">{{icon:key}}<b>Credential Broker</b><span>정책 근거 재검증 후<br>호출에 결합된 lease</span></li>
-<li>{{icon:tools}}<b>Tool adapter</b><span>신뢰 경계 내부에서<br>lease를 자격증명으로 교환</span></li>
-<li>{{icon:server}}<b>ERP</b><span>출력 스키마·분류 검증 후<br>Runtime에 반환</span></li>
+<li data-say="Agent(Runtime)는 &#x27;어떤 도구를, 어떤 버전으로, 어떤 값으로&#x27; 부를지만 말합니다. 비밀번호나 토큰은 Agent 손에 아예 없습니다.">{{icon:runtime}}<b>Runtime</b><span>도구 ID · 버전 · 인자<br><strong>자격증명 없음</strong></span></li>
+<li data-say="도구 경로가 그 도구가 승인된 것인지, 입력 값 형식이 맞는지, 정책상 허용되는지, 사람 승인이 필요한지를 확인합니다.">{{icon:gateway}}<b>도구 경로</b><span>승인된 endpoint 해석<br>입력 스키마 · 정책 · 승인</span></li>
+<li data-say="Credential Broker가 정책을 다시 확인한 뒤, 이 호출 한 번에만 쓸 수 있는 임시 사용권(lease)을 발급합니다. 다른 호출에 재사용할 수 없습니다." class="hi">{{icon:key}}<b>Credential Broker</b><span>정책 근거 재검증 후<br>호출에 결합된 lease</span></li>
+<li data-say="Tool adapter가 신뢰 경계 안쪽에서만 임시 사용권을 실제 자격증명으로 바꿔 ERP에 접속합니다. 자격증명은 이 안에서만 존재합니다.">{{icon:tools}}<b>Tool adapter</b><span>신뢰 경계 내부에서<br>lease를 자격증명으로 교환</span></li>
+<li data-say="ERP의 응답도 그대로 믿지 않습니다. 형식과 데이터 분류를 검사한 뒤에야 Agent에게 돌려줍니다.">{{icon:server}}<b>ERP</b><span>출력 스키마·분류 검증 후<br>Runtime에 반환</span></li>
 </ol>
 
 1. Runtime은 Agent Gateway의 도구 경로(tool route)에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
@@ -133,10 +135,12 @@ LLM은 자격증명에 접근하지 않으므로 유출 경로가 없습니다.
 Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway의 모델 경로(model route)에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다. 모델 입력과 출력은 Guardrail 검사를 거칩니다. 입력 검사 대상에는 사용자 메시지뿐 아니라 도구 결과와 검색 문서도 포함됩니다.
 
 <div class="lanes">
-<div class="lane"><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:lock}} <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>외부 경로 거부</small></span></div><i>&#8594;</i><div>{{icon:server}} 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:warn}} 허용 경로 없음</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>우회 없음</small></span></div><i>&#8594;</i><div>{{icon:cross}} 요청 실패</div></div>
+<div class="lane" data-say="공개(public)나 사내(internal) 데이터는 정책이 허용하면 외부 모델과 자체 호스팅 모델 중 어느 쪽으로도 갈 수 있습니다."><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
+<div class="lane" data-say="기밀(confidential)이나 제한(restricted) 데이터는 외부 모델로 가는 길을 막고, 회사 안에서 운영하는 자체 호스팅 모델로만 보냅니다."><div>{{icon:lock}} <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>외부 경로 거부</small></span></div><i>&#8594;</i><div>{{icon:server}} 자체 호스팅 모델</div></div>
+<div class="lane" data-say="갈 수 있는 모델이 하나도 없으면 다른 길로 몰래 돌아가지 않고 요청을 실패시킵니다. 이것을 실패 시 거부(fail closed)라고 합니다."><div>{{icon:warn}} 허용 경로 없음</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>우회 없음</small></span></div><i>&#8594;</i><div>{{icon:cross}} 요청 실패</div></div>
 </div>
+
+<div class="sim" data-sim="routing"></div>
 
 예시 데이터는 `confidential`이므로 자체 호스팅 모델로 라우팅됩니다. 응답에는 라우팅 결정을 기록한 `routeDecisionId`가 포함됩니다.
 

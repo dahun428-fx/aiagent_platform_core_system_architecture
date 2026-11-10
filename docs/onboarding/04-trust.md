@@ -56,11 +56,13 @@ LLM이 해당 지시를 따르더라도 도구 호출은 Agent Gateway 도구 �
 Guardrail은 공통 검사 서비스 하나와 네 개의 집행 지점으로 구성합니다. 검사 서비스는 판정(판정 결과, 정책 버전, 검사 ID)만 반환하고, 차단·수정·통과는 각 집행 지점이 결정합니다.
 
 <div class="lanes">
-<div class="lane"><div>{{icon:model}} ① 모델 입력·출력</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 모델 경로<small>프롬프트 인젝션 · PII · 유해 콘텐츠 · 출력 형식</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
-<div class="lane"><div>{{icon:tools}} ② 도구 호출·결과</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 도구 경로<small>호출 인자 · 도구 결과의 간접 인젝션 · 민감정보</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
-<div class="lane"><div>{{icon:knowledge}} ③ 검색 결과</div><i>&#8594;</i><div class="gate">{{icon:knowledge}}<span>Knowledge(RAG) 단계<small>간접 인젝션 · ACL·분류 필터 · 근거성</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
-<div class="lane"><div>{{icon:approve}} ④ 실행 제어</div><i>&#8594;</i><div class="gate">{{icon:runtime}}<span>Agent Runtime<small>권한 최소화 · 고위험 작업의 사람 승인</small></span></div><i>&#8594;</i><div>{{icon:lock}} 승인 전 실행 보류</div></div>
+<div class="lane" data-say="① 모델에 들어가는 내용과 모델이 내놓는 답을 검사합니다. 몰래 명령을 심는 프롬프트 인젝션, 개인정보, 유해한 내용, 잘못된 출력 형식을 걸러냅니다."><div>{{icon:model}} ① 모델 입력·출력</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 모델 경로<small>프롬프트 인젝션 · PII · 유해 콘텐츠 · 출력 형식</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane" data-say="② Agent가 도구에 보내는 값과 도구가 돌려준 결과를 검사합니다. 도구 결과 안에 숨겨진 지시문(간접 인젝션)이나 민감정보를 찾아냅니다."><div>{{icon:tools}} ② 도구 호출·결과</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Gateway 도구 경로<small>호출 인자 · 도구 결과의 간접 인젝션 · 민감정보</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane" data-say="③ 검색해서 가져온 문서를 검사합니다. 문서 속에 숨은 지시문, 볼 권한이 없는 문서, 근거가 약한 내용을 걸러냅니다."><div>{{icon:knowledge}} ③ 검색 결과</div><i>&#8594;</i><div class="gate">{{icon:knowledge}}<span>Knowledge(RAG) 단계<small>간접 인젝션 · ACL·분류 필터 · 근거성</small></span></div><i>&#8594;</i><div>{{icon:shield}} 검사 후 차단</div></div>
+<div class="lane" data-say="④ 실행 자체를 통제합니다. 필요한 최소 권한만 주고, 송금이나 삭제 같은 위험한 작업은 사람이 승인하기 전까지 실행하지 않습니다."><div>{{icon:approve}} ④ 실행 제어</div><i>&#8594;</i><div class="gate">{{icon:runtime}}<span>Agent Runtime<small>권한 최소화 · 고위험 작업의 사람 승인</small></span></div><i>&#8594;</i><div>{{icon:lock}} 승인 전 실행 보류</div></div>
 </div>
+
+<div class="sim" data-sim="guardrail"></div>
 
 - 네 집행 지점은 모두 적용합니다(MUST). 하나의 지점으로 다른 지점을 대체할 수 없습니다.
 - ①은 사용자 메시지뿐 아니라 모델에 전달되는 도구 결과·검색 문서·Memory 내용도 검사합니다(MUST). 사용자 메시지만 검사하는 관문 검사로는 간접 인젝션을 놓칠 수 있기 때문입니다.
@@ -98,11 +100,13 @@ Guardrail은 공통 검사 서비스 하나와 네 개의 집행 지점으로 �
 외부 시스템에 대한 쓰기 작업이 중복 실행되면 송금 이중 처리와 같은 문제가 발생합니다.
 
 <ol class="flow">
-<li>{{icon:check}}<b>자동 재시도</b><span>읽기 작업, 또는 하위 시스템이 멱등성을 보장하는 쓰기 작업만 해당</span></li>
-<li>{{icon:cross}}<b>동일 키 · 다른 요청</b><span>409로 거부</span></li>
-<li>{{icon:clock}}<b>실행 중</b><span>202로 진행 상태 반환</span></li>
-<li class="hi">{{icon:warn}}<b>결과 불명</b><span>timeout 이후 성공 여부가 불명확하면 <code>unknown_outcome</code>으로 기록하고 대사(reconciliation)로 확인</span></li>
+<li data-say="읽기 작업은 다시 해도 결과가 같으므로 자동으로 재시도할 수 있습니다. 쓰기 작업은 대상 시스템이 중복 처리를 막아 줄 때만 재시도합니다.">{{icon:check}}<b>자동 재시도</b><span>읽기 작업, 또는 하위 시스템이 멱등성을 보장하는 쓰기 작업만 해당</span></li>
+<li data-say="같은 요청 번호(멱등성 키)로 내용이 다른 요청이 오면 실수나 공격일 수 있으므로 409 오류로 거부합니다.">{{icon:cross}}<b>동일 키 · 다른 요청</b><span>409로 거부</span></li>
+<li data-say="같은 요청이 아직 처리 중인데 또 들어오면, 다시 실행하지 않고 &#x27;진행 중&#x27;(202)이라고 알려 줍니다.">{{icon:clock}}<b>실행 중</b><span>202로 진행 상태 반환</span></li>
+<li data-say="시간 초과로 성공했는지 실패했는지 알 수 없으면, 다시 실행해서 두 번 처리하는 대신 &#x27;결과 불명&#x27;으로 기록하고 대상 시스템과 대조해 확인합니다." class="hi">{{icon:warn}}<b>결과 불명</b><span>timeout 이후 성공 여부가 불명확하면 <code>unknown_outcome</code>으로 기록하고 대사(reconciliation)로 확인</span></li>
 </ol>
+
+<div class="sim" data-sim="idempotency"></div>
 
 이 패키지는 외부 효과의 exactly-once를 보장하지 않습니다. 해당 상황을 숨기지 않고 **상태로 노출**하는 것이 설계 의도입니다.
 

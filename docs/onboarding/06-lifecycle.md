@@ -47,14 +47,16 @@
 ## 수명주기 단계
 
 <ol class="flow">
-<li>{{icon:laptop}}<b>local experiment</b><span>로컬 개발 및 시험</span></li>
-<li>{{icon:manifest}}<b>registered</b><span>불변 버전과 Manifest 등록</span></li>
-<li>{{icon:test}}<b>validated</b><span>JSON Schema·API 계약 검증 통과</span></li>
-<li>{{icon:approve}}<b>eligible</b><span>평가·검토 완료, 승격 후보</span></li>
-<li class="hi">{{icon:rocket}}<b>production-approved</b><span>프로덕션 승인, 업무 트래픽 처리 가능</span></li>
-<li>{{icon:clock}}<b>deprecated</b><span>신규 사용 중단 안내</span></li>
-<li>{{icon:cross}}<b>retired</b><span>실행 종료</span></li>
+<li data-say="내 PC에서 자유롭게 만들고 시험하는 단계입니다. 아직 플랫폼에 등록되지 않았습니다.">{{icon:laptop}}<b>local experiment</b><span>로컬 개발 및 시험</span></li>
+<li data-say="고정 버전과 Manifest를 Registry에 등록했습니다. 등록은 &#x27;존재를 알렸다&#x27;는 뜻이지 업무에 써도 된다는 뜻은 아닙니다.">{{icon:manifest}}<b>registered</b><span>불변 버전과 Manifest 등록</span></li>
+<li data-say="형식(JSON Schema)과 API 계약 검증을 통과했습니다.">{{icon:test}}<b>validated</b><span>JSON Schema·API 계약 검증 통과</span></li>
+<li data-say="평가와 검토를 마쳐 프로덕션 후보가 됐습니다.">{{icon:approve}}<b>eligible</b><span>평가·검토 완료, 승격 후보</span></li>
+<li data-say="프로덕션 승인을 받아 실제 업무 요청을 처리할 수 있습니다. 이 단계만 업무 트래픽을 받습니다." class="hi">{{icon:rocket}}<b>production-approved</b><span>프로덕션 승인, 업무 트래픽 처리 가능</span></li>
+<li data-say="더 이상 새로 쓰지 말라고 안내하는 단계입니다. 기존 사용자는 옮겨갈 시간을 가집니다.">{{icon:clock}}<b>deprecated</b><span>신규 사용 중단 안내</span></li>
+<li data-say="실행을 완전히 종료했습니다. 어느 단계에서든 문제가 발견되면 별도로 격리(quarantined)합니다.">{{icon:cross}}<b>retired</b><span>실행 종료</span></li>
 </ol>
+
+<div class="sim" data-sim="lifecycle"></div>
 
 Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리(quarantined)** 상태를 관리합니다.
 
@@ -90,12 +92,14 @@ Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리
 workflow Agent는 장시간 실행되거나 중간에 사람의 승인을 대기할 수 있으므로 실행 상태를 관리합니다.
 
 <ol class="flow">
-<li>{{icon:check}}<b>accepted</b><span>요청 접수</span></li>
-<li>{{icon:runtime}}<b>running</b><span>실행 중</span></li>
-<li class="hi">{{icon:approve}}<b>waiting_approval</b><span>승인 대기</span></li>
-<li>{{icon:runtime}}<b>running</b><span>승인 및 재인가 후 재개</span></li>
-<li>{{icon:target}}<b>succeeded · failed</b><span>종료 상태는 덮어쓰지 않음</span></li>
+<li data-say="요청을 접수했습니다.">{{icon:check}}<b>accepted</b><span>요청 접수</span></li>
+<li data-say="Agent가 실행 중입니다.">{{icon:runtime}}<b>running</b><span>실행 중</span></li>
+<li data-say="위험한 작업을 앞두고 사람의 승인을 기다리며 멈춰 있습니다. 승인 없이는 진행하지 않습니다." class="hi">{{icon:approve}}<b>waiting_approval</b><span>승인 대기</span></li>
+<li data-say="승인을 받으면 권한을 다시 확인한 뒤 멈췄던 곳부터 이어서 실행합니다.">{{icon:runtime}}<b>running</b><span>승인 및 재인가 후 재개</span></li>
+<li data-say="성공 또는 실패로 끝났습니다. 끝난 결과는 나중에 덮어쓰지 않습니다.">{{icon:target}}<b>succeeded · failed</b><span>종료 상태는 덮어쓰지 않음</span></li>
 </ol>
+
+<div class="sim" data-sim="durable"></div>
 
 - 승인 대기 상태는 `rejected`, `expired`, `cancelled`로 종료될 수도 있습니다.
 - 실행 중 취소를 요청하면 `cancel_requested`가 되고, `cancelled` 또는 이미 확정된 `succeeded`·`failed`로 종료됩니다.
@@ -109,11 +113,11 @@ Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TB
 Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. FastTrack은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름입니다.
 
 <ol class="flow">
-<li>{{icon:eye}}<b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
-<li>{{icon:code}}<b>개선안 작성</b><span>새 revision (Local-First)</span></li>
-<li>{{icon:test}}<b>배포 전 평가</b><span>기존 버전과 비교</span></li>
-<li>{{icon:approve}}<b>eligible 등록</b><span>Registry</span></li>
-<li class="hi">{{icon:rocket}}<b>프로덕션 승인</b><span>승인 요건 그대로 적용</span></li>
+<li data-say="평가 결과와 실행 기록을 보고 어디를 고칠지 고릅니다.">{{icon:eye}}<b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
+<li data-say="내 PC에서 고친 새 버전을 만듭니다. 기존 버전은 그대로 둡니다.">{{icon:code}}<b>개선안 작성</b><span>새 revision (Local-First)</span></li>
+<li data-say="새 버전을 기존 버전과 같은 기준으로 평가해 실제로 나아졌는지 비교합니다.">{{icon:test}}<b>배포 전 평가</b><span>기존 버전과 비교</span></li>
+<li data-say="나아진 버전을 승격 후보로 Registry에 등록합니다.">{{icon:approve}}<b>eligible 등록</b><span>Registry</span></li>
+<li data-say="프로덕션 승인은 개선 버전이라도 똑같은 요건을 거칩니다. 빠른 길이라고 검사를 건너뛰지 않습니다." class="hi">{{icon:rocket}}<b>프로덕션 승인</b><span>승인 요건 그대로 적용</span></li>
 </ol>
 
 | 개선 대상 | 예 | 산출물 |
@@ -133,12 +137,12 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 플랫폼은 전체 모듈을 동시에 구현하지 않습니다. 다음 종단 간 실행 경로를 먼저 완성한 뒤, 도구·RAG·Durable 실행·Multi-Agent·분산 실행 환경을 단계적으로 추가합니다.
 
 <ol class="flow">
-<li>{{icon:laptop}}<b>로컬 Agent</b><span>Manifest 검증</span></li>
-<li>{{icon:gateway}}<b>Agent Platform APIs</b><span>인증 · Identity · 정책</span></li>
-<li>{{icon:runtime}}<b>Runtime adapter</b><span>Agent 실행</span></li>
-<li>{{icon:model}}<b>Agent Gateway 모델 경로</b><span>외부 · 자체 호스팅 모델</span></li>
-<li>{{icon:trace}}<b>실행 추적 · 평가</b><span>검증 근거 기록</span></li>
-<li>{{icon:rocket}}<b>Registry · CI 게이트</b><span>승인된 실행 환경으로 승격</span></li>
+<li data-say="내 PC의 Agent와 Manifest를 검증합니다.">{{icon:laptop}}<b>로컬 Agent</b><span>Manifest 검증</span></li>
+<li data-say="Agent Platform APIs로 호출해 인증·신원·정책 검사를 거칩니다.">{{icon:gateway}}<b>Agent Platform APIs</b><span>인증 · Identity · 정책</span></li>
+<li data-say="Runtime adapter가 Agent를 실행합니다.">{{icon:runtime}}<b>Runtime adapter</b><span>Agent 실행</span></li>
+<li data-say="Agent Gateway 모델 경로를 거쳐 외부 또는 자체 호스팅 모델을 호출합니다.">{{icon:model}}<b>Agent Gateway 모델 경로</b><span>외부 · 자체 호스팅 모델</span></li>
+<li data-say="실행 기록과 평가 결과가 승인의 근거로 남습니다.">{{icon:trace}}<b>실행 추적 · 평가</b><span>검증 근거 기록</span></li>
+<li data-say="Registry와 CI 게이트를 통과하면 승인된 실행 환경으로 승격됩니다.">{{icon:rocket}}<b>Registry · CI 게이트</b><span>승인된 실행 환경으로 승격</span></li>
 </ol>
 
 ![Local-First MVP 흐름](../../diagrams/mvp.svg)

@@ -66,12 +66,14 @@ def create():
 ## 연결 절차
 
 <ol class="flow">
-<li>{{icon:code}}<b>템플릿 복사</b><span><code>templates/agents/</code></span></li>
-<li>{{icon:manifest}}<b>Manifest 수정</b><span>ID·이름·도구</span></li>
-<li>{{icon:runtime}}<b>adapter 작성</b><span><code>agent.py</code>의 <code>handle</code></span></li>
-<li>{{icon:test}}<b>검증·적합성</b><span><code>validate</code> · <code>conformance</code></span></li>
-<li class="hi">{{icon:gateway}}<b>호출</b><span>새 Agent ID로 실행</span></li>
+<li data-say="templates/agents/ 아래 템플릿 폴더를 통째로 복사해 시작합니다.">{{icon:code}}<b>템플릿 복사</b><span><code>templates/agents/</code></span></li>
+<li data-say="Manifest에서 Agent ID, 이름, 사용할 도구를 내 Agent에 맞게 바꿉니다.">{{icon:manifest}}<b>Manifest 수정</b><span>ID·이름·도구</span></li>
+<li data-say="agent.py의 handle 함수에 Agent가 할 일을 작성합니다. 모델과 도구는 ctx로만 부릅니다.">{{icon:runtime}}<b>adapter 작성</b><span><code>agent.py</code>의 <code>handle</code></span></li>
+<li data-say="validate로 Manifest를, conformance로 플랫폼 규칙 11가지를 확인합니다.">{{icon:test}}<b>검증·적합성</b><span><code>validate</code> · <code>conformance</code></span></li>
+<li data-say="로컬 플랫폼을 띄우고 새 Agent ID로 호출해 응답을 확인합니다." class="hi">{{icon:gateway}}<b>호출</b><span>새 Agent ID로 실행</span></li>
 </ol>
+
+<div class="sim" data-sim="conformance"></div>
 
 ### 1. 템플릿 복사
 
@@ -196,6 +198,8 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 음성 예입니다. 같은 Agent에서 `tools.read`를 빼면 adapter는 실행되지만 `ctx.call_tool`에서 403으로 실패합니다. `models.invoke`를 빼면 `ctx.generate`에서 같은 이유로 실패합니다. `delegated` 모드에서는 호출자가 해당 scope를 보유하므로 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 발생하면 먼저 이 표와 `requiredScopes`를 대조합니다.
 
 신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(`tests/test_conformance.py`의 `ManifestEnforcementTests`: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.
+
+<div class="sim" data-sim="permission"></div>
 
 ## Manifest 필드 지원 범위 (로컬 mock)
 

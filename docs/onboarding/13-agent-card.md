@@ -78,10 +78,10 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를
 </div>
 
 <ol class="flow">
-<li>{{icon:manifest}}<b>공개 카드 조회</b><span><code>capabilities.extendedAgentCard: true</code> 확인</span></li>
-<li>{{icon:lock}}<b>인증</b><span>공개 카드에 선언된 인증 방식으로 토큰 획득</span></li>
-<li>{{icon:identity}}<b>GetExtendedAgentCard</b><span>인증 수준에 따라 다른 내용 반환</span></li>
-<li>{{icon:check}}<b>카드 교체</b><span>세션 동안 공개 카드 대신 사용</span></li>
+<li data-say="누구나 볼 수 있는 공개 카드를 먼저 읽고, 더 자세한 확장 카드가 있는지 확인합니다.">{{icon:manifest}}<b>공개 카드 조회</b><span><code>capabilities.extendedAgentCard: true</code> 확인</span></li>
+<li data-say="공개 카드에 적힌 방식으로 로그인해 토큰을 받습니다.">{{icon:lock}}<b>인증</b><span>공개 카드에 선언된 인증 방식으로 토큰 획득</span></li>
+<li data-say="토큰을 들고 확장 카드를 요청합니다. 권한 수준에 따라 보여 주는 내용이 다릅니다.">{{icon:identity}}<b>GetExtendedAgentCard</b><span>인증 수준에 따라 다른 내용 반환</span></li>
+<li data-say="이번 세션 동안은 공개 카드 대신 확장 카드를 사용합니다.">{{icon:check}}<b>카드 교체</b><span>세션 동안 공개 카드 대신 사용</span></li>
 </ol>
 
 확장 카드는 반드시 인증을 요구하며(MUST), 확장 카드에도 유출 시 악용될 수 있는 정보는 넣지 않습니다(SHOULD NOT). 플랫폼은 확장 카드의 내용을 권한 교집합에 따라 제한합니다.
@@ -89,11 +89,13 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를
 ## 서명과 검증
 
 <ol class="flow">
-<li>{{icon:manifest}}<b>정규화</b><span><code>signatures</code> 제외 후 JCS(RFC 8785) 정규화</span></li>
-<li>{{icon:key}}<b>서명</b><span>JWS(RFC 7515), 보호 헤더 <code>alg</code>·<code>typ</code>·<code>kid</code>, 선택 <code>jku</code></span></li>
-<li>{{icon:gateway}}<b>발행</b><span>Registry가 조직 키로 서명한 카드 제공</span></li>
-<li class="hi">{{icon:shield}}<b>검증</b><span>키 조회(kid·jku) → 정규화 → 서명 검증 후 신뢰</span></li>
+<li data-say="서명 부분을 뺀 카드 내용을 항상 같은 모양으로 정리(정규화)합니다. 글자 순서나 공백이 달라도 같은 내용이면 같은 결과가 나오게 하기 위해서입니다.">{{icon:manifest}}<b>정규화</b><span><code>signatures</code> 제외 후 JCS(RFC 8785) 정규화</span></li>
+<li data-say="정리한 내용에 조직 키로 서명합니다. 내용이 한 글자만 바뀌어도 서명이 맞지 않게 됩니다.">{{icon:key}}<b>서명</b><span>JWS(RFC 7515), 보호 헤더 <code>alg</code>·<code>typ</code>·<code>kid</code>, 선택 <code>jku</code></span></li>
+<li data-say="Registry가 서명된 카드를 내놓습니다.">{{icon:gateway}}<b>발행</b><span>Registry가 조직 키로 서명한 카드 제공</span></li>
+<li data-say="받는 쪽은 키를 찾아 같은 방식으로 정리한 뒤 서명을 확인합니다. 맞을 때만 카드를 믿습니다." class="hi">{{icon:shield}}<b>검증</b><span>키 조회(kid·jku) → 정규화 → 서명 검증 후 신뢰</span></li>
 </ol>
+
+<div class="sim" data-sim="card"></div>
 
 ```json
 {"alg": "ES256", "typ": "JOSE", "kid": "key-1", "jku": "https://example.com/agent/jwks.json"}

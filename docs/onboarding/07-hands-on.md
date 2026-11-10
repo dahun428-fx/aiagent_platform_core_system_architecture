@@ -23,11 +23,11 @@
 </div>
 
 <ol class="flow">
-<li>{{icon:manifest}}<b>실습 1</b><span>Manifest 검증<br>예상 소요 5분</span></li>
-<li>{{icon:gateway}}<b>실습 2</b><span>Agent 호출<br>예상 소요 10분</span></li>
-<li>{{icon:cross}}<b>실습 3</b><span>인증 실패·멱등성 충돌<br>예상 소요 5분</span></li>
-<li>{{icon:code}}<b>실습 4</b><span>TypeScript 클라이언트<br>선택</span></li>
-<li>{{icon:test}}<b>실습 5</b><span>전체 테스트<br>선택</span></li>
+<li data-say="Manifest가 형식에 맞는지 검증 도구로 확인해 봅니다.">{{icon:manifest}}<b>실습 1</b><span>Manifest 검증<br>예상 소요 5분</span></li>
+<li data-say="로컬 mock 플랫폼에 실제로 Agent 호출을 보내 응답을 받아 봅니다.">{{icon:gateway}}<b>실습 2</b><span>Agent 호출<br>예상 소요 10분</span></li>
+<li data-say="토큰을 빼거나 같은 키로 다른 요청을 보내, 플랫폼이 어떻게 막는지 직접 확인합니다.">{{icon:cross}}<b>실습 3</b><span>인증 실패·멱등성 충돌<br>예상 소요 5분</span></li>
+<li data-say="TypeScript 클라이언트로 같은 호출을 해 봅니다. 선택 사항입니다.">{{icon:code}}<b>실습 4</b><span>TypeScript 클라이언트<br>선택</span></li>
+<li data-say="전체 테스트를 실행해 모든 규칙이 지켜지는지 확인합니다. 선택 사항입니다.">{{icon:test}}<b>실습 5</b><span>전체 테스트<br>선택</span></li>
 </ol>
 
 ## 환경 구성

@@ -67,9 +67,9 @@
 ## 진입 경계와 반출 경계
 
 <div class="lanes">
-<div class="lane"><div>{{icon:user}} 업무 앱 · Applications</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Platform APIs<small>진입: Identity 위조, 미인가 접근, 중복 실행 차단</small></span></div><i>&#8594;</i><div>{{icon:runtime}} Agent Runtime</div></div>
-<div class="lane"><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Agent Gateway · 모델 경로<small>반출: 분류 위반 외부 전송, 공급사 종속 차단</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 · 자체 호스팅 모델</div></div>
-<div class="lane"><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:tools}}<span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div>{{icon:server}} 사내 · 외부 도구</div></div>
+<div class="lane" data-say="업무 앱이 Agent를 부르는 길입니다. 정문인 Agent Platform APIs가 호출자 신원을 확인하고, 권한이 없거나 같은 요청이 중복되면 Agent Runtime에 닿기 전에 막습니다."><div>{{icon:user}} 업무 앱 · Applications</div><i>&#8594;</i><div class="gate">{{icon:gateway}}<span>Agent Platform APIs<small>진입: Identity 위조, 미인가 접근, 중복 실행 차단</small></span></div><i>&#8594;</i><div>{{icon:runtime}} Agent Runtime</div></div>
+<div class="lane" data-say="Agent가 모델을 부르는 길입니다. Agent Gateway의 모델 경로가 데이터 분류를 보고, 밖으로 나가면 안 되는 데이터가 외부 모델로 가지 않게 막습니다."><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>Agent Gateway · 모델 경로<small>반출: 분류 위반 외부 전송, 공급사 종속 차단</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 · 자체 호스팅 모델</div></div>
+<div class="lane" data-say="Agent가 사내·외부 도구를 부르는 길입니다. Agent Gateway의 도구 경로가 승인된 도구인지 확인하고, 자격증명이 Agent에 노출되지 않게 대신 연결합니다."><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:tools}}<span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div>{{icon:server}} 사내 · 외부 도구</div></div>
 </div>
 
 진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 호출 통제와 모델 공급사 추상화는 서로 다른 책임이기 때문입니다. 논리적 분리이므로 물리적으로 통합 배포할 수 있으나, Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).
