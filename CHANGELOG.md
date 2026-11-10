@@ -5,7 +5,7 @@
 | 패키지 | 계약 | 주요 내용 | 검증 | 배포 산출물 |
 |---|---|---|---|---|
 | 0.1.0 | 0.1.0 | 기준선 Q1–Q30, ADR-001~030, 계약 23 schema·5 OpenAPI, Python mock, TypeScript client, 오프라인 포털 | release.py(테스트·TypeScript·HTTP smoke·브라우저 오프라인·ZIP) | `dist/enterprise-ai-agent-platform-v0.1.zip` (2026-10-30 생성) |
-| 0.1.1 (main) | 0.1.1 | 개발자 가이드 14장, Core Systems(ADR-031~037, Q31–Q37), 보안 결함 수정, 안전한 패키징, 내 Agent 연결 키트(adapter·로컬 Registry·적합성 11항목·템플릿 2종), Manifest scope·mode 집행 | CI: Python 테스트(Ubuntu·Windows), 포털 drift, TypeScript typecheck·build, Python↔TypeScript HTTP smoke | 미생성. Mac에서 `scripts/release.py` 실행 후 태그 `v0.1.1` → `dist/enterprise-ai-agent-platform-v0.1.1.zip` |
+| 0.1.1 | 0.1.1 | 개발자 가이드 14장, Core Systems(ADR-031~037, Q31–Q37), 보안 결함 수정, 안전한 패키징, 내 Agent 연결 키트(adapter·로컬 Registry·적합성 11항목·템플릿 2종), Manifest scope·mode 집행 | CI: Python 테스트(Ubuntu·Windows), 포털 drift, TypeScript typecheck·build, Python↔TypeScript HTTP smoke | `dist/enterprise-ai-agent-platform-v0.1.1.zip` (2026-11-10 생성, 태그 `v0.1.1`, source commit `69b04fa`) |
 
 ## 0.1.1
 
