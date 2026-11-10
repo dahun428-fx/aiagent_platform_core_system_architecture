@@ -130,12 +130,17 @@ class ModelGateway:
         self.available = {"external", "self-hosted"}
         self.calls = 0
 
-    def invoke(self, content, identity, policy, traceparent):
+    def route(self, identity, policy):
+        """Authorize and pick a policy-approved provider. Shared with the HTTP model route in impl/."""
         authorize(identity, policy, "models.invoke")
         candidates = ["self-hosted"] if policy["classification"] in ("confidential", "restricted") else ["self-hosted", "external"]
         provider = next((p for p in candidates if p in self.available and "model-" + p in policy["allowedResources"]), None)
         if provider is None:
             raise Fault(503, "UPSTREAM_UNAVAILABLE", "No policy-approved model route")
+        return provider
+
+    def invoke(self, content, identity, policy, traceparent):
+        provider = self.route(identity, policy)
         self.calls += 1
         self.record("model-gateway", traceparent, {"decisionId": policy["decisionId"], "provider": provider})
         return {"content": "mock:" + content, "provider": provider,

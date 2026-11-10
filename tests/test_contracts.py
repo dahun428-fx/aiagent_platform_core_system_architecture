@@ -145,7 +145,7 @@ class PackagingTests(unittest.TestCase):
     def test_generated_and_junk_files_are_excluded_and_order_is_stable(self):
         names = ["docs/b.md", "README.md", "checksums.sha256", "dist/x.zip", "verification/archive-verification.json",
                  "verification/archive-verification-v0.1.1.json", "docs/.DS_Store", "docs/a.md", "scripts/x.pyc",
-                 "verification/results.json"]
+                 "verification/results.json", "impl/gateway/model_route.py", "Makefile"]
         self.assertEqual(self.release.select_package_files(names),
                          ["README.md", "docs/a.md", "docs/b.md", "verification/results.json"])
 
