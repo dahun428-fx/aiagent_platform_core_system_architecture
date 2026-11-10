@@ -50,6 +50,7 @@ npm run build:client
 Python SDK 호출 예제: <code>python3 examples/python/client.py</code>.
 전체 검증·체크섬·ZIP: <code>.venv/bin/python scripts/release.py</code>.
 포털 재생성만 수행: <code>.venv/bin/python scripts/build_portal.py --write</code>.
+웹 배포: 저장소를 Vercel에 연결하면 <code>vercel.json</code> 설정대로 빌드 없이 <code>portal/</code>을 정적 사이트로 올린다 (검색엔진 색인 차단 헤더 포함).
 결과는 verification/, 배포 ZIP은 dist/에 생성된다.
 실행 검증 요약은 docs/validation-results.md에서 확인한다.</p>
 <h2 id="구성">구성</h2>

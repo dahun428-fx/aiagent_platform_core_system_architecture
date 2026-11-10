@@ -54,6 +54,7 @@ node examples/typescript/dist/demo.js
 Python SDK 호출 예제: `python3 examples/python/client.py`.
 전체 검증·체크섬·ZIP: `.venv/bin/python scripts/release.py`.
 포털 재생성만 수행: `.venv/bin/python scripts/build_portal.py --write`.
+웹 배포: 저장소를 Vercel에 연결하면 `vercel.json` 설정대로 빌드 없이 `portal/`을 정적 사이트로 올린다 (검색엔진 색인 차단 헤더 포함).
 결과는 verification/, 배포 ZIP은 dist/에 생성된다.
 실행 검증 요약은 docs/validation-results.md에서 확인한다.
 
