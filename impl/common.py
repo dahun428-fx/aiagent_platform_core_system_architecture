@@ -1,6 +1,7 @@
-"""impl/ 서비스들이 함께 쓰는 도구: 참조 구현 모듈 로딩, 작은 JSON HTTP 서버와 클라이언트."""
+"""impl/ 서비스들이 함께 쓰는 도구: 참조 구현 모듈 로딩, 작은 JSON HTTP 서버와 클라이언트, 내부 구간 서명."""
 from __future__ import annotations
 
+import hmac
 import importlib.util
 import json
 import sys
@@ -10,6 +11,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]  # 저장소 루트
+KEY_ENV = "IMPL_INTERNAL_KEY"  # 내부 구간 서명에 쓰는 공유 비밀값을 담는 환경 변수 이름
+SIGNATURE_HEADER = "X-Internal-Signature"
 MAX_BODY = 65536  # 요청 본문 최대 크기(64KB). 이보다 크면 거부한다.
 
 
@@ -55,6 +58,13 @@ class JsonHandler(BaseHTTPRequestHandler):
 # 서버를 127.0.0.1(이 컴퓨터)에만 바인딩한다. port 0이면 OS가 빈 포트를 골라 준다. 요청마다 스레드 하나.
 def serve(handler_class, port):
     return ThreadingHTTPServer(("127.0.0.1", port), handler_class)
+
+
+# 내부 구간 서명: 요청 본문을 키 순서와 공백을 고정한 JSON(참조 구현의 canonical_digest)으로 만든 뒤 HMAC-SHA256으로 서명한다.
+# 본문의 identity·policy가 한 글자라도 바뀌면 서명이 맞지 않는다.
+# shortcut: 만료 시각이나 nonce가 없어 가로챈 요청을 그대로 다시 보내면 통과한다. 3단계(Identity)에서 워크로드 토큰으로 바꾼다.
+def sign(key, body):
+    return hmac.new(key.encode(), load_ref().canonical_digest(body).encode(), "sha256").hexdigest()
 
 
 # JSON HTTP 요청을 보내고 (상태 코드, 헤더, JSON 본문)을 돌려준다.
