@@ -75,20 +75,43 @@ def disconnects(stack, service, expected):
     return n
 
 
+# 시나리오의 단계 목록. steps가 없으면 fault·expect로 된 한 단계짜리 시나리오다.
+# 단계마다: fault(이 단계의 고장), waitMs(보내기 전 대기), repeat(같은 요청을 몇 번 보낼지), expect(마지막 응답의 기대값)
+def scenario_steps(scenario):
+    return scenario.get("steps") or [{"fault": scenario.get("fault", {}), "expect": scenario["expect"]}]
+
+
 # 시나리오 하나를 실행하고, 기대값과 실제값을 항목별로 비교한 결과를 돌려준다.
 def run_scenario(stack, scenario):
-    req, expect = scenario["request"], scenario["expect"]
-    # 가짜 모델의 호출 횟수를 0으로 맞춰서 이번 요청이 부른 횟수만 세게 하고, 시나리오의 고장(fault)을 심는다.
-    call_json("POST", stack.urls["fake-model"] + "/_reset", scenario.get("fault", {}).get("fake-model", {}))
-    trace = new_traceparent()
-    trace_id = trace.split("-")[1]
+    req = scenario["request"]
+    # 모델 경로의 circuit breaker·rate limit을 처음 상태로 되돌려, 앞 시나리오의 실패가 이 시나리오에 번지지 않게 한다.
+    call_json("POST", stack.urls["model-route"] + "/_reset", {})
     # target 이 model-route 면 모델 경로에 직접, 아니면 Platform APIs로 보낸다.
     send = call_model_route if req.get("target") == "model-route" else call_platform
-    started = time.monotonic()
-    status, resp_headers, body = send(stack, req, trace)
-    elapsed_ms = round((time.monotonic() - started) * 1000)
+    steps = scenario_steps(scenario)
+    checks, audit = [], {}
+    for number, step in enumerate(steps, 1):
+        # 가짜 모델의 호출 횟수를 0으로 맞춰서 이 단계가 부른 횟수만 세게 하고, 이 단계의 고장(fault)을 심는다.
+        call_json("POST", stack.urls["fake-model"] + "/_reset", step.get("fault", {}).get("fake-model", {}))
+        time.sleep(step.get("waitMs", 0) / 1000)
+        for _ in range(step.get("repeat", 1)):
+            trace = new_traceparent()
+            started = time.monotonic()
+            status, resp_headers, body = send(stack, req, trace)
+            elapsed_ms = round((time.monotonic() - started) * 1000)
+        prefix = f"{number}단계 " if len(steps) > 1 else ""
+        audit = {}
+        step_checks = check_response(stack, step["expect"], status, resp_headers, body, trace.split("-")[1], elapsed_ms, audit)
+        checks += [(prefix + name, e, a) for name, e, a in step_checks]
 
-    # 판정 항목을 (이름, 기대값, 실제값)으로 모은다.
+    results = [{"name": n, "expected": e, "actual": a, "passed": e == a} for n, e, a in checks]
+    return {"id": scenario["id"], "title": scenario["title"], "slice": scenario.get("slice"),
+            "passed": all(r["passed"] for r in results), "traceId": trace.split("-")[1], "status": status,
+            "elapsedMs": elapsed_ms, "checks": results, "response": body, "audit": audit}
+
+
+# 응답 하나를 기대값과 항목별로 비교해 (이름, 기대값, 실제값) 목록을 돌려준다. 이번 trace id의 감사 기록은 audit에 담는다.
+def check_response(stack, expect, status, resp_headers, body, trace_id, elapsed_ms, audit):
     checks = [("status", expect["status"], status)]
     # 걸린 시간이 [최소, 최대] ms 안인지. 실제값은 범위 안이면 기대 범위 그대로, 밖이면 걸린 시간을 보여 준다.
     if "elapsedMs" in expect:
@@ -100,6 +123,10 @@ def run_scenario(stack, scenario):
     # 응답 본문의 최상위 필드(예: 오류 code, routeDecisionId)
     for field, value in expect.get("body", {}).items():
         checks.append((field, value, body.get(field) if isinstance(body, dict) else None))
+    # 응답 헤더(예: Retry-After). 헤더 이름은 대소문자를 가리지 않는다.
+    lowered = {k.lower(): v for k, v in resp_headers.items()}
+    for name, value in expect.get("headers", {}).items():
+        checks.append((name + " header", value, lowered.get(name.lower())))
     # 오류 응답에 내부 주소(upstream URL, 루프백 주소)가 드러나지 않는지
     if expect.get("noInternalAddress"):
         text = json.dumps(body)
@@ -111,7 +138,6 @@ def run_scenario(stack, scenario):
     for service, count in expect.get("upstreamDisconnects", {}).items():
         checks.append((service + " disconnects", count, disconnects(stack, service, count)))
     # 서비스별 감사 기록: 이번 trace id로 남은 것만 골라서, 어떤 컴포넌트가 기록했는지 비교한다.
-    audit = {}
     for service, components in expect.get("auditComponents", {}).items():
         records = audit[service] = trace_records(stack, service, trace_id)
         seen = sorted({r["component"] for r in records})
@@ -122,16 +148,12 @@ def run_scenario(stack, scenario):
         for field, value in fields.items():
             checks.append((f"{service} audit {field}", [value], sorted({r[field] for r in records if field in r})))
     # trace id가 끝까지 이어졌는지: 성공이면 응답 헤더, 실패면 Problem 본문의 traceId로 확인한다.
-    echoed = {k.lower(): v for k, v in resp_headers.items()}.get("traceparent")
+    echoed = lowered.get("traceparent")
     if status == 200:
         checks.append(("trace id echoed", trace_id, echoed.split("-")[1] if echoed else None))
     else:
         checks.append(("problem traceId", trace_id, body.get("traceId") if isinstance(body, dict) else None))
-
-    results = [{"name": n, "expected": e, "actual": a, "passed": e == a} for n, e, a in checks]
-    return {"id": scenario["id"], "title": scenario["title"], "slice": scenario.get("slice"),
-            "passed": all(r["passed"] for r in results), "traceId": trace_id, "status": status, "elapsedMs": elapsed_ms,
-            "checks": results, "response": body, "audit": audit}
+    return checks
 
 
 # 스택을 새로 띄워 모든 시나리오를 실행하고, 끝나면 스택을 끈다.

@@ -161,9 +161,21 @@ function requestSummary(s) {
     " · 인증 ", el("code", {}, r.authorization || "없음"), tail);
 }
 
-// 시나리오의 기대값 한 줄 요약
+// 시나리오의 기대값 요약. 여러 단계(steps)면 단계마다 한 줄: 고장, 대기, 반복 횟수, 마지막 응답의 기대값
 function expectSummary(s) {
-  const e = s.expect, bits = [`상태 ${e.status}`];
+  if (!s.steps) return el("div", { class: "meta" }, "기대 ", expectBits(s.expect).join(" · "));
+  return el("div", {}, ...s.steps.map((st, i) => {
+    const how = [];
+    for (const [svc, f] of Object.entries(st.fault || {})) how.push(`고장 ${svc} ${JSON.stringify(f)}`);
+    if (st.waitMs) how.push(`${st.waitMs}ms 기다린 뒤`);
+    how.push(`${st.repeat || 1}번 보냄`);
+    return el("div", { class: "meta" }, `${i + 1}단계 `, how.join(" · "), " → 기대 ", expectBits(st.expect).join(" · "));
+  }));
+}
+
+// 기대값 한 묶음을 사람이 읽는 조각들로 바꾼다
+function expectBits(e) {
+  const bits = [`상태 ${e.status}`];
   if ("outputContent" in e) bits.push(`출력 "${e.outputContent}"`);
   if (e.elapsedMs) bits.push(`${e.elapsedMs[0]}~${e.elapsedMs[1]}ms 안에 응답`);
   for (const [k, v] of Object.entries(e.body || {})) bits.push(`${k} "${v}"`);
@@ -171,9 +183,10 @@ function expectSummary(s) {
   for (const [svc, n] of Object.entries(e.upstreamDisconnects || {})) bits.push(`${svc} 연결 끊김 ${n}회`);
   if (e.noInternalAddress) bits.push("응답에 내부 주소 없음");
   for (const [svc, comps] of Object.entries(e.auditComponents || {})) bits.push(`${svc} 감사 ${comps.length ? comps.join("·") : "없음"}`);
+  for (const [k, v] of Object.entries(e.headers || {})) bits.push(`헤더 ${k}: ${v}`);
   for (const [svc, fields] of Object.entries(e.auditFields || {}))
     for (const [k, v] of Object.entries(fields)) bits.push(`${svc} 감사 ${k}=${v}`);
-  return el("div", { class: "meta" }, "기대 ", bits.join(" · "));
+  return bits;
 }
 
 // 실행 결과: 기대값·실제값 표, 같은 trace id의 감사 기록, 응답 본문(접힘)

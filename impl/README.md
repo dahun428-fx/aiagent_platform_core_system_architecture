@@ -2,7 +2,7 @@
 
 [구현 로드맵](../docs/implementation-roadmap.md)의 조각을 실제 서비스로 만드는 코드다. 표준 패키지와 버전을 따로 매기며(`impl/VERSION`), 표준 패키지 ZIP과 checksums에는 포함하지 않는다.
 
-## 지금까지의 조각: S0 걷는 뼈대, S0b 시나리오 화면, S1 권한 거부, S2 timeout, S3 오류 매핑·읽기 재시도
+## 지금까지의 조각: S0 걷는 뼈대, S0b 시나리오 화면, S1 권한 거부, S2 timeout, S3 오류 매핑·읽기 재시도, S4 보호 장치
 
 Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 세 프로세스를 거친다.
 
@@ -18,6 +18,8 @@ Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 
 Agent 호출마다 deadline이 있다. Platform APIs는 본문의 `execution.timeoutMs`와 앱이 보낸 `Request-Timeout-Ms` 헤더 중 짧은 쪽으로 deadline을 정하고, 모델 경로에 남은 시간을 `Request-Timeout-Ms`로 넘긴다. 모델 경로는 그 시간과 자체 상한(5초) 중 짧은 쪽만 upstream을 기다리고, 넘으면 upstream 연결을 끊고 504 `UPSTREAM_TIMEOUT`을 돌려준다([ADR-038](../adr/ADR-038.md)).
 
 upstream 실패는 시간 초과 504, 연결 실패 503 `UPSTREAM_UNAVAILABLE`, 5xx·깨진 응답 502 `UPSTREAM_ERROR`로 나눈다. 모델 호출은 외부에 남는 효과가 없는 읽기 호출이라 모델 경로가 deadline 안에서 최대 3회(0.05초, 0.1초 간격) 시도한다. 4xx와 시간 초과는 다시 시도하지 않는다. Platform APIs는 다시 시도하지 않고 모델 경로의 502·503·504를 그대로 전한다. 오류 응답에는 upstream 주소나 원문 오류를 넣지 않는다.
+
+모델 경로에는 보호 장치 두 가지가 있다. circuit breaker는 upstream 호출이 연속 3번 실패하면 열려서 1초 동안 upstream을 부르지 않고 바로 503(`Retry-After: 1`)을 준다. 1초가 지나면 시험 호출 하나만 보내서, 성공하면 닫고 실패하면 다시 연다. rate limit은 tenant·Agent마다 1초에 5번까지 받고, 넘으면 429 `RATE_LIMITED`와 `Retry-After`를 준다. Platform APIs는 이 `Retry-After`를 앱 응답까지 그대로 전한다. 수치는 로컬 시나리오용이며 운영 값은 TBD다.
 
 ## 확인 방법
 
@@ -38,13 +40,15 @@ make scenarios                 # 같은 시나리오를 터미널 표로 실행�
 
 ## 시나리오 정의
 
-`impl/scenarios/scenarios.json` 하나를 `make scenarios`, 자동 테스트, 시나리오 화면(`impl/demo/`)이 함께 읽는다. 시나리오를 추가하면 세 곳에 동시에 나타난다. 시나리오는 요청과 기대값(상태 코드, 걸린 시간 범위 `elapsedMs`, 출력, 응답 필드, upstream 호출 횟수와 연결 끊김 횟수, 서비스별 감사 기록)을 담는다. `fault`에는 가짜 upstream에 심을 고장을 적는다(지연 `delayMs`, 상태 코드 `status`, 연결 끊기 `drop`, 깨진 응답 `garbage`, 처음 n번만 실패 `failTimes`). `noInternalAddress`는 응답에 내부 주소가 없는지 본다. `request.headers`로 추가 헤더(예: `Request-Timeout-Ms`)를 보낸다. `"target": "model-route"`인 시나리오는 Platform을 건너뛰고 모델 경로에 직접 보내며, `sign`(서명 여부), `identity`·`policy`(예제 fixture에 덮어쓸 값), `afterSigning`(서명 뒤에 바꿀 값)으로 내부 구간을 흉내 낸다.
+`impl/scenarios/scenarios.json` 하나를 `make scenarios`, 자동 테스트, 시나리오 화면(`impl/demo/`)이 함께 읽는다. 시나리오를 추가하면 세 곳에 동시에 나타난다. 시나리오는 요청과 기대값(상태 코드, 걸린 시간 범위 `elapsedMs`, 출력, 응답 필드, upstream 호출 횟수와 연결 끊김 횟수, 서비스별 감사 기록)을 담는다. `fault`에는 가짜 upstream에 심을 고장을 적는다(지연 `delayMs`, 상태 코드 `status`, 연결 끊기 `drop`, 깨진 응답 `garbage`, 처음 n번만 실패 `failTimes`). `noInternalAddress`는 응답에 내부 주소가 없는지, `headers`는 응답 헤더(예: `Retry-After`)를 본다. 여러 요청이 필요한 시나리오는 `steps`에 단계(고장 `fault`, 대기 `waitMs`, 반복 `repeat`, 마지막 응답의 기대값 `expect`)를 적는다. 시나리오를 시작할 때마다 모델 경로의 circuit·rate limit 상태를 `/_reset`으로 되돌린다. `request.headers`로 추가 헤더(예: `Request-Timeout-Ms`)를 보낸다. `"target": "model-route"`인 시나리오는 Platform을 건너뛰고 모델 경로에 직접 보내며, `sign`(서명 여부), `identity`·`policy`(예제 fixture에 덮어쓸 값), `afterSigning`(서명 뒤에 바꿀 값)으로 내부 구간을 흉내 낸다.
 
 ## 아직 하지 않은 것
 
 - 내부 구간 서명에 만료 시각이나 nonce가 없어, 가로챈 요청을 그대로 다시 보내면 통과한다. 3단계(Identity)에서 워크로드 토큰으로 바꾼다.
-- 재시도 backoff에 jitter가 없고 재시도 예산이 호출마다 따로다. upstream 단위 예산과 circuit breaker는 S4에서 다룬다.
+- 재시도 backoff에 jitter가 없고 재시도 예산이 호출마다 따로다. circuit breaker가 연속 실패를 끊어 주지만, 열리기 전까지는 인스턴스마다 재시도가 겹칠 수 있다.
+- circuit과 rate limit 상태는 프로세스 메모리에만 있다. 모델 경로를 여러 개 띄우면 한도가 그 수만큼 늘고 circuit도 따로 열린다. 수평 확장 때 공유 저장소로 옮긴다.
+- circuit 기준(연속 3번, 1초)과 한도(1초 5번)는 코드 상수다. 운영 값은 upstream·tenant별 설정으로 받는다(TBD).
 - timeout은 소켓 동작(연결, 읽기 한 번)마다 걸린다. 조금씩 흘려 보내는 upstream은 deadline을 넘길 수 있다. 실제 upstream을 붙일 때 전체 시간 상한을 둔다.
 - Platform APIs는 잘못된 `Request-Timeout-Ms` 값을 422로 거부하지 않고 무시한다(본문의 `timeoutMs`는 적용). 모델 경로는 422로 거부한다.
 - 도구 경로·Credential Broker·멱등성은 아직 참조 구현의 in-process 코드다.
-- `/_audit`, `/_stats`, `/_reset`과 시나리오 화면의 `/api/*`는 로컬 확인용 엔드포인트다. 운영 배포에 두지 않는다.
+- `/_audit`, `/_stats`, `/_reset`(가짜 모델과 모델 경로)과 시나리오 화면의 `/api/*`는 로컬 확인용 엔드포인트다. 운영 배포에 두지 않는다.

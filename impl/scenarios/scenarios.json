@@ -508,6 +508,132 @@
           "failTimes": 1
         }
       }
+    },
+    {
+      "id": "circuit-breaker",
+      "title": "circuit 열림과 회복",
+      "slice": "S4",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-circuit-breaker",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-model": {
+              "status": 500
+            }
+          },
+          "repeat": 3,
+          "expect": {
+            "status": 502,
+            "body": {
+              "code": "UPSTREAM_ERROR"
+            },
+            "upstreamCalls": {
+              "fake-model": 9
+            }
+          }
+        },
+        {
+          "expect": {
+            "status": 503,
+            "elapsedMs": [
+              0,
+              100
+            ],
+            "body": {
+              "code": "UPSTREAM_UNAVAILABLE"
+            },
+            "headers": {
+              "Retry-After": "1"
+            },
+            "upstreamCalls": {
+              "fake-model": 0
+            },
+            "auditComponents": {
+              "platform-api": [
+                "agent-gateway",
+                "runtime"
+              ],
+              "model-route": []
+            }
+          }
+        },
+        {
+          "waitMs": 1100,
+          "expect": {
+            "status": 200,
+            "outputContent": "mock:hello",
+            "upstreamCalls": {
+              "fake-model": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "rate-limit",
+      "title": "호출 한도 초과",
+      "slice": "S4",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-rate-limit",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "steps": [
+        {
+          "repeat": 6,
+          "expect": {
+            "status": 429,
+            "body": {
+              "code": "RATE_LIMITED"
+            },
+            "headers": {
+              "Retry-After": "1"
+            },
+            "upstreamCalls": {
+              "fake-model": 5
+            },
+            "auditComponents": {
+              "platform-api": [
+                "agent-gateway",
+                "runtime"
+              ],
+              "model-route": []
+            }
+          }
+        }
+      ]
     }
   ]
 }
