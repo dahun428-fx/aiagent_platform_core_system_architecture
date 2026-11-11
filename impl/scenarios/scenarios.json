@@ -10,18 +10,211 @@
         "authorization": "Bearer mock-user",
         "idempotencyKey": "scenario-normal-call",
         "body": {
-          "input": {"type": "message", "content": "hello"},
-          "context": {"tenantId": "tenant-demo", "dataClassification": "internal"},
-          "execution": {"mode": "sync", "timeoutMs": 5000}
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
         }
       },
       "expect": {
         "status": 200,
         "outputContent": "mock:hello",
-        "upstreamCalls": {"fake-model": 1},
+        "upstreamCalls": {
+          "fake-model": 1
+        },
         "auditComponents": {
-          "platform-api": ["agent-gateway", "runtime"],
-          "model-route": ["model-gateway"]
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": [
+            "model-gateway"
+          ]
+        }
+      }
+    },
+    {
+      "id": "downgrade-classification",
+      "title": "분류 낮춤 시도",
+      "slice": "S1",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-downgrade",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "public"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "outputContent": "mock:hello",
+        "upstreamCalls": {
+          "fake-model": 1
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": [
+            "model-gateway"
+          ]
+        },
+        "auditFields": {
+          "model-route": {
+            "classification": "internal"
+          }
+        }
+      }
+    },
+    {
+      "id": "unsigned",
+      "title": "서명 없는 내부 호출",
+      "slice": "S1",
+      "request": {
+        "target": "model-route",
+        "sign": false
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Internal signature missing or invalid"
+        },
+        "upstreamCalls": {
+          "fake-model": 0
+        },
+        "auditComponents": {
+          "model-route": []
+        }
+      }
+    },
+    {
+      "id": "tampered",
+      "title": "서명 후 분류 변조",
+      "slice": "S1",
+      "request": {
+        "target": "model-route",
+        "policy": {
+          "classification": "confidential",
+          "allowedResources": [
+            "model-external"
+          ]
+        },
+        "afterSigning": {
+          "policy": {
+            "classification": "public"
+          }
+        }
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Internal signature missing or invalid"
+        },
+        "upstreamCalls": {
+          "fake-model": 0
+        },
+        "auditComponents": {
+          "model-route": []
+        }
+      }
+    },
+    {
+      "id": "missing-scope",
+      "title": "scope 없음",
+      "slice": "S1",
+      "request": {
+        "target": "model-route",
+        "identity": {
+          "scopes": [
+            "tools.read",
+            "agents.invoke"
+          ]
+        }
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Policy denied"
+        },
+        "upstreamCalls": {
+          "fake-model": 0
+        },
+        "auditComponents": {
+          "model-route": []
+        }
+      }
+    },
+    {
+      "id": "tenant-mismatch",
+      "title": "tenant 불일치",
+      "slice": "S1",
+      "request": {
+        "target": "model-route",
+        "identity": {
+          "tenantId": "tenant-other"
+        }
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Policy denied"
+        },
+        "upstreamCalls": {
+          "fake-model": 0
+        },
+        "auditComponents": {
+          "model-route": []
+        }
+      }
+    },
+    {
+      "id": "confidential-external-only",
+      "title": "기밀 데이터, external만 허용",
+      "slice": "S1",
+      "request": {
+        "target": "model-route",
+        "policy": {
+          "classification": "confidential",
+          "allowedResources": [
+            "model-external"
+          ]
+        }
+      },
+      "expect": {
+        "status": 503,
+        "body": {
+          "code": "UPSTREAM_UNAVAILABLE",
+          "detail": "No policy-approved model route"
+        },
+        "upstreamCalls": {
+          "fake-model": 0
+        },
+        "auditComponents": {
+          "model-route": []
         }
       }
     }

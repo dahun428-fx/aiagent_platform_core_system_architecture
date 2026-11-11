@@ -1,10 +1,13 @@
 """로컬 스택을 별도 프로세스 세 개로 띄운다: 가짜 모델 → Agent Gateway 모델 경로 → Platform APIs.
 
 각 서비스는 127.0.0.1의 빈 포트에 바인딩하고, 표준 출력 첫 줄에 그 포트를 출력한다.
+내부 구간 서명 키는 실행마다 새로 만들어 환경 변수로 넘긴다. 파일이나 저장소에는 남지 않는다.
 직접 실행하면 스택을 띄운 채로 둔다: python impl/stack.py
 """
 from __future__ import annotations
 
+import os
+import secrets
 import subprocess
 import sys
 import tempfile
@@ -13,7 +16,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from common import call_json  # noqa: E402
+from common import KEY_ENV, call_json  # noqa: E402
 
 
 class Stack:
@@ -22,13 +25,14 @@ class Stack:
     def __init__(self):
         self.procs = []
         self.urls = {}
+        self.internal_key = secrets.token_hex(32)  # Platform과 모델 경로가 공유하는 서명 키(실행마다 새로)
 
     # 서비스 하나를 띄우고, 첫 줄의 포트를 읽은 뒤 /health/ready 가 200이 될 때까지 최대 10초 기다린다.
     def _start(self, name, script, *args):
         # stderr는 파이프가 아닌 파일로 보낸다: 아무도 읽지 않는 파이프는 traceback이 약 64KB 쌓이면 가득 차서 서비스가 멈춘다.
         err = tempfile.TemporaryFile("w+", encoding="utf-8")
         proc = subprocess.Popen([sys.executable, str(HERE / script), *args], stdout=subprocess.PIPE,
-                                stderr=err, text=True, encoding="utf-8")
+                                stderr=err, text=True, encoding="utf-8", env={**os.environ, KEY_ENV: self.internal_key})
         proc.err = err
         self.procs.append(proc)
         line = proc.stdout.readline().strip()
