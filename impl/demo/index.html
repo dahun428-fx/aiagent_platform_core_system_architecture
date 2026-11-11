@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시나리오 화면</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dde1e6;
+  --accent: #2f5bd3; --green: #1a7f37; --green-bg: #e7f5ec; --red: #c62828; --red-bg: #fdecec;
+  --wait: #6b7280; --wait-bg: #eef0f3; --code: #f1f3f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418; --panel: #1a1e24; --text: #e6e9ed; --muted: #9aa4b1; --line: #2c323a;
+    --accent: #7ea2ff; --green: #56d37c; --green-bg: #17301f; --red: #ff7b7b; --red-bg: #3a1d1d;
+    --wait: #9aa4b1; --wait-bg: #242a31; --code: #22272e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 20px; }
+h1 { font-size: 22px; margin: 0; flex: 1 1 auto; }
+h1 small { font-weight: 500; color: var(--muted); font-size: 14px; margin-left: 8px; }
+h2 { font-size: 16px; margin: 0; }
+h3 { font-size: 13px; margin: 16px 0 6px; color: var(--muted); font-weight: 600; }
+button { font: inherit; border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+button.secondary { background: transparent; color: var(--accent); }
+button:disabled { opacity: .55; cursor: progress; }
+.summary { display: flex; gap: 8px; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.pill.green { color: var(--green); background: var(--green-bg); }
+.pill.red { color: var(--red); background: var(--red-bg); }
+.pill.wait { color: var(--wait); background: var(--wait-bg); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.hop { flex: 1 1 180px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.hop b { display: block; font-size: 14px; }
+.hop span { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+.arrow { align-self: center; color: var(--muted); }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.card-head h2 { flex: 1 1 200px; }
+.slice { font-size: 12px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; }
+.meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+pre { background: var(--code); padding: 10px; border-radius: 6px; overflow-x: auto; margin: 0; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+td.ok { color: var(--green); font-weight: 700; white-space: nowrap; }
+td.bad { color: var(--red); font-weight: 700; white-space: nowrap; }
+tr.bad td { background: var(--red-bg); }
+.audit li { margin: 4px 0; }
+.audit { padding-left: 18px; margin: 0; }
+.svc { font-weight: 600; }
+details { margin-top: 12px; }
+summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.error { color: var(--red); margin-top: 8px; }
+.hint { color: var(--muted); font-size: 13px; }
+@media (max-width: 640px) {
+  .flow { flex-direction: column; }
+  .hop { flex: none; }
+  .arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>시나리오 화면<small>Agent Gateway 구현 조각 확인</small></h1>
+    <div class="summary" id="summary"></div>
+    <button id="run-all" type="button">모두 실행</button>
+  </header>
+
+  <section class="panel" aria-label="요청 경로">
+    <div class="flow" id="flow"></div>
+    <p class="hint">각 서비스는 이 컴퓨터의 127.0.0.1에서 별도 프로세스로 실행됩니다. 비밀정보는 쓰지 않습니다.</p>
+  </section>
+
+  <div id="scenarios"><p class="hint">시나리오를 불러오는 중…</p></div>
+</main>
+
+<script>
+"use strict";
+// 화면 상태: 시나리오 정의 목록과, 시나리오 id별 마지막 실행 결과
+const state = { scenarios: [], results: {} };
+const $ = (sel) => document.querySelector(sel);
+
+// DOM 요소를 만든다. 글자는 textContent 로만 넣어서(innerHTML 미사용) 응답 내용이 HTML로 해석되지 않는다.
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") node.className = v; else node.setAttribute(k, v);
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined) continue;
+    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return node;
+}
+
+// 값을 화면용 문자열로: 없으면 "없음", 문자열은 그대로, 나머지는 JSON
+const show = (v) => (v === null || v === undefined) ? "없음" : (typeof v === "string" ? v : JSON.stringify(v));
+
+// 오른쪽 위 요약: 초록·빨강·대기 개수
+function renderSummary() {
+  const total = state.scenarios.length;
+  const done = Object.values(state.results);
+  const green = done.filter((r) => r.passed).length;
+  const red = done.length - green;
+  const box = $("#summary");
+  const pills = [el("span", { class: "pill green" }, `초록 ${green}개`), el("span", { class: "pill red" }, `빨강 ${red}개`)];
+  if (total > done.length) pills.push(el("span", { class: "pill wait" }, `대기 ${total - done.length}개`));
+  box.replaceChildren(...pills);
+}
+
+// 요청 경로 띠: 클라이언트 → Platform APIs → 모델 경로 → 가짜 모델, 서비스별 실제 주소 표시
+function renderFlow(services) {
+  const hops = [
+    ["클라이언트", "이 화면 / make scenarios"],
+    ["Platform APIs + Runtime", services["platform-api"]],
+    ["Agent Gateway 모델 경로", services["model-route"]],
+    ["가짜 모델", services["fake-model"]],
+  ];
+  const parts = [];
+  hops.forEach(([name, where], i) => {
+    if (i) parts.push(el("div", { class: "arrow", "aria-hidden": "true" }, "→"));
+    parts.push(el("div", { class: "hop" }, el("b", {}, name), el("span", {}, where || "")));
+  });
+  $("#flow").replaceChildren(...parts);
+}
+
+// 시나리오가 보내는 요청 한 줄 요약
+function requestSummary(s) {
+  const r = s.request, b = r.body || {};
+  return el("div", { class: "meta" },
+    "요청 ", el("code", {}, `POST /v1/agents/${r.agentId}/invocations`),
+    " · 입력 ", el("code", {}, show(b.input && b.input.content)),
+    " · tenant ", el("code", {}, show(b.context && b.context.tenantId)),
+    " · 분류 ", el("code", {}, show(b.context && b.context.dataClassification)),
+    " · 인증 ", el("code", {}, r.authorization || "없음"));
+}
+
+// 시나리오의 기대값 한 줄 요약
+function expectSummary(s) {
+  const e = s.expect, bits = [`상태 ${e.status}`];
+  if ("outputContent" in e) bits.push(`출력 "${e.outputContent}"`);
+  for (const [svc, n] of Object.entries(e.upstreamCalls || {})) bits.push(`${svc} 호출 ${n}회`);
+  for (const [svc, comps] of Object.entries(e.auditComponents || {})) bits.push(`${svc} 감사 ${comps.join("·")}`);
+  return el("div", { class: "meta" }, "기대 ", bits.join(" · "));
+}
+
+// 실행 결과: 기대값·실제값 표, 같은 trace id의 감사 기록, 응답 본문(접힘)
+function renderResult(r) {
+  const rows = r.checks.map((c) => el("tr", { class: c.passed ? "" : "bad" },
+    el("td", {}, c.name), el("td", {}, el("code", {}, show(c.expected))),
+    el("td", {}, el("code", {}, show(c.actual))),
+    el("td", { class: c.passed ? "ok" : "bad" }, c.passed ? "일치" : "다름")));
+  const audit = [];
+  for (const [svc, records] of Object.entries(r.audit || {})) {
+    for (const rec of records) {
+      const { component, traceparent, ...rest } = rec;
+      audit.push(el("li", {}, el("span", { class: "svc" }, `${svc} › ${component}`), " ",
+        el("code", {}, JSON.stringify(rest))));
+    }
+  }
+  return el("div", {},
+    el("div", { class: "meta" }, `응답 상태 ${r.status} · trace id `, el("code", {}, r.traceId)),
+    el("h3", {}, "기대값과 실제값"),
+    el("div", { class: "table-wrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, el("th", {}, "항목"), el("th", {}, "기대"), el("th", {}, "실제"), el("th", {}, "판정"))),
+      el("tbody", {}, rows))),
+    el("h3", {}, "같은 trace id로 남은 감사 기록"),
+    audit.length ? el("ul", { class: "audit" }, audit) : el("p", { class: "hint" }, "감사 기록 없음"),
+    el("details", {}, el("summary", {}, "응답 본문 보기"), el("pre", {}, JSON.stringify(r.response, null, 2))));
+}
+
+// 시나리오 카드 전체를 다시 그린다
+function renderScenarios() {
+  const cards = state.scenarios.map((s) => {
+    const r = state.results[s.id];
+    const pill = r ? el("span", { class: `pill ${r.passed ? "green" : "red"}` }, r.passed ? "초록" : "빨강")
+                   : el("span", { class: "pill wait" }, "대기");
+    const btn = el("button", { class: "secondary", type: "button", "data-run": s.id }, r ? "다시 실행" : "실행");
+    return el("article", { class: "panel", id: `scenario-${s.id}` },
+      el("div", { class: "card-head" }, el("span", { class: "slice" }, s.slice || "-"), el("h2", {}, s.title), pill, btn),
+      requestSummary(s), expectSummary(s),
+      r ? renderResult(r) : null,
+      state.errors && state.errors[s.id] ? el("p", { class: "error" }, state.errors[s.id]) : null);
+  });
+  $("#scenarios").replaceChildren(...cards);
+  renderSummary();
+}
+
+// 서버에 실행을 요청한다. id 가 있으면 그 시나리오만, null 이면 전부. 실행 중에는 버튼을 잠근다.
+async function runScenarios(id) {
+  const buttons = document.querySelectorAll("button");
+  buttons.forEach((b) => { b.disabled = true; });
+  state.errors = {};
+  try {
+    const resp = await fetch("/api/run", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(id ? { id } : {}) });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`);
+    for (const r of data.results) state.results[r.id] = r;
+  } catch (err) {
+    for (const s of state.scenarios) if (!id || s.id === id) state.errors[s.id] = `실행 실패: ${err.message}`;
+  } finally {
+    renderScenarios();
+    document.querySelectorAll("button").forEach((b) => { b.disabled = false; });
+  }
+}
+
+// 카드의 "실행"/"다시 실행" 버튼은 data-run 속성의 id 로 그 시나리오만 실행한다
+document.addEventListener("click", (ev) => {
+  const target = ev.target.closest("button[data-run]");
+  if (target) runScenarios(target.getAttribute("data-run"));
+});
+$("#run-all").addEventListener("click", () => runScenarios(null));
+
+// 처음 열릴 때: 시나리오 목록을 받아 그리고, 바로 전부 실행한다
+(async () => {
+  try {
+    const data = await (await fetch("/api/scenarios")).json();
+    state.scenarios = data.scenarios;
+    renderFlow(data.services);
+    renderScenarios();
+    runScenarios(null);
+  } catch (err) {
+    $("#scenarios").replaceChildren(el("p", { class: "error" }, `시나리오를 불러오지 못했습니다: ${err.message}`));
+  }
+})();
+</script>
+</body>
+</html>
