@@ -2,7 +2,7 @@
   "openapi": "3.1.2",
   "info": {
     "title": "Agent Gateway",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "전사 표준 목표 계약. 회사 주소·IdP 제품은 TBD. examples의 example.invalid는 합성 fixture다. mock 구현 범위는 docs/release-scope.md 참조."
   },
   "servers": [
@@ -51,6 +51,17 @@
               "minLength": 1
             },
             "example": "example-request-key"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -216,9 +227,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -256,6 +277,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -267,7 +305,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -315,6 +380,17 @@
               "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
             },
             "example": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -656,9 +732,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -696,6 +782,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -707,7 +810,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -740,6 +870,17 @@
               "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
             },
             "example": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -925,9 +1066,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -965,6 +1116,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -976,7 +1144,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -1009,6 +1204,17 @@
               "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
             },
             "example": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -1149,9 +1355,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -1189,6 +1405,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -1200,7 +1433,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -1243,6 +1503,17 @@
               "minLength": 1
             },
             "example": "example-request-key"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -1383,9 +1654,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -1423,6 +1704,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -1434,7 +1732,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -1476,6 +1801,17 @@
               "type": "integer",
               "minimum": 0
             }
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -1627,9 +1963,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -1667,6 +2013,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -1678,7 +2041,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -1721,6 +2111,17 @@
               "minLength": 1
             },
             "example": "example-request-key"
+          },
+          {
+            "name": "Request-Timeout-Ms",
+            "in": "header",
+            "required": false,
+            "description": "호출자에게 남은 시간(ms). 받는 쪽은 이 값과 자기 timeoutMs 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다. 시계가 다른 서비스 사이에서도 맞도록 절대 시각이 아닌 남은 시간으로 전달한다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 4500
           }
         ],
         "responses": {
@@ -1865,9 +2266,19 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 429,
-                  "code": "VALIDATION_ERROR",
+                  "code": "RATE_LIMITED",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
               }
             }
           },
@@ -1905,6 +2316,23 @@
               }
             }
           },
+          "502": {
+            "description": "Problem Details (502)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 502,
+                  "code": "UPSTREAM_ERROR",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Problem Details (503)",
             "content": {
@@ -1916,7 +2344,34 @@
                   "type": "about:blank",
                   "title": "Request failed",
                   "status": 503,
-                  "code": "VALIDATION_ERROR",
+                  "code": "UPSTREAM_UNAVAILABLE",
+                  "traceId": "0123456789abcdef0123456789abcdef"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "다시 시도하기 전 기다릴 초(delta-seconds만 사용, HTTP-date 형식은 쓰지 않음)",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "example": 2
+              }
+            }
+          },
+          "504": {
+            "description": "Problem Details (504)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/problem"
+                },
+                "example": {
+                  "type": "about:blank",
+                  "title": "Request failed",
+                  "status": 504,
+                  "code": "UPSTREAM_TIMEOUT",
                   "traceId": "0123456789abcdef0123456789abcdef"
                 }
               }
@@ -2234,7 +2689,10 @@
               "NOT_FOUND",
               "CONFLICT",
               "NOT_IMPLEMENTED",
-              "UPSTREAM_UNAVAILABLE"
+              "UPSTREAM_UNAVAILABLE",
+              "UPSTREAM_TIMEOUT",
+              "UPSTREAM_ERROR",
+              "RATE_LIMITED"
             ]
           },
           "traceId": {

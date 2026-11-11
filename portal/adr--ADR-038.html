@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>ADR-038: upstream 실패 구분, deadline 전달, 도구 경로 202 (계약 0.2.0) · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="adr-038-upstream-실패-구분-deadline-전달-도구-경로-202-계약-020">ADR-038: upstream 실패 구분, deadline 전달, 도구 경로 202 (계약 0.2.0)</h1>
+<ul>
+<li>Status: Decided</li>
+<li>Baseline: 구현 로드맵 C1</li>
+<li>Date: 2026-11-11</li>
+<li>Owner / 회사 승인자: TBD</li>
+<li>Source: <a href="docs--implementation-roadmap.html">구현 로드맵</a>, <a href="docs--versioning.html">계약 버전·호환성</a></li>
+</ul>
+<h2 id="context">Context</h2>
+<p>계약 0.1.1은 upstream 실패를 모두 <code>503 UPSTREAM_UNAVAILABLE</code> 하나로 표현한다. 호출자는 응답이 늦었는지, upstream이 잘못 답했는지, 지금 연결할 곳이 없는지 구분할 수 없어 재시도 여부를 정할 수 없다. 한도 초과(429)에는 전용 오류 코드도, 언제 다시 시도할지도 없다. 서비스 사이에 남은 시간을 넘기는 방법이 없어 hop마다 자기 timeout을 따로 적용한다. 같은 <code>Idempotency-Key</code>의 도구 호출이 아직 실행 중일 때 돌려줄 응답도 없다. 구현 조각 S2(timeout), S3(오류 매핑), S4(rate limit), S6b(동시 실행)는 이 계약이 있어야 시작할 수 있다.</p>
+<h2 id="decision">Decision</h2>
+<p>계약을 0.2.0으로 개정한다. 상태 코드마다 오류 코드 하나를 정한다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>상황</th>
+<th>상태</th>
+<th><code>code</code></th>
+<th>헤더</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>upstream이 시간 안에 답하지 않음</td>
+<td>504</td>
+<td><code>UPSTREAM_TIMEOUT</code></td>
+<td></td>
+</tr>
+<tr>
+<td>upstream이 5xx나 계약에 맞지 않는 응답을 줌</td>
+<td>502</td>
+<td><code>UPSTREAM_ERROR</code></td>
+<td></td>
+</tr>
+<tr>
+<td>연결할 upstream이 없음(연결 거부, circuit open, 허용된 경로 없음)</td>
+<td>503</td>
+<td><code>UPSTREAM_UNAVAILABLE</code></td>
+<td><code>Retry-After</code>(선택)</td>
+</tr>
+<tr>
+<td>tenant·Agent 한도 초과</td>
+<td>429</td>
+<td><code>RATE_LIMITED</code></td>
+<td><code>Retry-After</code>(선택)</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>health를 뺀 모든 operation에 502·504 응답을 추가한다.</li>
+<li><code>Retry-After</code>는 0 이상의 정수 초(delta-seconds)만 쓴다. HTTP-date 형식은 쓰지 않는다.</li>
+<li>health를 뺀 모든 operation에 선택 헤더 <code>Request-Timeout-Ms</code>(1 이상의 정수)를 추가한다. 값은 호출자에게 남은 시간이다. 받는 쪽은 이 값과 자기 <code>timeoutMs</code> 중 짧은 쪽을 적용하고, 다음 hop에는 그동안 쓴 시간을 뺀 값을 보낸다.</li>
+<li><code>invokeTool</code>에 202 응답을 추가한다. 같은 <code>Idempotency-Key</code> 요청이 아직 실행 중이라는 뜻이며, 본문 없이 <code>Retry-After</code>와 <code>traceparent</code>만 돌려준다. 도구는 다시 실행하지 않는다.</li>
+<li>모든 OpenAPI 문서의 <code>info.version</code>을 0.2.0으로 올리고, 429·503 예시의 <code>code</code>를 실제 의미(<code>RATE_LIMITED</code>, <code>UPSTREAM_UNAVAILABLE</code>)로 고친다.</li>
+</ul>
+<h2 id="alternatives-considered">Alternatives considered</h2>
+<p>절대 시각 deadline 헤더(예: RFC 3339 시각): 서비스 사이 시계 차이만큼 deadline이 틀어진다. 남은 시간(ms)을 넘기는 방식을 택했다. 502·504 대신 503 하나에 세부 <code>code</code>만 추가: 프록시·로드밸런서·HTTP 클라이언트가 상태 코드만 보고 재시도를 정하므로 상태 코드부터 구분한다. 도구 202에 실행 상태 본문 추가: 지금은 "아직 실행 중" 한 가지뿐이라 본문이 필요 없다. 상태가 늘어나면 새 ADR에서 정한다.</p>
+<h2 id="consequences">Consequences</h2>
+<p>기존 응답·파라미터·오류 코드는 그대로 두고 더하기만 했다(<code>tests/test_contracts.py</code>의 <code>test_0_2_0_only_adds_to_0_1_1</code>). 그러나 <code>problem.code</code>를 닫힌 enum으로 검증하는 0.1.x 소비자는 새 코드를 받으면 실패한다. 이런 소비자는 0.2.0 스키마로 갱신하거나, 모르는 <code>code</code>를 상태 코드 기준으로 처리해야 한다(MUST).
+참조 구현과 <code>impl/</code>는 아직 새 응답을 보내지 않는다. S2~S4, S6b 조각이 차례로 보내기 시작한다.</p>
+<h2 id="constraints">Constraints</h2>
+<p>timeout·재시도 수치, rate limit 한도는 회사 환경에서 정한다(TBD). 예제 값은 production 기본값이 아니다.</p>
+<h2 id="related-contracts-verification">Related contracts / verification</h2>
+<p><a href="contracts--problem.schema.html">problem.schema.json</a> · <a href="contracts--model-gateway.openapi.html">model-gateway.openapi.json</a> · <a href="contracts--tool-gateway.openapi.html">tool-gateway.openapi.json</a> · <a href="../contracts/released/0.2.0.json">contracts/released/0.2.0.json</a> · <a href="../tests/test_contracts.py">계약 테스트</a></p>
+<h2 id="security-impact">Security impact</h2>
+<p>502·504 응답의 <code>detail</code>에 upstream 주소, 내부 호스트 이름, upstream 원문 오류를 넣어서는 안 된다(MUST NOT).
+<code>Request-Timeout-Ms</code>는 호출자가 보낸 값이므로 받는 쪽의 <code>timeoutMs</code>보다 길게 적용해서는 안 된다(MUST NOT). 값이 매우 커도 자기 상한을 넘기지 않는다.
+202는 실행 중이라는 사실만 알리며, 다른 principal의 같은 key 요청에 결과나 상태를 보여 주지 않는다(MUST NOT).</p>
+<h2 id="supersession-migration">Supersession / migration</h2>
+<p>0.1.1 대비 변경은 위 Decision 표와 목록이 전부다. 소비자 전환 순서는 <a href="docs--versioning.html#마이그레이션">계약 버전·호환성</a>을 따른다.</p><p class="file-link">원본 파일: <a href="../adr/ADR-038.md">adr/ADR-038.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#context">Context</a><a href="#decision">Decision</a><a href="#alternatives-considered">Alternatives considered</a><a href="#consequences">Consequences</a><a href="#constraints">Constraints</a><a href="#related-contracts-verification">Related contracts / verification</a><a href="#security-impact">Security impact</a><a href="#supersession-migration">Supersession / migration</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -6,6 +6,13 @@
 |---|---|---|---|---|
 | 0.1.0 | 0.1.0 | 기준선 Q1–Q30, ADR-001~030, 계약 23 schema·5 OpenAPI, Python mock, TypeScript client, 오프라인 포털 | release.py(테스트·TypeScript·HTTP smoke·브라우저 오프라인·ZIP) | `dist/enterprise-ai-agent-platform-v0.1.zip` (2026-10-30 생성) |
 | 0.1.1 | 0.1.1 | 개발자 가이드 14장, Core Systems(ADR-031~037, Q31–Q37), 보안 결함 수정, 안전한 패키징, 내 Agent 연결 키트(adapter·로컬 Registry·적합성 11항목·템플릿 2종), Manifest scope·mode 집행 | CI: Python 테스트(Ubuntu·Windows), 포털 drift, TypeScript typecheck·build, Python↔TypeScript HTTP smoke | `dist/enterprise-ai-agent-platform-v0.1.1.zip` (2026-11-10 생성, 태그 `v0.1.1`, source commit `69b04fa`) |
+| (미배포) | 0.2.0 | 계약 개정: 502·504, `UPSTREAM_TIMEOUT`·`UPSTREAM_ERROR`·`RATE_LIMITED`, `Retry-After`, `Request-Timeout-Ms`, 도구 경로 202(ADR-038) | CI: 계약 테스트(0.2.0 snapshot, 0.1.1 대비 추가만 했는지 검사) | |
+
+## 계약 0.2.0 (미배포)
+
+- 계약: upstream 실패를 504 `UPSTREAM_TIMEOUT`·502 `UPSTREAM_ERROR`·503 `UPSTREAM_UNAVAILABLE`로 구분하고, 429에 `RATE_LIMITED`를 정한다. 429·503에 `Retry-After`(정수 초), 모든 operation에 선택 헤더 `Request-Timeout-Ms`, `invokeTool`에 202(같은 key 실행 중)를 추가한다(`contracts/released/0.2.0.json`, [ADR-038](adr/ADR-038.md)).
+- 마이그레이션: `problem.code`를 닫힌 enum으로 검증하는 소비자는 갱신해야 한다. 변경 요약표는 [계약 버전·호환성](docs/versioning.md)의 "0.1.1 → 0.2.0 변경 요약"에 있다.
+- 한계: 계약만 바꿨다. 참조 구현과 `impl/`는 아직 새 응답을 보내지 않는다.
 
 ## 0.1.1
 
