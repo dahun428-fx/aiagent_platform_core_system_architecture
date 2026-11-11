@@ -30,7 +30,10 @@
         "NOT_FOUND",
         "CONFLICT",
         "NOT_IMPLEMENTED",
-        "UPSTREAM_UNAVAILABLE"
+        "UPSTREAM_UNAVAILABLE",
+        "UPSTREAM_TIMEOUT",
+        "UPSTREAM_ERROR",
+        "RATE_LIMITED"
       ]
     },
     "traceId": {

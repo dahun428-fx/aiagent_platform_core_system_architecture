@@ -84,11 +84,32 @@ class Contracts(unittest.TestCase):
         frozen = json.loads(snapshots[-1].read_text(encoding="utf-8"))
         self.assertEqual(actual, frozen, "Contract changed: reviewed migration and new release snapshot required")
 
+    # 0.2.0은 0.1.1에 응답·오류 코드·헤더를 더하기만 했다: 기존 응답·파라미터·오류 코드가 하나도 빠지지 않았는지 확인한다.
+    def test_0_2_0_only_adds_to_0_1_1(self):
+        old, new = (json.loads((ROOT / f"contracts/released/{v}.json").read_text(encoding="utf-8")) for v in ("0.1.1", "0.2.0"))
+        self.assertEqual({k: v for k, v in old["schemas"].items() if k != "problem"},
+                         {k: v for k, v in new["schemas"].items() if k != "problem"})
+        self.assertLessEqual(set(old["schemas"]["problem"]["properties"]["code"]["enum"]),
+                             set(new["schemas"]["problem"]["properties"]["code"]["enum"]))
+        for name, api in old["apis"].items():
+            for route, methods in api["paths"].items():
+                for method, op in methods.items():
+                    with self.subTest(api=name, route=route, method=method):
+                        after = new["apis"][name]["paths"][route][method]
+                        self.assertLessEqual(set(op["responses"]), set(after["responses"]))
+                        # 기존 파라미터는 그대로 두고, 새로 붙은 파라미터(Request-Timeout-Ms)는 선택 항목이어야 한다.
+                        before, params = op.get("parameters", []), after.get("parameters", [])
+                        self.assertEqual(before, params[:len(before)])
+                        self.assertFalse(any(p["required"] for p in params[len(before):]))
+
     def test_baseline_adr_traceability(self):
         baseline = (ROOT / "docs/requirements/baseline-v0.1.md").read_text(encoding="utf-8")
         self.assertEqual(len(re.findall(r"^\| Q\d+ \|", baseline, re.M)), 37)
-        for n in range(1, 38):
-            text = (ROOT / f"adr/ADR-{n:03}.md").read_text(encoding="utf-8")
+        # 기준선 Q1–Q37의 ADR-001~037은 모두 있어야 하고, 그 뒤에 추가된 ADR(예: ADR-038)도 같은 형식을 지켜야 한다.
+        adrs = sorted((ROOT / "adr").glob("ADR-*.md"))
+        self.assertLessEqual({f"ADR-{n:03}.md" for n in range(1, 38)}, {p.name for p in adrs})
+        for path in adrs:
+            text = path.read_text(encoding="utf-8")
             for section in ["Context", "Decision", "Alternatives considered", "Consequences", "Constraints", "Related contracts", "Security impact", "Supersession / migration"]:
                 self.assertIn(section, text)
             self.assertIn("Status: Decided", text)

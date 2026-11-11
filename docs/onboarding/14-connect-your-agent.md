@@ -205,7 +205,7 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 
 | 필드 | 처리 | 내용 |
 |---|---|---|
-| `apiVersion`, `kind`, 전체 구조 | 검증됨 | JSON Schema(계약 0.1.1) 검증 |
+| `apiVersion`, `kind`, 전체 구조 | 검증됨 | JSON Schema(계약 0.2.0) 검증 |
 | `metadata.id`, `metadata.version` | 실행에 사용 | Agent ID 라우팅, 결과의 `agentVersion`, 멱등성 키 |
 | `metadata.owner`, `metadata.name` | 검증만 | 실행 동작에 영향 없음 |
 | `source.*` | 검증만 | 불변 revision·digest 형식 검사. 실제 artifact 대조는 하지 않음 |
