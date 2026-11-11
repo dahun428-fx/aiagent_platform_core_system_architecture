@@ -56,18 +56,26 @@ class TempPostgres:
         self.root.mkdir()
         self.data = self.root / "data"
         port = free_port()
-        self.run("initdb", "-D", str(self.data), "-U", "impl", "--auth=trust", "-E", "UTF8")
-        # 유닉스 소켓을 끄고 TCP 루프백만 연다. 설정 파일에 적으면 운영체제마다 다른 명령줄 따옴표 규칙을 피할 수 있다.
-        with open(self.data / "postgresql.conf", "a", encoding="utf-8") as conf:
-            conf.write(f"\nport = {port}\nlisten_addresses = '127.0.0.1'\nunix_socket_directories = ''\nfsync = off\n")
-        self.run("pg_ctl", "-D", str(self.data), "-l", str(self.root / "log"), "-w", "start")
+        try:
+            self.run("initdb", "-D", str(self.data), "-U", "impl", "--auth=trust", "-E", "UTF8")
+            # 유닉스 소켓을 끄고 TCP 루프백만 연다. 설정 파일에 적으면 운영체제마다 다른 명령줄 따옴표 규칙을 피할 수 있다.
+            with open(self.data / "postgresql.conf", "a", encoding="utf-8") as conf:
+                conf.write(f"\nport = {port}\nlisten_addresses = '127.0.0.1'\nunix_socket_directories = ''\nfsync = off\n")
+            self.run("pg_ctl", "-D", str(self.data), "-l", str(self.root / "log"), "-w", "start")
+        except BaseException:  # 띄우다 실패하면 임시 폴더를 남기지 않는다
+            shutil.rmtree(self.root, ignore_errors=True)
+            raise
         self.url = f"postgresql://impl@127.0.0.1:{port}/postgres"
 
     # PostgreSQL 명령 하나를 실행한다. 실패하면 출력을 담아 알린다.
+    # 출력은 파이프가 아닌 임시 파일로 받는다. Windows에서 `pg_ctl start`가 띄운 서버가 파이프를 물려받아 계속 열어 두면,
+    # 파이프가 닫히기를 기다리는 subprocess.run이 영원히 끝나지 않는다.
     def run(self, tool, *args):
-        done = subprocess.run([str(Path(self.bin) / tool), *args], capture_output=True, text=True)
-        if done.returncode != 0:
-            raise RuntimeError(f"{tool} failed: {done.stdout}{done.stderr}")
+        with tempfile.TemporaryFile("w+", encoding="utf-8", errors="replace") as out:
+            code = subprocess.run([str(Path(self.bin) / tool), *args], stdout=out, stderr=subprocess.STDOUT).returncode
+            if code != 0:
+                out.seek(0)
+                raise RuntimeError(f"{tool} failed: {out.read()}")
 
     # DB를 끄고 임시 폴더를 지운다.
     def close(self):
