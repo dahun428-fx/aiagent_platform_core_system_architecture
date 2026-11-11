@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
 import sys
 import time
 import uuid
@@ -62,6 +64,7 @@ def call_model_route(stack, req, trace, _nonce=None):
 # 멱등성 키 = 시나리오의 idempotencyKey + 이번 실행의 nonce. 같은 시나리오 안의 단계들은 같은 키를 쓰고,
 # 시나리오를 다시 실행하면(DB가 남아 있어도) 새 키가 된다.
 # grant: {"scopes": [...], "resources": [...]} 는 identity(위임 단계 포함)와 policy에 scope·자원을 더한다(쓰기 도구용).
+# worker: 보낼 도구 경로 프로세스(기본 tool-route, 두 번째 worker는 tool-route-2).
 # approval: 있으면 이 요청에 맞는 승인 기록을 만들어 도구 경로에 저장하고 approvalId를 붙인다. 안의 값은 승인에 덮어쓴다(예: 만료).
 def call_tool_route(stack, req, trace, nonce):
     ref = load_ref()
@@ -82,7 +85,7 @@ def call_tool_route(stack, req, trace, nonce):
         body["approvalId"] = approval["approvalId"]
     headers = {"Idempotency-Key": body["idempotencyKey"], "traceparent": trace,
                SIGNATURE_HEADER: sign(stack.internal_key, body)}
-    return call_json("POST", stack.urls["tool-route"] + "/v1/tool-invocations", body, headers)
+    return call_json("POST", stack.urls[req.get("worker", "tool-route")] + "/v1/tool-invocations", body, headers)
 
 
 SENDERS = {"model-route": call_model_route, "tool-route": call_tool_route}
@@ -132,12 +135,26 @@ def run_scenario(stack, scenario):
             stack.restart(step["restart"])
         time.sleep(step.get("waitMs", 0) / 1000)
         step_req = {**req, **step.get("request", {})}
-        for _ in range(step.get("repeat", 1)):
-            trace = new_traceparent()
-            started = time.monotonic()
-            status, resp_headers, body = send(stack, step_req, trace, nonce)
-            elapsed_ms = round((time.monotonic() - started) * 1000)
+        # background: 보내 놓고 답을 기다리지 않는다(실행 도중에 서비스를 죽이는 시나리오용). 답이나 연결 오류는 버린다.
+        # settleMs만큼 기다린 뒤 다음 단계로 간다. 요청이 upstream에 닿기 전에 다음 단계가 고장을 지우지 않게 한다.
+        if step.get("background"):
+            threading.Thread(target=send_quietly, args=(send, stack, step_req, new_traceparent(), nonce), daemon=True).start()
+            time.sleep(step.get("settleMs", 0) / 1000)
+            continue
         prefix = f"{number}단계 " if len(steps) > 1 else ""
+        # concurrent: n개를 한꺼번에 보내고(workers가 있으면 돌아가며 나눠서), 받은 상태 코드가 모두 허용된 값인지 본다.
+        # 나머지 판정은 그중 200 응답 하나(없으면 마지막 응답)로 한다.
+        if step.get("concurrent"):
+            trace, (status, resp_headers, body), elapsed_ms, statuses = send_concurrently(send, stack, step_req, nonce,
+                                                                                           step["concurrent"])
+            allowed = sorted(step["expect"]["statusesIn"])
+            checks.append((prefix + "statuses", allowed, allowed if set(statuses) <= set(allowed) else sorted(set(statuses))))
+        else:
+            for _ in range(step.get("repeat", 1)):
+                trace = new_traceparent()
+                started = time.monotonic()
+                status, resp_headers, body = send(stack, step_req, trace, nonce)
+                elapsed_ms = round((time.monotonic() - started) * 1000)
         audit = {}
         step_checks = check_response(stack, step["expect"], status, resp_headers, body, trace.split("-")[1], elapsed_ms, audit)
         checks += [(prefix + name, e, a) for name, e, a in step_checks]
@@ -148,9 +165,35 @@ def run_scenario(stack, scenario):
             "elapsedMs": elapsed_ms, "checks": results, "response": body, "audit": audit}
 
 
+# 요청 하나를 보내고 결과는 버린다(background 단계).
+def send_quietly(send, stack, req, trace, nonce):
+    try:
+        send(stack, req, trace, nonce)
+    except (ConnectionError, TimeoutError):
+        pass
+
+
+# 같은 요청 n개를 스레드 n개로 동시에 보낸다. workers가 있으면 i번째 요청은 workers[i % len] 로 간다.
+# (그중 200 하나의 trace, (상태, 헤더, 본문), 걸린 ms, 전체 상태 코드 목록)을 돌려준다.
+def send_concurrently(send, stack, req, nonce, count):
+    workers = req.get("workers", [req.get("worker", "tool-route")])
+
+    def one(i):
+        trace = new_traceparent()
+        started = time.monotonic()
+        response = send(stack, {**req, "worker": workers[i % len(workers)]}, trace, nonce)
+        return trace, response, round((time.monotonic() - started) * 1000)
+
+    with ThreadPoolExecutor(max_workers=count) as pool:
+        results = list(pool.map(one, range(count)))
+    statuses = [response[0] for _, response, _ in results]
+    chosen = next((r for r in results if r[1][0] == 200), results[-1])
+    return (*chosen, statuses)
+
+
 # 응답 하나를 기대값과 항목별로 비교해 (이름, 기대값, 실제값) 목록을 돌려준다. 이번 trace id의 감사 기록은 audit에 담는다.
 def check_response(stack, expect, status, resp_headers, body, trace_id, elapsed_ms, audit):
-    checks = [("status", expect["status"], status)]
+    checks = [("status", expect["status"], status)] if "status" in expect else []
     # 걸린 시간이 [최소, 최대] ms 안인지. 실제값은 범위 안이면 기대 범위 그대로, 밖이면 걸린 시간을 보여 준다.
     if "elapsedMs" in expect:
         low, high = expect["elapsedMs"]
@@ -187,7 +230,7 @@ def check_response(stack, expect, status, resp_headers, body, trace_id, elapsed_
             checks.append((f"{service} audit {field}", [value], sorted({r[field] for r in records if field in r})))
     # trace id가 끝까지 이어졌는지: 성공이면 응답 헤더, 실패면 Problem 본문의 traceId로 확인한다.
     echoed = lowered.get("traceparent")
-    if status == 200:
+    if status in (200, 202):  # 202(처리 중)는 본문이 없으므로 헤더로 본다
         checks.append(("trace id echoed", trace_id, echoed.split("-")[1] if echoed else None))
     else:
         checks.append(("problem traceId", trace_id, body.get("traceId") if isinstance(body, dict) else None))

@@ -57,9 +57,15 @@ class JsonHandler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
 
-# 서버를 127.0.0.1(이 컴퓨터)에만 바인딩한다. port 0이면 OS가 빈 포트를 골라 준다. 요청마다 스레드 하나.
+# 요청마다 스레드 하나로 처리하는 HTTP 서버.
+class Server(ThreadingHTTPServer):
+    # 연결 대기열 길이. 기본값 5는 동시 요청이 몰리면(동시 실행 시나리오의 20개) 넘쳐서 연결이 reset된다.
+    request_queue_size = 128
+
+
+# 서버를 127.0.0.1(이 컴퓨터)에만 바인딩한다. port 0이면 OS가 빈 포트를 골라 준다.
 def serve(handler_class, port):
-    return ThreadingHTTPServer(("127.0.0.1", port), handler_class)
+    return Server(("127.0.0.1", port), handler_class)
 
 
 # 내부 구간 서명: 요청 본문을 키 순서와 공백을 고정한 JSON(참조 구현의 canonical_digest)으로 만든 뒤 HMAC-SHA256으로 서명한다.

@@ -182,14 +182,19 @@ function expectSummary(s) {
     if (st.restart) how.push(`${st.restart} 재시작 뒤`);
     if (st.waitMs) how.push(`${st.waitMs}ms 기다린 뒤`);
     if (st.request) how.push(`요청 바꿈 ${JSON.stringify(st.request)}`);
-    how.push(`${st.repeat || 1}번 보냄`);
+    if (st.background) {
+      how.push(`답을 기다리지 않고 보낸 뒤 ${st.settleMs || 0}ms 기다림`);
+      return el("div", { class: "meta" }, `${i + 1}단계 `, how.join(" · "));
+    }
+    if (st.concurrent) how.push(`${st.concurrent}개를 동시에 보냄` + (s.request.workers ? ` (${s.request.workers.join(", ")}에 나눠서)` : ""));
+    else how.push(`${st.repeat || 1}번 보냄`);
     return el("div", { class: "meta" }, `${i + 1}단계 `, how.join(" · "), " → 기대 ", expectBits(st.expect).join(" · "));
   }));
 }
 
 // 기대값 한 묶음을 사람이 읽는 조각들로 바꾼다
 function expectBits(e) {
-  const bits = [`상태 ${e.status}`];
+  const bits = e.statusesIn ? [`모든 응답이 ${e.statusesIn.join(" 또는 ")}`, `대표 응답 상태 ${e.status}`] : [`상태 ${e.status}`];
   if ("outputContent" in e) bits.push(`출력 "${e.outputContent}"`);
   if (e.elapsedMs) bits.push(`${e.elapsedMs[0]}~${e.elapsedMs[1]}ms 안에 응답`);
   for (const [k, v] of Object.entries(e.body || {})) bits.push(`${k} "${v}"`);

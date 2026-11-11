@@ -1018,6 +1018,220 @@
           }
         }
       ]
+    },
+    {
+      "id": "tool-concurrent-read",
+      "title": "동시 20회 읽기",
+      "slice": "S6b",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-search",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-tool-concurrent-read",
+        "workers": [
+          "tool-route",
+          "tool-route-2"
+        ]
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-tool": {
+              "delayMs": 300
+            }
+          },
+          "concurrent": 20,
+          "expect": {
+            "statusesIn": [
+              200,
+              202
+            ],
+            "status": 200,
+            "outputContent": "tool:hello",
+            "upstreamCalls": {
+              "fake-tool": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "write-concurrent",
+      "title": "동시 20회 쓰기",
+      "slice": "S6b",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-write-concurrent",
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "approval": {},
+        "workers": [
+          "tool-route",
+          "tool-route-2"
+        ]
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-tool": {
+              "delayMs": 300
+            }
+          },
+          "concurrent": 20,
+          "expect": {
+            "statusesIn": [
+              200,
+              202
+            ],
+            "status": 200,
+            "outputContent": "ticket:hello",
+            "upstreamCalls": {
+              "fake-tool": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "read-worker-crash",
+      "title": "읽기 중 worker 죽음",
+      "slice": "S6b",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-search",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-read-worker-crash"
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-tool": {
+              "delayMs": 3000
+            }
+          },
+          "background": true,
+          "settleMs": 300
+        },
+        {
+          "restart": "tool-route",
+          "request": {
+            "worker": "tool-route-2"
+          },
+          "expect": {
+            "status": 202,
+            "headers": {
+              "Retry-After": "1"
+            },
+            "upstreamCalls": {
+              "fake-tool": 0
+            }
+          }
+        },
+        {
+          "waitMs": 6200,
+          "request": {
+            "worker": "tool-route-2"
+          },
+          "expect": {
+            "status": 200,
+            "outputContent": "tool:hello",
+            "upstreamCalls": {
+              "fake-tool": 1
+            },
+            "auditFields": {
+              "tool-route-2": {
+                "outcome": "executed"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "write-worker-crash",
+      "title": "쓰기 중 worker 죽음",
+      "slice": "S6b",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-write-worker-crash",
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "approval": {}
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-tool": {
+              "delayMs": 3000
+            }
+          },
+          "background": true,
+          "settleMs": 300
+        },
+        {
+          "restart": "tool-route",
+          "request": {
+            "worker": "tool-route-2"
+          },
+          "expect": {
+            "status": 202,
+            "headers": {
+              "Retry-After": "1"
+            },
+            "upstreamCalls": {
+              "fake-tool": 0
+            }
+          }
+        },
+        {
+          "waitMs": 6200,
+          "request": {
+            "worker": "tool-route-2"
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "status": "unknown_outcome"
+            },
+            "upstreamCalls": {
+              "fake-tool": 0
+            },
+            "auditFields": {
+              "tool-route-2": {
+                "outcome": "unknown_outcome"
+              }
+            }
+          }
+        }
+      ]
     }
   ]
 }

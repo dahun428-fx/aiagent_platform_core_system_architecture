@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS tool_approvals (
 class EffectLedger:
     """키 하나의 생애: claim(pending 줄을 만든 쪽만 실행) → finish(결과 저장) 또는 release(실패하면 줄을 지워 다시 시도 가능).
 
-    shortcut: 실행 중에 프로세스가 죽으면 pending 줄이 남아 그 키는 계속 202를 받는다.
-              pending 만료(읽기는 다시 실행, 쓰기는 unknown_outcome)는 worker가 여럿이 되는 S6b에서 넣는다.
+    실행 중에 프로세스가 죽으면 pending 줄이 남는다. 오래된 pending(stale)은 도구 경로가 정리한다:
+    읽기는 줄을 지우고 다시 실행하고, 쓰기는 실행됐는지 모르므로 unknown_outcome으로 저장한다.
     """
 
     def __init__(self, url):
@@ -54,9 +54,11 @@ class EffectLedger:
         return psycopg.connect(self.url, autocommit=True, connect_timeout=5)
 
     # 이 키로 실행할 권리를 얻는다. 처음 온 요청이면 ("run", None).
-    # 이미 줄이 있으면: digest가 다르면 ("conflict", None), 처리 중이면 ("pending", None), 끝났으면 ("done", 저장된 결과).
-    # INSERT ... ON CONFLICT DO NOTHING 한 문장으로 "없으면 만들기"를 원자적으로 해서, 동시에 두 요청이 와도 하나만 실행한다.
-    def claim(self, key, digest):
+    # 이미 줄이 있으면: digest가 다르면 ("conflict", None), 처리 중이면 ("pending", None), 끝났으면 ("done", 저장된 결과),
+    # pending이 stale_after초보다 오래됐으면 ("stale", 그 줄의 created_at). 실행하던 프로세스가 죽었다는 뜻이다.
+    # INSERT ... ON CONFLICT DO NOTHING 한 문장으로 "없으면 만들기"를 원자적으로 해서, 동시에 여러 요청이 와도
+    # (여러 worker 프로세스에서 와도) 하나만 실행한다.
+    def claim(self, key, digest, stale_after):
         with self.connect() as conn:
             inserted = conn.execute(
                 "INSERT INTO tool_effects (tenant_id, principal_id, agent_id, tool_id, tool_version, idempotency_key,"
@@ -64,15 +66,19 @@ class EffectLedger:
                 (*key, digest)).rowcount
             if inserted:
                 return "run", None
+            # 오래됐는지는 DB 시계로 판단한다. worker마다 시계가 달라도 같은 기준이 된다.
             row = conn.execute(
-                "SELECT request_digest, status, result FROM tool_effects WHERE tenant_id = %s AND principal_id = %s"
-                " AND agent_id = %s AND tool_id = %s AND tool_version = %s AND idempotency_key = %s", key).fetchone()
+                "SELECT request_digest, status, result, created_at, created_at < now() - make_interval(secs => %s)"
+                " FROM tool_effects WHERE tenant_id = %s AND principal_id = %s AND agent_id = %s AND tool_id = %s"
+                " AND tool_version = %s AND idempotency_key = %s", (stale_after, *key)).fetchone()
         if row is None:  # claim과 SELECT 사이에 release로 지워졌다. 다시 시도한다.
-            return self.claim(key, digest)
-        stored_digest, status, result = row
+            return self.claim(key, digest, stale_after)
+        stored_digest, status, result, created_at, stale = row
         if stored_digest != digest:
             return "conflict", None
-        return ("pending", None) if status == "pending" else ("done", result)
+        if status != "pending":
+            return "done", result
+        return ("stale", created_at) if stale else ("pending", None)
 
     # 실행이 끝났다: 결과(tool-result)를 저장해서, 같은 키로 다시 오면 실행하지 않고 이 결과를 돌려준다.
     # 줄의 status는 결과의 status(succeeded 또는 unknown_outcome)를 그대로 쓴다.
@@ -88,6 +94,14 @@ class EffectLedger:
         with self.connect() as conn:
             conn.execute("DELETE FROM tool_effects WHERE tenant_id = %s AND principal_id = %s AND agent_id = %s"
                          " AND tool_id = %s AND tool_version = %s AND idempotency_key = %s AND status = 'pending'", key)
+
+    # 오래된 pending 줄을 지운다. 그사이 다른 요청이 먼저 지우고 새로 claim했으면(created_at이 다르면) 지우지 않는다.
+    # 지운 쪽이 다시 claim하면 INSERT가 원자적이므로, 동시에 여럿이 지워도 실행은 하나만 다시 한다.
+    def release_stale(self, key, created_at):
+        with self.connect() as conn:
+            conn.execute("DELETE FROM tool_effects WHERE tenant_id = %s AND principal_id = %s AND agent_id = %s"
+                         " AND tool_id = %s AND tool_version = %s AND idempotency_key = %s AND status = 'pending'"
+                         " AND created_at = %s", (*key, created_at))
 
     # 승인 기록을 저장한다(같은 approvalId면 새 내용으로 바꾼다). 승인이 맞는지는 쓰기 도구를 부를 때 검사한다.
     def save_approval(self, approval):
