@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>구현 로드맵 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="구현-로드맵">구현 로드맵</h1>
+<p>이 문서는 <a href="docs--core-systems.html">Core Systems</a>를 실제 서비스로 구현하는 순서와 각 조각의 완료 기준을 정의한다. 순서는 Agent Gateway → Agent Runtime → Agent Identity·Agent Observability → Agent Evaluation → Agent Tuning이다. 구현 단위는 1~3일 분량의 <strong>조각(slice)</strong> 이다. 각 조각은 명령 하나로 실행해 결과를 직접 확인할 수 있어야 한다.</p>
+<p>첫 조각은 성공 경로 하나를 처음부터 끝까지 관통하는 걷는 뼈대(walking skeleton)다. 이후 조각은 실패 상황을 하나씩 추가한다.</p>
+<h2 id="출발점">출발점</h2>
+<p>현재 참조 구현(<code>examples/python/platform_ref.py</code>)은 계약을 실행해 보는 단일 프로세스 mock이다. 흐름과 거부 규칙은 계약과 맞지만, 운영에서 발생하는 실패 상황은 다루지 않는다. 구현 한계의 원문은 <a href="docs--release-scope.html">제공 범위와 구현 한계</a>를 따른다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>영역</th>
+<th>현재 참조 구현</th>
+<th>구현이 채울 부분</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>프로세스 경계</td>
+<td>Platform APIs·Runtime·모델 경로·도구 경로·Credential Broker가 한 프로세스의 클래스</td>
+<td>서비스 간 네트워크 경계, 서로 다른 신뢰 영역</td>
+</tr>
+<tr>
+<td>권한</td>
+<td>scope·tenant·만료·위임 체인 검사, 분류 하향 거부</td>
+<td>실제 토큰 검증, 데이터 원천 분류, policy engine</td>
+</tr>
+<tr>
+<td>시간 제한</td>
+<td>없음</td>
+<td><code>timeoutMs</code> 적용, deadline 전파</td>
+</tr>
+<tr>
+<td>오류·재시도</td>
+<td>Problem Details 형식</td>
+<td>upstream 실패 매핑, 재시도 예산, circuit breaker</td>
+</tr>
+<tr>
+<td>멱등성</td>
+<td>메모리 dict</td>
+<td>재시작·다중 worker에 안전한 persistent effect ledger</td>
+</tr>
+<tr>
+<td>실행</td>
+<td>동기 호출만, async는 501</td>
+<td>durable 상태 전이, checkpoint, 취소, 승인 대기</td>
+</tr>
+<tr>
+<td>Agent 격리</td>
+<td>in-process import</td>
+<td>프로세스·컨테이너 격리</td>
+</tr>
+<tr>
+<td>관측</td>
+<td>메모리 audit 목록</td>
+<td>OTel exporter, collector, 비용 지표</td>
+</tr>
+<tr>
+<td>외부 연결</td>
+<td>없음</td>
+<td>모델 endpoint, REST·MCP tool server</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="진행-방식">진행 방식</h2>
+<p>모든 조각은 5분 안에 직접 실행해 맞는지 판단할 수 있는 결과로 끝난다. 결과가 눈에 보이지 않는 기반 작업은 따로 모아 진행하지 않는다. 그 작업을 처음 필요로 하는 조각에 필요한 만큼만 넣는다.</p>
+<p><strong>조각 조건</strong></p>
+<ul>
+<li>크기는 1~3일, PR 하나다. 이보다 커지면 둘로 나눈다.</li>
+<li>시나리오 정의 파일 하나를 자동 테스트, <code>make scenarios</code>(표 출력), 시나리오 실행 화면이 함께 읽는다.</li>
+<li>고장 주입(지연, 5xx, 연결 끊김, 잘못된 응답)은 시나리오 정의의 <code>fault:</code> 필드로 지정한다. 화면과 CI가 같은 고장을 똑같이 재현한다.</li>
+<li>판정은 "초록 N개, 빨강 0개" 한 줄로 끝난다. 이전 조각의 시나리오도 계속 통과해야 한다.</li>
+</ul>
+<p><strong>조각 사이클</strong></p>
+<ol>
+<li>조각 목록의 "확인 방법"을 그 조각의 약속으로 삼는다.</li>
+<li>구현, 시나리오, 테스트를 PR 하나로 올린다. CI가 시나리오 결과표를 PR에 첨부한다.</li>
+<li>검토자는 결과표를 보고 병합하거나 수정을 요청한다. 변화가 큰 조각(S0, S0b, S5, S6a, S7a)은 로컬에서도 실행해 본다.</li>
+<li>피드백에 따라 다음 조각의 순서와 범위를 조정하고, 이 문서의 조각 목록을 갱신한다.</li>
+</ol>
+<p><strong>코드 위치</strong></p>
+<p>구현 코드는 이 저장소의 <code>impl/</code> 디렉터리에 둔다. 표준 패키지와 버전을 따로 매기며, 표준 패키지 ZIP과 checksums에는 포함하지 않는다. 계약이 안정되면 별도 저장소로 분리할지 다시 정한다.</p>
+<h2 id="1단계-agent-gateway">1단계 Agent Gateway</h2>
+<p>Agent Gateway의 모델 경로와 도구 경로를 독립 HTTP 서비스로 만들고, 권한·timeout·오류·재시도를 조각마다 하나씩 입증한다. upstream은 모두 로컬의 가짜 서버라서 비밀정보가 필요 없다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>순서</th>
+<th>조각</th>
+<th>만드는 것</th>
+<th>확인 방법</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>S0 걷는 뼈대</td>
+<td>Gateway 모델 경로와 가짜 모델만 HTTP로 분리한다. Platform APIs·Runtime은 참조 구현을 그대로 쓴다. 시나리오 정의 파일 1개와 <code>make scenarios</code>를 만든다</td>
+<td><code>make scenarios</code> → "정상 호출"이 초록, trace id와 감사 기록 출력</td>
+</tr>
+<tr>
+<td>2</td>
+<td>S0b 시나리오 화면</td>
+<td>정적 HTML 한 장: 시나리오 목록, 실행 버튼, 기대값과 실제값 비교, trace id, 가짜 upstream 호출 횟수</td>
+<td><code>make demo</code> → 브라우저에서 같은 시나리오가 초록</td>
+</tr>
+<tr>
+<td>3</td>
+<td>S1 권한 거부</td>
+<td>호출마다 identity·policy를 다시 검사한다. 내부 구간에 공유 비밀값 기반 최소 서명을 넣어 요청 본문의 identity를 그대로 믿지 않는다</td>
+<td>scope 없음·tenant 불일치·서명 없음 → 403, 모델 호출 0회. 분류를 <code>public</code>으로 낮춰도 서버 분류 유지: self-hosted가 있으면 200, external만 있으면 503</td>
+</tr>
+<tr>
+<td>4</td>
+<td>C1 계약 개정 0.2.0</td>
+<td>502·504 응답, <code>UPSTREAM_TIMEOUT</code>·<code>UPSTREAM_ERROR</code>·<code>RATE_LIMITED</code> 코드, <code>Retry-After</code> 헤더, deadline 전달 헤더, 도구 경로 202 응답. ADR, migration note, 새 snapshot</td>
+<td>계약 변경 요약표 확인, 기존 테스트가 0.2.0 기준으로 초록</td>
+</tr>
+<tr>
+<td>5</td>
+<td>S2 timeout</td>
+<td>deadline을 전파하고 <code>timeoutMs</code>와 남은 시간 중 짧은 쪽을 적용한다. 초과하면 upstream 연결을 끊는다</td>
+<td><code>timeoutMs</code>=500에서 지연 주입 → 500~650ms 안에 504, upstream 연결 종료 표시</td>
+</tr>
+<tr>
+<td>6</td>
+<td>S3 오류·읽기 재시도</td>
+<td>upstream 실패를 Problem Details로 매핑한다. 읽기 호출만 최대 3회 backoff 재시도한다</td>
+<td>5xx·연결 거부·깨진 응답 → 502·503·502. 일시 장애 → 시도 2회 후 200. 계속 실패 → 3회 후 502. 응답에 내부 주소 없음</td>
+</tr>
+<tr>
+<td>7</td>
+<td>S4 보호 장치</td>
+<td>upstream별 circuit breaker, tenant·Agent별 rate limit</td>
+<td>연속 실패 → circuit open, 즉시 503 → half-open 카운트다운 후 자동 회복. 한도 초과 → 429와 <code>Retry-After</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>S5 도구 경로·멱등성</td>
+<td>가짜 REST tool server, 승인된 도구만 허용. 여기서 PostgreSQL을 도입한다. idempotency key는 tenant·principal·Agent version·tool version·요청 digest에 결합한다</td>
+<td>같은 key 재요청 → <code>make restart-gateway</code> → 재요청. 도구 실행 1회. 다른 본문 409, 미승인 도구 403</td>
+</tr>
+<tr>
+<td>9</td>
+<td>S6a 쓰기·승인·unknown_outcome</td>
+<td>쓰기 전에 로컬 승인 검증(tenant·invocationId·subjectDigest·policyVersion·만료). <code>pending</code>을 기록하고, 응답을 잃으면 <code>unknown_outcome</code>으로 두며 자동 재실행하지 않는다</td>
+<td>승인 없는 쓰기 403. 응답 끊김 → <code>unknown_outcome</code>, 재실행 0회. 같은 key 재요청은 저장된 <code>unknown_outcome</code>을 그대로 반환</td>
+</tr>
+<tr>
+<td>10</td>
+<td>S6b 동시 실행</td>
+<td>worker 2개, effect ledger 기반 중복 실행 방지</td>
+<td>동시 20회 실행 → 실제 실행 1회, 나머지는 202 또는 저장된 결과. 최종 판정은 CI 반복 테스트</td>
+</tr>
+<tr>
+<td>11</td>
+<td>S7a MCP</td>
+<td>인증 없는 로컬 MCP tool server를 거쳐 도구를 호출한다</td>
+<td>S1·S3·S5 시나리오를 MCP 도구로 다시 실행해 같은 결과</td>
+</tr>
+<tr>
+<td>12</td>
+<td>S7b SDK 분리</td>
+<td>Agent용 SDK를 독립 패키지로 분리한다</td>
+<td><code>make agent-demo</code> 성공. agent-demo가 SDK만 import</td>
+</tr>
+<tr>
+<td>13</td>
+<td>S7c 계약 타입 생성</td>
+<td>스키마에서 타입을 생성하고 드리프트를 검사한다. <code>release-scope.md</code>를 갱신한다</td>
+<td>스키마를 일부러 바꾸면 CI가 빨강</td>
+</tr>
+</tbody>
+</table></div>
+<p>모든 조각에서 응답·감사 기록·오류에 같은 trace id가 남는지 함께 확인한다.</p>
+<p><strong>1단계 범위 밖</strong></p>
+<ul>
+<li>실제 모델·SaaS 호출과 실제 자격증명</li>
+<li>A2A 경로</li>
+<li>OTel exporter (3단계)</li>
+<li>모델 경로 멱등성</li>
+<li><code>unknown_outcome</code> reconciliation (2단계)</li>
+<li>MCP OAuth 요구사항 (3단계 Credential Broker 이후)</li>
+</ul>
+<p>S1의 내부 서명은 임시 장치이며 3단계 토큰 검증으로 대체한다. 이 한계는 <code>release-scope.md</code>에 적는다.</p>
+<h2 id="2단계-agent-runtime">2단계 Agent Runtime</h2>
+<p>Agent를 플랫폼 프로세스 밖에서 격리 실행하고, 실행 상태를 저장소에 두어 재시작·취소·승인 대기를 견디게 한다. Runtime의 모든 모델·도구 호출은 1단계 Gateway로만 나간다.</p>
+<p>조각 후보(1단계 종료 시 확정):</p>
+<ol>
+<li>R1 별도 프로세스 실행: 무한 루프 Agent가 <code>timeoutMs</code>에 종료되고 <code>failed</code>로 기록된다.</li>
+<li>R2 비동기 호출: <code>getInvocation</code>·<code>listEvents</code>로 상태와 이벤트가 순서대로 쌓인다.</li>
+<li>R3 취소: <code>cancelInvocation</code> 후 terminal 상태가 덮어쓰이지 않는다.</li>
+<li>R4 재시작 복구: Runtime 재시작 후 checkpoint에서 재개하고, 확정된 쓰기는 다시 실행하지 않는다. 상태 전이는 <code>revision</code> 기반 compare-and-swap으로 보호한다.</li>
+<li>R5 승인 대기: <code>waiting_approval</code>에서 <code>submitApproval</code>로 재개한다. 재사용·다른 요청·만료 승인은 거부한다.</li>
+<li>R6 네트워크 차단: Agent가 Gateway를 거치지 않고 외부에 접속하면 차단된다.</li>
+<li>R7 reconciliation: <code>unknown_outcome</code>을 확인 절차로 확정한다.</li>
+</ol>
+<p>상태 전이는 <a href="docs--execution.html">실행·Durable·HITL</a>을 따른다. Session Store와 Artifact Store는 인터페이스와 단순 구현만 둔다. Memory는 이 단계 범위 밖이다.</p>
+<h2 id="3단계-agent-identityagent-observability">3단계 Agent Identity·Agent Observability</h2>
+<p>합성 identity를 실제 토큰 검증으로 바꾸고, span을 실제 collector로 내보낸다. 사내 IdP가 정해지기 전에는 로컬 OIDC 발급자로 검증한다.</p>
+<p>조각 후보(2단계 종료 시 확정):</p>
+<ol>
+<li>I1 토큰 검증: 위조·만료·다른 audience 토큰, 본문 tenant 조작 → 401/403. tenant·principal은 토큰에서만 파생한다.</li>
+<li>I2 workload identity와 위임: delegated 호출은 토큰 교환(RFC 8693)으로 위임 체인을 표현한다.</li>
+<li>I3 Credential Broker: secret store의 실제 자격증명을 Gateway 안에서만 주입한다. Agent 쪽 메모리·로그·span에 자격증명이 없음을 자동 검사한다. token passthrough는 금지한다.</li>
+<li>O1 trace 내보내기: 한 요청의 전 경로(Platform APIs → Runtime → Gateway → upstream)가 collector에서 하나의 trace로 조회된다. GenAI semantic conventions 버전을 고정한다.</li>
+<li>O2 지표와 비용: 지연, 오류율, timeout, 토큰, tenant·Agent별 비용, 정책 거부, 승인 대기, <code>unknown_outcome</code>.</li>
+</ol>
+<p>감사 기록은 trace와 분리된 저장소에 추가 전용으로 남긴다. 프롬프트·모델 출력 원문과 토큰은 기본으로 기록하지 않는다. 사내 IdP와의 실제 연동은 TBD-01 결정 후 진행한다.</p>
+<h2 id="4단계-agent-evaluation">4단계 Agent Evaluation</h2>
+<p>3단계에서 모인 trace를 평가 데이터로 바꾸고, 기준에 못 미치는 Agent revision의 등록·승격을 막는다.</p>
+<p>조각 후보: E1 trace를 평가 사례로 저장 → E2 코드 grader와 승격 게이트 → E3 모델 grader와 사람 검토.</p>
+<ul>
+<li>grader는 코드 기반(도구 선택·정책 준수·스키마), 모델 기반(답변 품질), 사람 검토를 섞는다.</li>
+<li>측정 축은 목표 달성, 도구 사용 적절성, 안전, 비용·지연이다.</li>
+<li>완료 기준: 도구 설명을 일부러 망가뜨린 revision이 게이트에서 막히고, 실패 사례가 도구 오류·정책 거부·답변 품질로 분류된다.</li>
+<li>의미 있는 dataset을 만들려면 첫 업무 사례(TBD-04)가 필요하다.</li>
+</ul>
+<h2 id="5단계-agent-tuning">5단계 Agent Tuning</h2>
+<p>평가에서 찾은 실패를 고치는 루프를 닫는다. 비용이 적은 방법부터 적용한다.</p>
+<ol>
+<li>프롬프트·도구 설명 개선안을 만들고 golden dataset으로 재평가한다.</li>
+<li>모델 경로의 라우팅 정책을 평가 결과로 조정한다.</li>
+<li>필요할 때만 trace로 학습 데이터를 만들어 모델을 튜닝하고, 결과 모델을 모델 경로에 새 버전으로 등록해 평가 게이트를 다시 통과시킨다.</li>
+</ol>
+<p>개선안은 평가 점수를 올릴 때만 승격하고, 모든 변경에 근거 trace와 평가 결과를 연결한다.</p>
+<h2 id="공통-완료-정의">공통 완료 정의</h2>
+<p>각 조각과 단계는 다음이 모두 참일 때 끝난다.</p>
+<ol>
+<li>확인 방법의 모든 항목이 CI 자동 테스트로 통과한다. 손으로만 확인한 항목은 완료로 치지 않는다.</li>
+<li>이전 조각의 테스트가 계속 통과한다.</li>
+<li>계약을 바꾸면 <a href="docs--versioning.html">계약 변경</a> 절차대로 스키마·ADR·테스트를 같은 변경에서 갱신한다.</li>
+<li><code>release-scope.md</code>의 구현 한계에서 해소된 항목을 지우고 남은 한계를 사실대로 적는다.</li>
+<li>로컬에서 <code>make demo</code> 또는 <code>make scenarios</code>로 재현된다.</li>
+<li>단계가 끝나면 태그를 붙인다.</li>
+</ol>
+<h2 id="기술-결정">기술 결정</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>질문</th>
+<th>결정</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>구현 언어</td>
+<td>Python</td>
+<td>기존 계약 검증·참조 구현·테스트를 재사용한다. 측정상 병목이면 Gateway만 교체한다</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>코드 위치</td>
+<td>이 저장소의 <code>impl/</code></td>
+<td>계약과 구현을 한 PR에서 바꾼다. 1단계 종료 후 분리 여부를 다시 정한다</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>1단계 모델</td>
+<td>가짜 모델 서버(stub)</td>
+<td>비밀정보 없이 고장을 재현한다. 상용 API는 Credential Broker 이후</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>상태 저장소</td>
+<td>PostgreSQL</td>
+<td>다중 worker 동시성을 검증하려면 서버형 DB가 필요하다. S5에서 도입한다</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>로컬 실행</td>
+<td>컨테이너 compose</td>
+<td>개발자 노트북에서 바로 실행된다</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>계약 개정</td>
+<td>0.2.0으로 개정</td>
+<td>timeout과 upstream 오류를 구분하고 deadline을 전달하려면 계약 변경이 필요하다</td>
+</tr>
+</tbody>
+</table></div>
+<p>아직 정하지 않은 결정:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>질문</th>
+<th>추천안</th>
+<th>필요 시점</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D6</td>
+<td>policy engine</td>
+<td>1단계는 코드 내장과 인터페이스, 3단계 전에 OPA 또는 Cedar 중 선택(TBD-03)</td>
+<td>3단계 전</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>durable 실행</td>
+<td>자체 상태머신과 DB로 시작, 장기 실행이 늘면 workflow engine 검토(TBD-08)</td>
+<td>2단계 전</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>첫 실제 업무 사례</td>
+<td>1~3단계는 없이 진행, 4단계 dataset 전에 필요(TBD-04)</td>
+<td>4단계 전</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="위험과-대응">위험과 대응</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>위험</th>
+<th>영향</th>
+<th>대응</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gateway가 모든 호출의 단일 통과점</td>
+<td>지연·장애 집중</td>
+<td>처음부터 무상태 수평 확장 구조. 정책 판단 지연을 측정한다. 부하 목표는 TBD-07 결정 후 정한다</td>
+</tr>
+<tr>
+<td>참조 구현과 실제 구현의 동작 차이</td>
+<td>문서와 코드 불일치</td>
+<td>같은 시나리오 정의를 두 구현에 모두 실행한다</td>
+</tr>
+<tr>
+<td>쓰기 도구 중복 실행</td>
+<td>외부 시스템 피해</td>
+<td>effect ledger, <code>unknown_outcome</code>, 자동 재실행 금지를 S6a·S6b에서 먼저 입증한다</td>
+</tr>
+<tr>
+<td>회사 결정(TBD) 대기</td>
+<td>일정 지연</td>
+<td>IdP·policy·secret store는 표준 인터페이스 뒤에 로컬 구현으로 진행하고 나중에 교체한다</td>
+</tr>
+<tr>
+<td>GenAI semantic conventions 변경</td>
+<td>span 재작업</td>
+<td>사용 버전을 고정하고 매핑을 한 곳에 모은다</td>
+</tr>
+<tr>
+<td>참조 구현을 production으로 오인</td>
+<td>보안 사고</td>
+<td>조각마다 <code>release-scope.md</code>의 남은 한계를 갱신한다</td>
+</tr>
+</tbody>
+</table></div><p class="file-link">원본 파일: <a href="../docs/implementation-roadmap.md">docs/implementation-roadmap.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#출발점">출발점</a><a href="#진행-방식">진행 방식</a><a href="#1단계-agent-gateway">1단계 Agent Gateway</a><a href="#2단계-agent-runtime">2단계 Agent Runtime</a><a href="#3단계-agent-identityagent-observability">3단계 Agent Identity·Agent Observability</a><a href="#4단계-agent-evaluation">4단계 Agent Evaluation</a><a href="#5단계-agent-tuning">5단계 Agent Tuning</a><a href="#공통-완료-정의">공통 완료 정의</a><a href="#기술-결정">기술 결정</a><a href="#위험과-대응">위험과 대응</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

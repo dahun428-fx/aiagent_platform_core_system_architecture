@@ -32,6 +32,9 @@ def run(name, command):
 # Release outputs are never packaged into themselves.
 GENERATED = {"checksums.sha256"}
 GENERATED_PREFIXES = ("dist/", "verification/archive-verification")
+# Implementation work in progress: versioned separately, never part of the standards package.
+NOT_PACKAGED_PREFIXES = ("impl/",)
+NOT_PACKAGED = {"Makefile"}
 # Tracked paths a release run may rewrite. Any other change during the run means the packaged source moved.
 RELEASE_OUTPUTS = ("checksums.sha256",)
 RELEASE_OUTPUT_PREFIXES = ("dist/", "verification/")
@@ -56,6 +59,7 @@ def select_package_files(names):
     if sensitive:
         raise RuntimeError("Sensitive files are tracked and would be packaged: " + ", ".join(sorted(sensitive)))
     keep = [n for n in names if n not in GENERATED and not n.startswith(GENERATED_PREFIXES)
+            and n not in NOT_PACKAGED and not n.startswith(NOT_PACKAGED_PREFIXES)
             and posixpath.basename(n) not in JUNK_NAMES and not n.endswith(".pyc")]
     return sorted(keep)
 

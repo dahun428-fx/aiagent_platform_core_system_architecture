@@ -22,8 +22,11 @@ HTTP API 문서는 목표 인터페이스다. mock은 Agent invoke / health만 �
 메모리 idempotency는 재시작/다중 worker에 안전하지 않다.
 mock lease는 외부 credential이 아니며 실전 cryptography·federation·persistency를 제공하지 않는다.
 프로덕션 TLS, quota, audit store, queue, retry ledger, approval service, artifact signature는 회사 결정 후 구현해야 한다.</p>
+<h2 id="구현-코드impl">구현 코드(impl/)</h2>
+<p><code>impl/</code>는 <a href="docs--implementation-roadmap.html">구현 로드맵</a>의 조각을 구현하는 코드이며 표준 패키지 ZIP과 checksums에 포함하지 않는다.
+현재 Agent Gateway 모델 경로만 별도 HTTP 서비스로 분리돼 있고, upstream은 로컬 가짜 모델이다. 나머지 한계는 위 참조 구현과 같다.</p>
 <h2 id="검증-주장">검증 주장</h2>
 <p>verification/results.json의 각 검사는 실행된 도구·exit code·출력을 기록한다.
 표준 검증은 machine-readable 문법·fixture·예제·명시된 거부 동작의 범위이며 production 보안 인증이 아니다.
 브라우저 오프라인 검증과 ZIP 무결성은 별도 결과에 기록한다.
-의존성은 requirements-dev.txt/package.json으로 고정하며 최초 설치에는 인터넷이 필요하다.</p><p class="file-link">원본 파일: <a href="../docs/release-scope.md">docs/release-scope.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#이-패키지가-제공하는-것">이 패키지가 제공하는 것</a><a href="#실제-실행과-설계의-경계">실제 실행과 설계의 경계</a><a href="#검증-주장">검증 주장</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+의존성은 requirements-dev.txt/package.json으로 고정하며 최초 설치에는 인터넷이 필요하다.</p><p class="file-link">원본 파일: <a href="../docs/release-scope.md">docs/release-scope.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#이-패키지가-제공하는-것">이 패키지가 제공하는 것</a><a href="#실제-실행과-설계의-경계">실제 실행과 설계의 경계</a><a href="#구현-코드impl">구현 코드(impl/)</a><a href="#검증-주장">검증 주장</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
