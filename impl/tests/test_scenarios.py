@@ -114,6 +114,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertLess(time.monotonic() - started, 1.0)
 
     # upstream에 연결조차 안 되면 모델 경로는 3번 시도한 뒤 503을 주고, 오류에 upstream 주소를 넣지 않는다.
+    # Windows는 닫힌 포트에 연결을 거부당하기까지 시도마다 약 2초를 다시 시도하므로 deadline을 넉넉히 준다.
     def test_model_route_hides_unreachable_upstream_address(self):
         import json
         from gateway import model_route
@@ -121,7 +122,7 @@ class ScenarioTests(unittest.TestCase):
         route = model_route.ModelRoute("http://127.0.0.1:9", "test-key")
         with self.assertRaises(ref.Fault) as caught:
             route.call_upstream([{"role": "user", "content": "hi"}], "self-hosted", run.new_traceparent(),
-                                model_route.time.monotonic() + 2)
+                                model_route.time.monotonic() + 15)
         self.assertEqual((caught.exception.status, caught.exception.code), (503, "UPSTREAM_UNAVAILABLE"))
         self.assertNotIn("127.0.0.1", json.dumps(caught.exception.problem()))
 
