@@ -60,8 +60,8 @@ class ScenarioTests(unittest.TestCase):
             route.invoke("hi", ref.load("identity"), ref.load("policy"), run.new_traceparent())
         self.assertEqual(caught.exception.status, 503)
 
-    # 모델 경로가 422를 주거나 계약에 안 맞는 200을 줘도, 앱에는 4xx가 아닌 503으로 알린다.
-    def test_platform_reports_bad_gateway_answers_as_503(self):
+    # 모델 경로가 422를 주거나 계약에 안 맞는 200을 줘도, 앱에는 4xx가 아닌 502로 알린다.
+    def test_platform_reports_bad_gateway_answers_as_502(self):
         import threading
         import platform_api
         from common import JsonHandler, serve
@@ -82,7 +82,7 @@ class ScenarioTests(unittest.TestCase):
         for case in ("route 422", "invalid 200 result"):
             with self.subTest(case), self.assertRaises(ref.Fault) as caught:
                 route.invoke("hi", ref.load("identity"), ref.load("policy"), run.new_traceparent())
-            self.assertEqual((caught.exception.status, caught.exception.code), (503, "UPSTREAM_UNAVAILABLE"))
+            self.assertEqual((caught.exception.status, caught.exception.code), (502, "UPSTREAM_ERROR"))
 
     # Request-Timeout-Ms가 1 이상의 정수가 아니면 모델 경로는 422로 거부한다(계약 0.2.0).
     def test_model_route_rejects_bad_timeout_header(self):
@@ -112,6 +112,18 @@ class ScenarioTests(unittest.TestCase):
             route.invoke("hi", ref.load("identity"), ref.load("policy"), run.new_traceparent())
         self.assertEqual((caught.exception.status, caught.exception.code), (504, "UPSTREAM_TIMEOUT"))
         self.assertLess(time.monotonic() - started, 1.0)
+
+    # upstream에 연결조차 안 되면 모델 경로는 3번 시도한 뒤 503을 주고, 오류에 upstream 주소를 넣지 않는다.
+    def test_model_route_hides_unreachable_upstream_address(self):
+        import json
+        from gateway import model_route
+        ref = load_ref()
+        route = model_route.ModelRoute("http://127.0.0.1:9", "test-key")
+        with self.assertRaises(ref.Fault) as caught:
+            route.call_upstream([{"role": "user", "content": "hi"}], "self-hosted", run.new_traceparent(),
+                                model_route.time.monotonic() + 2)
+        self.assertEqual((caught.exception.status, caught.exception.code), (503, "UPSTREAM_UNAVAILABLE"))
+        self.assertNotIn("127.0.0.1", json.dumps(caught.exception.problem()))
 
 
 if __name__ == "__main__":

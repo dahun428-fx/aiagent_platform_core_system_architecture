@@ -8,7 +8,11 @@ GET  /_audit                 이 프로세스가 남긴 감사 기록 (로컬 �
 GET  /health/ready           기동 확인
 
 upstream 은 --upstream 으로 받은 가짜 모델 서버다. 권한 검사와 라우팅은 참조 구현을 그대로 쓰고,
-서명 키는 환경 변수 IMPL_INTERNAL_KEY 로 받는다(stack.py가 실행마다 새로 만든다). 오류 매핑과 재시도는 S3에서 다룬다.
+서명 키는 환경 변수 IMPL_INTERNAL_KEY 로 받는다(stack.py가 실행마다 새로 만든다).
+
+upstream 실패는 계약 0.2.0(ADR-038)대로 나눈다: 시간 초과 504, 연결 실패 503, 5xx·깨진 응답 502.
+모델 호출은 외부에 남는 효과가 없는 읽기 호출이므로, 연결 실패·5xx·깨진 응답은 deadline 안에서 최대 3회까지 시도한다.
+오류 응답에는 upstream 주소나 upstream 원문 오류를 넣지 않는다.
 """
 from __future__ import annotations
 
@@ -17,6 +21,7 @@ import hmac
 import os
 import sys
 import threading
+import time
 from pathlib import Path
 
 # impl/ 를 import 경로에 넣어 공통 모듈(common.py)을 불러온다.
@@ -26,6 +31,10 @@ from common import KEY_ENV, SIGNATURE_HEADER, TIMEOUT_HEADER, JsonHandler, call_
 # 참조 구현 모듈: 계약 검증(validate), 오류(Fault), 권한·라우팅(ModelGateway)을 여기서 가져다 쓴다.
 ref = load_ref()
 UPSTREAM_TIMEOUT_S = 5.0  # 모델 경로 자체 상한. 호출자가 남은 시간을 더 길게 보내도 이보다 오래 기다리지 않는다(ADR-038).
+MAX_ATTEMPTS = 3  # 첫 시도 포함 최대 시도 횟수
+FIRST_BACKOFF_S = 0.05  # 두 번째 시도 전 대기. 그다음은 두 배(0.05초 → 0.1초)
+# shortcut: backoff에 jitter가 없고 재시도 예산이 호출마다 따로다. 여러 인스턴스가 한꺼번에 재시도하면 upstream에 몰린다.
+#           S4 circuit breaker와 함께 upstream 단위 예산을 둔다.
 
 
 # Request-Timeout-Ms 헤더 값을 초 단위 대기 시간으로 바꾼다. 없으면 자체 상한, 있으면 둘 중 짧은 쪽.
@@ -75,23 +84,49 @@ class ModelRoute:
         identity, policy, trace = body["identity"], body["policy"], body["traceparent"]
         # 3) 권한 검사 + 데이터 분류에 맞는 provider 선택. 거부되면 403, 갈 곳이 없으면 503.
         provider = self.router.route(identity, policy)
-        # 4) upstream(가짜 모델) 호출. 남은 시간 안에 답이 없으면 연결을 끊고 504. 연결 실패나 200이 아닌 응답은 503(S3에서 나눈다).
-        try:
-            status, _, out = call_json("POST", self.upstream + "/v1/chat", {"messages": body["messages"]}, timeout=budget)
-        except TimeoutError:
-            raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Model upstream timed out") from None
-        except ConnectionError:
-            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model upstream unreachable") from None
-        if status != 200:
-            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model upstream failed")
-        # 5) 성공한 호출만 감사 기록에 남기고, 결과를 model-result 계약으로 검증한 뒤 돌려준다.
+        # 4) upstream(가짜 모델) 호출. 실패하면 deadline 안에서 다시 시도한다.
+        result = self.call_upstream(body["messages"], provider, trace, time.monotonic() + budget)
+        # 5) 성공한 호출만 감사 기록에 남긴다.
         #    라우팅을 결정한 데이터 분류도 남겨서, 앱이 분류를 낮춰 보냈을 때 서버 분류가 쓰였는지 확인할 수 있게 한다.
         self.record("model-gateway", trace, {"decisionId": policy["decisionId"], "provider": provider,
                                              "tenantId": identity["tenantId"], "classification": policy["classification"]})
-        result = {"content": out["content"], "provider": provider, "routeDecisionId": "route-" + provider,
-                  "usage": out["usage"], "traceparent": trace}
-        ref.validate("model-result", result)
         return result
+
+    # upstream을 deadline까지 최대 MAX_ATTEMPTS번 부른다. 계약에 맞는 결과를 얻으면 돌려주고, 못 얻으면 마지막 실패를 Fault로 던진다.
+    #   시간 초과        → 504, 다시 시도하지 않는다(남은 시간을 이미 다 썼다)
+    #   연결 실패        → 503, 다시 시도
+    #   5xx·깨진 응답    → 502, 다시 시도
+    #   그 밖의 4xx      → 502, 다시 시도해도 같으므로 바로 끝낸다
+    def call_upstream(self, messages, provider, trace, deadline):
+        backoff = FIRST_BACKOFF_S
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            status = None
+            try:
+                status, _, out = call_json("POST", self.upstream + "/v1/chat", {"messages": messages},
+                                           timeout=max(deadline - time.monotonic(), 0.001))
+            except TimeoutError:
+                raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Model upstream timed out") from None
+            except ConnectionError:
+                fault = ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model upstream unreachable")
+            except ValueError:  # 본문이 JSON이 아니다
+                fault = ref.Fault(502, "UPSTREAM_ERROR", "Model upstream returned an invalid response")
+            if status == 200:
+                try:
+                    result = {"content": out["content"], "provider": provider, "routeDecisionId": "route-" + provider,
+                              "usage": out["usage"], "traceparent": trace}
+                    ref.validate("model-result", result)
+                    return result
+                except (KeyError, TypeError, ref.Fault):  # 필드가 없거나 계약에 안 맞는 200
+                    fault = ref.Fault(502, "UPSTREAM_ERROR", "Model upstream returned an invalid response")
+            elif status is not None:
+                fault = ref.Fault(502, "UPSTREAM_ERROR", "Model upstream returned an error")
+                if status < 500:
+                    raise fault
+            # 마지막 시도였거나, 기다린 뒤 다시 시도할 시간이 없으면 지금 실패로 끝낸다.
+            if attempt == MAX_ATTEMPTS or time.monotonic() + backoff >= deadline:
+                raise fault
+            time.sleep(backoff)
+            backoff *= 2
 
 
 # HTTP 서버를 만든다. port 0이면 OS가 빈 포트를 골라 준다.

@@ -23,6 +23,8 @@ from common import KEY_ENV, SIGNATURE_HEADER, TIMEOUT_HEADER, call_json, load_re
 ref = load_ref()
 # 모델 경로가 남은 시간에 맞춰 먼저 504를 돌려줄 수 있도록, 여기서는 그보다 조금 더 기다린다.
 ANSWER_MARGIN_S = 0.1
+# 모델 경로가 돌려준 upstream 실패 상태와 오류 코드(계약 0.2.0, ADR-038)
+UPSTREAM_FAULTS = {502: "UPSTREAM_ERROR", 503: "UPSTREAM_UNAVAILABLE", 504: "UPSTREAM_TIMEOUT"}
 # 요청 스레드마다 지금 처리 중인 Agent 호출의 deadline(time.monotonic 기준)을 담는다.
 # ThreadingHTTPServer는 요청 하나를 스레드 하나가 끝까지 처리하므로, Runtime을 고치지 않고 모델 호출까지 전달된다.
 current = threading.local()
@@ -77,18 +79,19 @@ class HttpModelRoute:
         except ConnectionError:
             # 모델 경로 서비스에 연결조차 안 되는 경우
             raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Agent Gateway model route unreachable") from None
-        # 정책 거부(403)만 호출자 책임이다. 시간 초과(504)는 그대로 전한다.
-        # 그 밖의 실패는 잘못된 결과까지 포함해 우리 쪽 문제이므로 4xx가 아닌 503으로 돌려준다.
+        # 정책 거부(403)만 호출자 책임이다. 모델 경로가 정한 upstream 실패(502·503·504)는 같은 상태로 전한다.
+        # 모델 경로의 그 밖의 응답(4xx, 500, 계약에 안 맞는 200)은 우리 쪽 upstream이 잘못 답한 것이므로 502.
+        # 재시도는 모델 경로가 이미 했으므로 여기서는 다시 시도하지 않는다(단계마다 재시도하면 횟수가 곱해진다).
         if status == 403:
             raise ref.Fault(403, "FORBIDDEN", "Policy denied")
-        if status == 504:
-            raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Model upstream timed out")
+        if status in UPSTREAM_FAULTS:
+            raise ref.Fault(status, UPSTREAM_FAULTS[status], "Model upstream failed")
         if status != 200:
-            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model route failed")
+            raise ref.Fault(502, "UPSTREAM_ERROR", "Model route failed")
         try:
             ref.validate("model-result", out)
         except ref.Fault:
-            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model route returned an invalid result") from None
+            raise ref.Fault(502, "UPSTREAM_ERROR", "Model route returned an invalid result") from None
         return out
 
 

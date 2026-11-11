@@ -324,6 +324,190 @@
           "delayMs": 2000
         }
       }
+    },
+    {
+      "id": "upstream-5xx",
+      "title": "모델 5xx 계속",
+      "slice": "S3",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-upstream-5xx",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 502,
+        "body": {
+          "code": "UPSTREAM_ERROR"
+        },
+        "noInternalAddress": true,
+        "upstreamCalls": {
+          "fake-model": 3
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": []
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "status": 500
+        }
+      }
+    },
+    {
+      "id": "upstream-drop",
+      "title": "모델 연결 끊김",
+      "slice": "S3",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-upstream-drop",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 503,
+        "body": {
+          "code": "UPSTREAM_UNAVAILABLE"
+        },
+        "noInternalAddress": true,
+        "upstreamCalls": {
+          "fake-model": 3
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": []
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "drop": true
+        }
+      }
+    },
+    {
+      "id": "upstream-garbage",
+      "title": "모델 깨진 응답",
+      "slice": "S3",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-upstream-garbage",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 502,
+        "body": {
+          "code": "UPSTREAM_ERROR"
+        },
+        "noInternalAddress": true,
+        "upstreamCalls": {
+          "fake-model": 3
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": []
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "garbage": true
+        }
+      }
+    },
+    {
+      "id": "upstream-transient",
+      "title": "모델 일시 장애",
+      "slice": "S3",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-upstream-transient",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "outputContent": "mock:hello",
+        "upstreamCalls": {
+          "fake-model": 2
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": [
+            "model-gateway"
+          ]
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "status": 500,
+          "failTimes": 1
+        }
+      }
     }
   ]
 }

@@ -2,8 +2,14 @@
 
 POST /v1/chat      {"messages": [...]} → {"content": "mock:<마지막 메시지>", "usage": {...}}
 GET  /_stats       → {"calls": n, "disconnects": n}   /v1/chat 호출 횟수, 답하기 전에 호출자가 연결을 끊은 횟수 (시나리오 판정용)
-POST /_reset       {"delayMs": n}(선택) → 횟수를 0으로 되돌리고, 이번 시나리오의 고장을 정한다. 본문이 비면 고장 없음
-고장 주입은 지금 지연(delayMs)뿐이다. 5xx·연결 끊김·깨진 응답은 S3에서 더한다.
+POST /_reset       {고장}(선택) → 횟수를 0으로 되돌리고, 이번 시나리오의 고장을 정한다. 본문이 비면 고장 없음
+
+고장 필드 (시나리오의 fault."fake-model")
+  delayMs: n     답하기 전에 n ms 기다린다
+  status: 500    그 상태 코드로 답한다
+  drop: true     아무 답 없이 연결을 닫는다
+  garbage: true  200에 JSON이 아닌 본문을 보낸다
+  failTimes: n   status·drop·garbage를 처음 n번 호출에만 적용한다(일시 장애). 없으면 매번
 """
 from __future__ import annotations
 
@@ -63,15 +69,35 @@ def make_server(port=0):
                 return
             with state.lock:
                 state.calls += 1
-                delay = state.fault.get("delayMs", 0) / 1000
+                call, fault = state.calls, state.fault
+                delay = fault.get("delayMs", 0) / 1000
             # 지연 고장: 답하기 전에 기다린다. 그 사이 호출자가 연결을 끊으면 세어 두고 답하지 않는다.
             if delay and self.caller_hung_up_within(delay):
                 with state.lock:
                     state.disconnects += 1
                 return
+            # 실패 고장: failTimes가 있으면 그 횟수까지만, 없으면 매번 실패한다.
+            if call <= fault.get("failTimes", call):
+                if fault.get("drop"):
+                    self.close_connection = True  # 아무것도 쓰지 않고 돌아가면 연결이 닫힌다
+                    return
+                if "status" in fault:
+                    self.send_json(fault["status"], {"error": "injected failure"})
+                    return
+                if fault.get("garbage"):
+                    self.send_raw(200, b"<html>not json</html>")
+                    return
             out = "mock:" + text
             # 토큰 수는 단어 수로 흉내 낸다.
             self.send_json(200, {"content": out, "usage": {"inputTokens": len(text.split()), "outputTokens": len(out.split())}})
+
+        # JSON이 아닌 본문을 그대로 보낸다(깨진 응답 고장).
+        def send_raw(self, status, raw):
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
 
         # seconds 동안 기다리며, 그 사이 호출자가 연결을 닫았는지 본다. 닫힌 연결은 읽을 수 있게 되고 0바이트를 돌려준다.
         def caller_hung_up_within(self, seconds):

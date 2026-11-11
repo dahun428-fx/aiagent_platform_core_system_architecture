@@ -100,6 +100,10 @@ def run_scenario(stack, scenario):
     # 응답 본문의 최상위 필드(예: 오류 code, routeDecisionId)
     for field, value in expect.get("body", {}).items():
         checks.append((field, value, body.get(field) if isinstance(body, dict) else None))
+    # 오류 응답에 내부 주소(upstream URL, 루프백 주소)가 드러나지 않는지
+    if expect.get("noInternalAddress"):
+        text = json.dumps(body)
+        checks.append(("internal address hidden", True, not any(s in text for s in ("127.0.0.1", "localhost", "http://"))))
     # 서비스별 upstream 호출 횟수
     for service, count in expect.get("upstreamCalls", {}).items():
         checks.append((service + " calls", count, upstream_stats(stack, service)["calls"]))
