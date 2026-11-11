@@ -2,11 +2,13 @@
 
 POST /v1/model-invocations   model-request 를 받아 model-result 를 돌려준다. 실패하면 Problem Details.
                              X-Internal-Signature 헤더(Platform이 공유 비밀값으로 만든 서명)가 맞아야 한다.
+                             Request-Timeout-Ms 헤더(남은 시간)가 있으면 그 시간과 자체 상한 중 짧은 쪽만 upstream을 기다리고,
+                             넘으면 upstream 연결을 끊고 504 UPSTREAM_TIMEOUT.
 GET  /_audit                 이 프로세스가 남긴 감사 기록 (로컬 시나리오 확인용)
 GET  /health/ready           기동 확인
 
 upstream 은 --upstream 으로 받은 가짜 모델 서버다. 권한 검사와 라우팅은 참조 구현을 그대로 쓰고,
-서명 키는 환경 변수 IMPL_INTERNAL_KEY 로 받는다(stack.py가 실행마다 새로 만든다). timeout 구분, 오류 매핑, 재시도는 다음 조각에서 다룬다.
+서명 키는 환경 변수 IMPL_INTERNAL_KEY 로 받는다(stack.py가 실행마다 새로 만든다). 오류 매핑과 재시도는 S3에서 다룬다.
 """
 from __future__ import annotations
 
@@ -19,11 +21,21 @@ from pathlib import Path
 
 # impl/ 를 import 경로에 넣어 공통 모듈(common.py)을 불러온다.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from common import KEY_ENV, SIGNATURE_HEADER, JsonHandler, call_json, load_ref, serve, sign  # noqa: E402
+from common import KEY_ENV, SIGNATURE_HEADER, TIMEOUT_HEADER, JsonHandler, call_json, load_ref, serve, sign  # noqa: E402
 
 # 참조 구현 모듈: 계약 검증(validate), 오류(Fault), 권한·라우팅(ModelGateway)을 여기서 가져다 쓴다.
 ref = load_ref()
-UPSTREAM_TIMEOUT_S = 5.0  # shortcut: 모든 호출에 고정 timeout, S2에서 전달받은 deadline으로 바꾼다.
+UPSTREAM_TIMEOUT_S = 5.0  # 모델 경로 자체 상한. 호출자가 남은 시간을 더 길게 보내도 이보다 오래 기다리지 않는다(ADR-038).
+
+
+# Request-Timeout-Ms 헤더 값을 초 단위 대기 시간으로 바꾼다. 없으면 자체 상한, 있으면 둘 중 짧은 쪽.
+# 계약상 1 이상의 정수다. 그 밖의 값은 422로 거부한다.
+def upstream_budget(header):
+    if header is None:
+        return UPSTREAM_TIMEOUT_S
+    if not (header.isascii() and header.isdigit()) or int(header) < 1:
+        raise ref.Fault(422, "VALIDATION_ERROR", TIMEOUT_HEADER + " must be a positive integer")
+    return min(int(header) / 1000, UPSTREAM_TIMEOUT_S)
 
 
 class ModelRoute:
@@ -45,7 +57,7 @@ class ModelRoute:
                                **{k: v for k, v in fields.items() if k in allowed}})
 
     # 모델 호출 한 번: 서명 확인 → 입력 검사 → 권한·provider 선택 → upstream 호출 → 감사 기록 → 결과 검증.
-    def invoke(self, body, key, traceparent, signature):
+    def invoke(self, body, key, traceparent, signature, timeout_header=None):
         # 0) 서명 확인. 없거나 틀리면 본문의 identity·policy를 믿을 수 없으므로 아무것도 하지 않고 403.
         #    compare_digest는 비교 시간이 일정해서, 응답 시간으로 서명을 한 글자씩 맞춰 보는 공격을 막는다.
         if not signature or not hmac.compare_digest(signature, sign(self.key, body)):
@@ -55,6 +67,7 @@ class ModelRoute:
         # shortcut: 키를 필수로 받지만 저장하지 않아서, 재시도하면 모델이 다시 호출된다. S5에서 effect ledger를 붙인다.
         if not key or not key.strip():
             raise ref.Fault(422, "VALIDATION_ERROR", "Idempotency-Key is required")
+        budget = upstream_budget(timeout_header)
         # 2) 헤더와 본문의 traceparent가 다르면 추적이 갈라지므로 거부한다.
         if traceparent is not None and traceparent != body["traceparent"]:
             raise ref.Fault(422, "VALIDATION_ERROR", "traceparent header and body differ")
@@ -62,10 +75,11 @@ class ModelRoute:
         identity, policy, trace = body["identity"], body["policy"], body["traceparent"]
         # 3) 권한 검사 + 데이터 분류에 맞는 provider 선택. 거부되면 403, 갈 곳이 없으면 503.
         provider = self.router.route(identity, policy)
-        # 4) upstream(가짜 모델) 호출. 연결 실패나 200이 아닌 응답은 모두 503으로 돌려준다.
+        # 4) upstream(가짜 모델) 호출. 남은 시간 안에 답이 없으면 연결을 끊고 504. 연결 실패나 200이 아닌 응답은 503(S3에서 나눈다).
         try:
-            status, _, out = call_json("POST", self.upstream + "/v1/chat", {"messages": body["messages"]},
-                                       timeout=UPSTREAM_TIMEOUT_S)
+            status, _, out = call_json("POST", self.upstream + "/v1/chat", {"messages": body["messages"]}, timeout=budget)
+        except TimeoutError:
+            raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Model upstream timed out") from None
         except ConnectionError:
             raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Model upstream unreachable") from None
         if status != 200:
@@ -102,7 +116,7 @@ def make_server(upstream, key, port=0):
                 if self.path != "/v1/model-invocations":
                     raise ref.Fault(404, "NOT_FOUND", "Unknown path")
                 out = route.invoke(self.read_json(), self.headers.get("Idempotency-Key"), trace,
-                                   self.headers.get(SIGNATURE_HEADER))
+                                   self.headers.get(SIGNATURE_HEADER), self.headers.get(TIMEOUT_HEADER))
                 self.send_json(200, out, headers={"traceparent": out["traceparent"]})
             except ref.Fault as exc:
                 self.send_json(exc.status, exc.problem(trace), "application/problem+json")

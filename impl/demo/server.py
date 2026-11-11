@@ -67,7 +67,7 @@ def make_server(stack, port=8700, scenarios_path=run.SCENARIOS):
             with lock:
                 try:
                     results = [run.run_scenario(stack, s) for s in scenarios]
-                except ConnectionError as exc:
+                except (ConnectionError, TimeoutError) as exc:
                     self.send_json(503, {"detail": f"local stack unreachable: {exc}"})
                     return
             self.send_json(200, {"results": results})

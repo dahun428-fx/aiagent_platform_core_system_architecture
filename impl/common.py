@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]  # 저장소 루트
 KEY_ENV = "IMPL_INTERNAL_KEY"  # 내부 구간 서명에 쓰는 공유 비밀값을 담는 환경 변수 이름
 SIGNATURE_HEADER = "X-Internal-Signature"
+TIMEOUT_HEADER = "Request-Timeout-Ms"  # 호출자에게 남은 시간(ms). 계약 0.2.0(ADR-038)
 MAX_BODY = 65536  # 요청 본문 최대 크기(64KB). 이보다 크면 거부한다.
 
 
@@ -68,7 +69,9 @@ def sign(key, body):
 
 
 # JSON HTTP 요청을 보내고 (상태 코드, 헤더, JSON 본문)을 돌려준다.
-# 4xx·5xx 응답도 예외 없이 그대로 돌려주고, 연결 자체가 안 될 때만 ConnectionError를 던진다.
+# 4xx·5xx 응답도 예외 없이 그대로 돌려준다. 시간 안에 답이 없으면 TimeoutError, 연결 자체가 안 되면 ConnectionError.
+# shortcut: urllib의 timeout은 소켓 동작 하나(연결, 읽기 한 번)마다 걸린다. 조금씩 흘려 보내는 upstream은 전체로는 더 오래 걸릴 수 있다.
+#           실제 upstream을 붙일 때 전체 시간 상한을 따로 둔다.
 def call_json(method, url, body=None, headers=None, timeout=5.0):
     data = None if body is None else json.dumps(body).encode()
     req = Request(url, data=data, method=method, headers={"Content-Type": "application/json", **(headers or {})})
@@ -78,5 +81,11 @@ def call_json(method, url, body=None, headers=None, timeout=5.0):
     except HTTPError as exc:
         raw = exc.read()
         return exc.code, dict(exc.headers), json.loads(raw) if raw else None
-    except (URLError, OSError) as exc:
+    except TimeoutError:
+        raise  # 읽는 중 시간 초과. 이 함수를 빠져나가면서 연결이 닫히므로 upstream도 끊긴 것을 안다.
+    except URLError as exc:
+        if isinstance(exc.reason, TimeoutError):  # 연결하는 중 시간 초과
+            raise TimeoutError(str(exc)) from exc
+        raise ConnectionError(str(exc)) from exc
+    except OSError as exc:
         raise ConnectionError(str(exc)) from exc

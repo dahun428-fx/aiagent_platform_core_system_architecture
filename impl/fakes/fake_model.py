@@ -1,14 +1,17 @@
 """가짜 모델 서버: Agent Gateway 모델 경로 뒤에 있는 upstream 역할. 실제 모델도, 비밀정보도 없다.
 
 POST /v1/chat      {"messages": [...]} → {"content": "mock:<마지막 메시지>", "usage": {...}}
-GET  /_stats       → {"calls": n}   지금까지 /v1/chat 이 불린 횟수 (시나리오 판정용)
-POST /_reset       → {"calls": 0}   횟수를 0으로 되돌린다
-다음 조각부터 여기에 실패 주입(지연, 5xx, 연결 끊김, 깨진 응답)을 넣는다.
+GET  /_stats       → {"calls": n, "disconnects": n}   /v1/chat 호출 횟수, 답하기 전에 호출자가 연결을 끊은 횟수 (시나리오 판정용)
+POST /_reset       {"delayMs": n}(선택) → 횟수를 0으로 되돌리고, 이번 시나리오의 고장을 정한다. 본문이 비면 고장 없음
+고장 주입은 지금 지연(delayMs)뿐이다. 5xx·연결 끊김·깨진 응답은 S3에서 더한다.
 """
 from __future__ import annotations
 
+import select
+import socket
 import sys
 import threading
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -16,10 +19,12 @@ from common import JsonHandler, serve  # noqa: E402
 
 
 class State:
-    """호출 횟수. 요청 스레드 여러 개가 동시에 올리므로 lock으로 보호한다."""
+    """호출 횟수, 끊긴 횟수, 주입할 고장. 요청 스레드 여러 개가 동시에 쓰므로 lock으로 보호한다."""
 
     def __init__(self):
         self.calls = 0
+        self.disconnects = 0
+        self.fault = {}
         self.lock = threading.Lock()
 
 
@@ -31,7 +36,8 @@ def make_server(port=0):
         # GET: 호출 횟수 조회와 기동 확인.
         def do_GET(self):
             if self.path == "/_stats":
-                self.send_json(200, {"calls": state.calls})
+                with state.lock:
+                    self.send_json(200, {"calls": state.calls, "disconnects": state.disconnects})
             elif self.path == "/health/ready":
                 self.send_json(200, {"status": "ok"})
             else:
@@ -40,8 +46,10 @@ def make_server(port=0):
         # POST: 횟수 초기화, 또는 채팅 호출 한 번(마지막 메시지 앞에 "mock:"을 붙여 돌려준다).
         def do_POST(self):
             if self.path == "/_reset":
+                fault = self.read_json() if int(self.headers.get("Content-Length", "0")) else {}
                 with state.lock:
-                    state.calls = 0
+                    state.calls = state.disconnects = 0
+                    state.fault = fault
                 self.send_json(200, {"calls": 0})
                 return
             if self.path != "/v1/chat":
@@ -55,9 +63,27 @@ def make_server(port=0):
                 return
             with state.lock:
                 state.calls += 1
+                delay = state.fault.get("delayMs", 0) / 1000
+            # 지연 고장: 답하기 전에 기다린다. 그 사이 호출자가 연결을 끊으면 세어 두고 답하지 않는다.
+            if delay and self.caller_hung_up_within(delay):
+                with state.lock:
+                    state.disconnects += 1
+                return
             out = "mock:" + text
             # 토큰 수는 단어 수로 흉내 낸다.
             self.send_json(200, {"content": out, "usage": {"inputTokens": len(text.split()), "outputTokens": len(out.split())}})
+
+        # seconds 동안 기다리며, 그 사이 호출자가 연결을 닫았는지 본다. 닫힌 연결은 읽을 수 있게 되고 0바이트를 돌려준다.
+        def caller_hung_up_within(self, seconds):
+            end = time.monotonic() + seconds
+            while (left := end - time.monotonic()) > 0:
+                readable, _, _ = select.select([self.connection], [], [], left)
+                if readable:
+                    try:
+                        return self.connection.recv(1, socket.MSG_PEEK) == b""
+                    except OSError:  # Windows는 닫힌 연결을 오류(연결 재설정)로 알리기도 한다
+                        return True
+            return False
 
     return serve(Handler, port)
 
