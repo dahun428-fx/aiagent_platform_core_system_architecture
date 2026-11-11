@@ -16,6 +16,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from common import SIGNATURE_HEADER, call_json, load_ref, sign  # noqa: E402
+from gateway.tool_route import subject_digest  # noqa: E402
 from stack import Stack  # noqa: E402
 
 SCENARIOS = HERE / "scenarios.json"
@@ -60,9 +61,25 @@ def call_model_route(stack, req, trace, _nonce=None):
 # 예제 fixture(tool-invoke)에 시나리오의 toolId·version·arguments를 덮어쓴다.
 # 멱등성 키 = 시나리오의 idempotencyKey + 이번 실행의 nonce. 같은 시나리오 안의 단계들은 같은 키를 쓰고,
 # 시나리오를 다시 실행하면(DB가 남아 있어도) 새 키가 된다.
+# grant: {"scopes": [...], "resources": [...]} 는 identity(위임 단계 포함)와 policy에 scope·자원을 더한다(쓰기 도구용).
+# approval: 있으면 이 요청에 맞는 승인 기록을 만들어 도구 경로에 저장하고 approvalId를 붙인다. 안의 값은 승인에 덮어쓴다(예: 만료).
 def call_tool_route(stack, req, trace, nonce):
-    body = {**load_ref().load("tool-invoke"), "traceparent": trace, "idempotencyKey": req["idempotencyKey"] + "-" + nonce}
+    ref = load_ref()
+    body = {**ref.load("tool-invoke"), "traceparent": trace, "idempotencyKey": req["idempotencyKey"] + "-" + nonce}
     body.update({k: req[k] for k in ("toolId", "version", "arguments") if k in req})
+    grant = req.get("grant", {})
+    identity, policy = body["identity"], body["policy"]
+    identity["scopes"] = identity["scopes"] + grant.get("scopes", [])
+    for hop in identity["delegation"]:
+        hop["scopes"] = hop["scopes"] + grant.get("scopes", [])
+    policy["allowedScopes"] = policy["allowedScopes"] + grant.get("scopes", [])
+    policy["allowedResources"] = policy["allowedResources"] + grant.get("resources", [])
+    if "approval" in req:
+        approval = {**ref.load("approval"), "approvalId": "approval-" + nonce, "tenantId": identity["tenantId"],
+                    "invocationId": body["invocationId"], "subjectDigest": subject_digest(body),
+                    "policyVersion": policy["policyVersion"], **req["approval"]}
+        call_json("POST", stack.urls["tool-route"] + "/_approvals", approval)
+        body["approvalId"] = approval["approvalId"]
     headers = {"Idempotency-Key": body["idempotencyKey"], "traceparent": trace,
                SIGNATURE_HEADER: sign(stack.internal_key, body)}
     return call_json("POST", stack.urls["tool-route"] + "/v1/tool-invocations", body, headers)
