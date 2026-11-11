@@ -2,7 +2,7 @@
 
 [구현 로드맵](../docs/implementation-roadmap.md)의 조각을 실제 서비스로 만드는 코드다. 표준 패키지와 버전을 따로 매기며(`impl/VERSION`), 표준 패키지 ZIP과 checksums에는 포함하지 않는다.
 
-## 지금까지의 조각: S0 걷는 뼈대, S0b 시나리오 화면, S1 권한 거부, S2 timeout
+## 지금까지의 조각: S0 걷는 뼈대, S0b 시나리오 화면, S1 권한 거부, S2 timeout, S3 오류 매핑·읽기 재시도
 
 Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 세 프로세스를 거친다.
 
@@ -16,6 +16,8 @@ Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 
 모델 경로는 서명이 맞아도 호출마다 identity·policy를 다시 검사한다(scope, tenant, 정책 만료, 데이터 분류에 따른 provider 제한).
 
 Agent 호출마다 deadline이 있다. Platform APIs는 본문의 `execution.timeoutMs`와 앱이 보낸 `Request-Timeout-Ms` 헤더 중 짧은 쪽으로 deadline을 정하고, 모델 경로에 남은 시간을 `Request-Timeout-Ms`로 넘긴다. 모델 경로는 그 시간과 자체 상한(5초) 중 짧은 쪽만 upstream을 기다리고, 넘으면 upstream 연결을 끊고 504 `UPSTREAM_TIMEOUT`을 돌려준다([ADR-038](../adr/ADR-038.md)).
+
+upstream 실패는 시간 초과 504, 연결 실패 503 `UPSTREAM_UNAVAILABLE`, 5xx·깨진 응답 502 `UPSTREAM_ERROR`로 나눈다. 모델 호출은 외부에 남는 효과가 없는 읽기 호출이라 모델 경로가 deadline 안에서 최대 3회(0.05초, 0.1초 간격) 시도한다. 4xx와 시간 초과는 다시 시도하지 않는다. Platform APIs는 다시 시도하지 않고 모델 경로의 502·503·504를 그대로 전한다. 오류 응답에는 upstream 주소나 원문 오류를 넣지 않는다.
 
 ## 확인 방법
 
@@ -36,12 +38,12 @@ make scenarios                 # 같은 시나리오를 터미널 표로 실행�
 
 ## 시나리오 정의
 
-`impl/scenarios/scenarios.json` 하나를 `make scenarios`, 자동 테스트, 시나리오 화면(`impl/demo/`)이 함께 읽는다. 시나리오를 추가하면 세 곳에 동시에 나타난다. 시나리오는 요청과 기대값(상태 코드, 걸린 시간 범위 `elapsedMs`, 출력, 응답 필드, upstream 호출 횟수와 연결 끊김 횟수, 서비스별 감사 기록)을 담는다. `fault`에는 가짜 upstream에 심을 고장을 적는다(지금은 지연 `delayMs`). `request.headers`로 추가 헤더(예: `Request-Timeout-Ms`)를 보낸다. `"target": "model-route"`인 시나리오는 Platform을 건너뛰고 모델 경로에 직접 보내며, `sign`(서명 여부), `identity`·`policy`(예제 fixture에 덮어쓸 값), `afterSigning`(서명 뒤에 바꿀 값)으로 내부 구간을 흉내 낸다.
+`impl/scenarios/scenarios.json` 하나를 `make scenarios`, 자동 테스트, 시나리오 화면(`impl/demo/`)이 함께 읽는다. 시나리오를 추가하면 세 곳에 동시에 나타난다. 시나리오는 요청과 기대값(상태 코드, 걸린 시간 범위 `elapsedMs`, 출력, 응답 필드, upstream 호출 횟수와 연결 끊김 횟수, 서비스별 감사 기록)을 담는다. `fault`에는 가짜 upstream에 심을 고장을 적는다(지연 `delayMs`, 상태 코드 `status`, 연결 끊기 `drop`, 깨진 응답 `garbage`, 처음 n번만 실패 `failTimes`). `noInternalAddress`는 응답에 내부 주소가 없는지 본다. `request.headers`로 추가 헤더(예: `Request-Timeout-Ms`)를 보낸다. `"target": "model-route"`인 시나리오는 Platform을 건너뛰고 모델 경로에 직접 보내며, `sign`(서명 여부), `identity`·`policy`(예제 fixture에 덮어쓸 값), `afterSigning`(서명 뒤에 바꿀 값)으로 내부 구간을 흉내 낸다.
 
 ## 아직 하지 않은 것
 
 - 내부 구간 서명에 만료 시각이나 nonce가 없어, 가로챈 요청을 그대로 다시 보내면 통과한다. 3단계(Identity)에서 워크로드 토큰으로 바꾼다.
-- timeout 외의 upstream 실패는 아직 모두 503 `UPSTREAM_UNAVAILABLE`이다. 502 구분과 읽기 재시도는 S3에서 다룬다.
+- 재시도 backoff에 jitter가 없고 재시도 예산이 호출마다 따로다. upstream 단위 예산과 circuit breaker는 S4에서 다룬다.
 - timeout은 소켓 동작(연결, 읽기 한 번)마다 걸린다. 조금씩 흘려 보내는 upstream은 deadline을 넘길 수 있다. 실제 upstream을 붙일 때 전체 시간 상한을 둔다.
 - Platform APIs는 잘못된 `Request-Timeout-Ms` 값을 422로 거부하지 않고 무시한다(본문의 `timeoutMs`는 적용). 모델 경로는 422로 거부한다.
 - 도구 경로·Credential Broker·멱등성은 아직 참조 구현의 in-process 코드다.
