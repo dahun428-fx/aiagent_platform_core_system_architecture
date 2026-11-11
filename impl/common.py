@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]  # 저장소 루트
 KEY_ENV = "IMPL_INTERNAL_KEY"  # 내부 구간 서명에 쓰는 공유 비밀값을 담는 환경 변수 이름
+DATABASE_ENV = "IMPL_DATABASE_URL"  # 도구 경로 effect ledger가 쓰는 PostgreSQL 주소를 담는 환경 변수 이름
 SIGNATURE_HEADER = "X-Internal-Signature"
 TIMEOUT_HEADER = "Request-Timeout-Ms"  # 호출자에게 남은 시간(ms). 계약 0.2.0(ADR-038)
 MAX_BODY = 65536  # 요청 본문 최대 크기(64KB). 이보다 크면 거부한다.

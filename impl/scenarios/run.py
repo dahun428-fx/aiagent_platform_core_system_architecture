@@ -32,7 +32,7 @@ def new_traceparent():
 
 
 # 앱처럼 Platform APIs에 Agent 호출을 보낸다.
-def call_platform(stack, req, trace):
+def call_platform(stack, req, trace, _nonce=None):
     # Idempotency-Key 뒤에 무작위 값을 붙여서, 다시 실행해도 이전 결과(멱등성 캐시)가 돌아오지 않게 한다.
     headers = {"Authorization": req["authorization"], "Idempotency-Key": req["idempotencyKey"] + "-" + uuid.uuid4().hex[:8],
                "traceparent": trace, **req.get("headers", {})}
@@ -43,7 +43,7 @@ def call_platform(stack, req, trace):
 # Platform을 건너뛰고 모델 경로에 직접 model-request를 보낸다. 내부 구간에 끼어든 호출자를 흉내 낸다.
 # identity·policy는 예제 fixture에 시나리오의 값을 덮어써서 만든다.
 # sign: true면 스택의 키로 서명하고(기본), false면 서명을 빼며, afterSigning 의 값은 서명한 뒤에 본문에 덮어쓴다(변조).
-def call_model_route(stack, req, trace):
+def call_model_route(stack, req, trace, _nonce=None):
     ref = load_ref()
     body = {"capability": "chat", "messages": [{"role": "user", "content": "hello"}],
             "identity": {**ref.load("identity"), **req.get("identity", {})},
@@ -54,6 +54,21 @@ def call_model_route(stack, req, trace):
     for part, values in req.get("afterSigning", {}).items():
         body[part] = {**body[part], **values}
     return call_json("POST", stack.urls["model-route"] + "/v1/model-invocations", body, headers)
+
+
+# Platform을 건너뛰고 도구 경로에 직접 tool-invoke를 보낸다. Runtime이 보내는 요청을 흉내 낸다.
+# 예제 fixture(tool-invoke)에 시나리오의 toolId·version·arguments를 덮어쓴다.
+# 멱등성 키 = 시나리오의 idempotencyKey + 이번 실행의 nonce. 같은 시나리오 안의 단계들은 같은 키를 쓰고,
+# 시나리오를 다시 실행하면(DB가 남아 있어도) 새 키가 된다.
+def call_tool_route(stack, req, trace, nonce):
+    body = {**load_ref().load("tool-invoke"), "traceparent": trace, "idempotencyKey": req["idempotencyKey"] + "-" + nonce}
+    body.update({k: req[k] for k in ("toolId", "version", "arguments") if k in req})
+    headers = {"Idempotency-Key": body["idempotencyKey"], "traceparent": trace,
+               SIGNATURE_HEADER: sign(stack.internal_key, body)}
+    return call_json("POST", stack.urls["tool-route"] + "/v1/tool-invocations", body, headers)
+
+
+SENDERS = {"model-route": call_model_route, "tool-route": call_tool_route}
 
 
 # 서비스의 감사 기록 중 이번 trace id로 남은 것만 돌려준다. 다른 요청의 기록과 섞이지 않게 한다.
@@ -76,7 +91,8 @@ def disconnects(stack, service, expected):
 
 
 # 시나리오의 단계 목록. steps가 없으면 fault·expect로 된 한 단계짜리 시나리오다.
-# 단계마다: fault(이 단계의 고장), waitMs(보내기 전 대기), repeat(같은 요청을 몇 번 보낼지), expect(마지막 응답의 기대값)
+# 단계마다: fault(이 단계의 고장), restart(보내기 전에 재시작할 서비스), waitMs(보내기 전 대기),
+#          request(이 단계에서 요청에 덮어쓸 값), repeat(같은 요청을 몇 번 보낼지), expect(마지막 응답의 기대값)
 def scenario_steps(scenario):
     return scenario.get("steps") or [{"fault": scenario.get("fault", {}), "expect": scenario["expect"]}]
 
@@ -86,18 +102,23 @@ def run_scenario(stack, scenario):
     req = scenario["request"]
     # 모델 경로의 circuit breaker·rate limit을 처음 상태로 되돌려, 앞 시나리오의 실패가 이 시나리오에 번지지 않게 한다.
     call_json("POST", stack.urls["model-route"] + "/_reset", {})
-    # target 이 model-route 면 모델 경로에 직접, 아니면 Platform APIs로 보낸다.
-    send = call_model_route if req.get("target") == "model-route" else call_platform
+    # target 이 model-route·tool-route 면 그 경로에 직접, 아니면 Platform APIs로 보낸다.
+    send = SENDERS.get(req.get("target"), call_platform)
+    nonce = uuid.uuid4().hex[:8]
     steps = scenario_steps(scenario)
     checks, audit = [], {}
     for number, step in enumerate(steps, 1):
         # 가짜 모델의 호출 횟수를 0으로 맞춰서 이 단계가 부른 횟수만 세게 하고, 이 단계의 고장(fault)을 심는다.
-        call_json("POST", stack.urls["fake-model"] + "/_reset", step.get("fault", {}).get("fake-model", {}))
+        for fake in ("fake-model", "fake-tool"):
+            call_json("POST", stack.urls[fake] + "/_reset", step.get("fault", {}).get(fake, {}))
+        if step.get("restart"):
+            stack.restart(step["restart"])
         time.sleep(step.get("waitMs", 0) / 1000)
+        step_req = {**req, **step.get("request", {})}
         for _ in range(step.get("repeat", 1)):
             trace = new_traceparent()
             started = time.monotonic()
-            status, resp_headers, body = send(stack, req, trace)
+            status, resp_headers, body = send(stack, step_req, trace, nonce)
             elapsed_ms = round((time.monotonic() - started) * 1000)
         prefix = f"{number}단계 " if len(steps) > 1 else ""
         audit = {}
