@@ -50,14 +50,17 @@ class TempPostgres:
 
     def __init__(self):
         self.bin = postgres_bin()
-        self.dir = tempfile.TemporaryDirectory(prefix="impl-pg-", ignore_cleanup_errors=True)
-        self.data = Path(self.dir.name) / "data"
+        # 임시 폴더를 mkdtemp(권한 0o700)로 만들지 않는다. Windows에서 그 권한은 관리자 그룹에만 열리는데,
+        # initdb는 관리자 권한을 뺀 채로 돌아서 그 안에 data 폴더를 만들지 못한다. 기본 권한으로 직접 만든다.
+        self.root = Path(tempfile.gettempdir()) / f"impl-pg-{secrets.token_hex(6)}"
+        self.root.mkdir()
+        self.data = self.root / "data"
         port = free_port()
         self.run("initdb", "-D", str(self.data), "-U", "impl", "--auth=trust", "-E", "UTF8")
         # 유닉스 소켓을 끄고 TCP 루프백만 연다. 설정 파일에 적으면 운영체제마다 다른 명령줄 따옴표 규칙을 피할 수 있다.
         with open(self.data / "postgresql.conf", "a", encoding="utf-8") as conf:
             conf.write(f"\nport = {port}\nlisten_addresses = '127.0.0.1'\nunix_socket_directories = ''\nfsync = off\n")
-        self.run("pg_ctl", "-D", str(self.data), "-l", str(Path(self.dir.name) / "log"), "-w", "start")
+        self.run("pg_ctl", "-D", str(self.data), "-l", str(self.root / "log"), "-w", "start")
         self.url = f"postgresql://impl@127.0.0.1:{port}/postgres"
 
     # PostgreSQL 명령 하나를 실행한다. 실패하면 출력을 담아 알린다.
@@ -71,7 +74,7 @@ class TempPostgres:
         try:
             self.run("pg_ctl", "-D", str(self.data), "-m", "fast", "-w", "stop")
         finally:
-            self.dir.cleanup()
+            shutil.rmtree(self.root, ignore_errors=True)
 
 
 class Stack:
