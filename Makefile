@@ -4,9 +4,16 @@ PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 .PHONY: setup scenarios stack test-impl
 
 # Create .venv and install the Python dependencies (jsonschema and friends).
+# Uses uv when it is installed. Otherwise venv and ensurepip run as separate steps so a pip bootstrap
+# failure shows its real error instead of venv's one-line summary.
 setup:
-	python3 -m venv .venv
-	.venv/bin/python -m pip install -r requirements-dev.txt
+	@if command -v uv >/dev/null 2>&1; then \
+		uv venv --clear .venv && uv pip install --python .venv/bin/python -r requirements-dev.txt; \
+	else \
+		python3 -m venv --clear --without-pip .venv && \
+		.venv/bin/python -m ensurepip --upgrade --default-pip && \
+		.venv/bin/python -m pip install -r requirements-dev.txt; \
+	fi
 
 # Run every scenario against a fresh local stack and print the pass/fail table.
 scenarios:

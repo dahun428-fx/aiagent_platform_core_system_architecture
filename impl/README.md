@@ -16,7 +16,7 @@ Agent Gateway 모델 경로를 별도 HTTP 서비스로 분리했다. 요청은 
 ## 확인 방법
 
 ```sh
-make setup                     # 처음 한 번: .venv 생성 + requirements-dev.txt 설치(jsonschema 등)
+make setup                     # 처음 한 번: .venv 생성 + requirements-dev.txt 설치(uv가 있으면 uv 사용)
 make scenarios                 # .venv가 있으면 그 Python을 자동으로 쓴다
 ```
 
