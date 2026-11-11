@@ -30,6 +30,14 @@ class ScenarioTests(unittest.TestCase):
                 failed = [c for c in result["checks"] if not c["passed"]]
                 self.assertEqual(failed, [], scenario["title"])
 
+    # 동시 실행 시나리오는 타이밍에 따라 결과가 갈릴 수 있으므로 10번 반복해서 매번 실제 실행이 1번인지 본다.
+    def test_concurrent_scenarios_repeat(self):
+        for scenario in [s for s in run.load_scenarios() if any(st.get("concurrent") for st in s.get("steps", []))]:
+            for attempt in range(10):
+                with self.subTest(scenario["id"], attempt=attempt):
+                    result = run.run_scenario(self.stack, scenario)
+                    self.assertEqual([c for c in result["checks"] if not c["passed"]], [], scenario["title"])
+
     # 모델 경로에 Idempotency-Key 없이 보내면 422 Problem이고, 요청의 trace id가 그대로 담겨야 한다.
     def test_model_route_rejects_missing_idempotency_key(self):
         ref = load_ref()

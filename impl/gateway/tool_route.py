@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import (DATABASE_ENV, KEY_ENV, SIGNATURE_HEADER, TIMEOUT_HEADER, JsonHandler, ResponseLost,  # noqa: E402
                     call_json, load_ref, serve, sign)
 from ledger import EffectLedger  # noqa: E402
-from model_route import upstream_budget  # noqa: E402
+from model_route import UPSTREAM_TIMEOUT_S, upstream_budget  # noqa: E402
 
 ref = load_ref()
 # 이 도구 경로에 등록된 도구: 예제 fixture의 tool-search 0.1.0(읽기)과, 같은 모양의 쓰기 도구 tool-ticket 0.1.0.
@@ -40,6 +40,17 @@ TOOLS = {(d["toolId"], d["version"]): d for d in [SEARCH, TICKET]}
 UPSTREAM_PATHS = {"tool-search": "/v1/search", "tool-ticket": "/v1/tickets"}
 # unknown_outcome 결과에 넣는 설명(tool-result 계약상 output.content가 비어 있으면 안 된다)
 UNKNOWN_CONTENT = "Tool upstream response was lost; the write may or may not have happened and was not retried"
+# 이보다 오래된 pending은 실행하던 프로세스가 죽은 것으로 본다. 살아 있는 실행은 upstream을 UPSTREAM_TIMEOUT_S보다
+# 오래 기다리지 않으므로, 그 위에 1초 여유를 둔다.
+PENDING_STALE_S = UPSTREAM_TIMEOUT_S + 1
+
+
+# tool-result 하나를 만든다(succeeded 또는 unknown_outcome).
+def tool_result(body, trace, status, content):
+    out = {"invocationId": body["invocationId"], "toolId": body["toolId"], "status": status,
+           "output": {"content": content}, "traceparent": trace}
+    ref.validate("tool-result", out)
+    return out
 
 
 # 승인이 가리키는 대상(subjectDigest): 어떤 도구(이름·버전)를 어떤 인자로 부르는가.
@@ -129,13 +140,24 @@ class ToolRoute:
         ledger_key = (identity["tenantId"], identity.get("principalId", identity["workloadId"]), identity["agentId"],
                       body["toolId"], body["version"], body["idempotencyKey"])
         digest = ref.canonical_digest({"arguments": body["arguments"], "resource": tool["resource"]})
-        state, stored = self.ledger.claim(ledger_key, digest)
+        state, stored = self.ledger.claim(ledger_key, digest, PENDING_STALE_S)
+        # 실행하던 프로세스가 죽어 pending이 오래 남았다. 쓰기는 실행됐는지 모르므로 unknown_outcome으로 확정하고,
+        # 읽기는 줄을 지우고 다시 claim한다(다시 실행해도 외부에 남는 효과가 없다).
+        if state == "stale" and tool["effect"] == "write":
+            result = tool_result(body, trace, "unknown_outcome", UNKNOWN_CONTENT)
+            self.ledger.finish(ledger_key, result)
+            self.record("tool-gateway", trace, {"toolId": body["toolId"], "tenantId": identity["tenantId"],
+                                                "outcome": "unknown_outcome"})
+            return result
+        if state == "stale":
+            self.ledger.release_stale(ledger_key, stored)
+            state, stored = self.ledger.claim(ledger_key, digest, PENDING_STALE_S)
         if state == "conflict":
             raise ref.Fault(409, "CONFLICT", "Idempotency key reused for different request")
         if state == "done":
             self.record("tool-gateway", trace, {"toolId": body["toolId"], "tenantId": identity["tenantId"], "outcome": "replayed"})
             return {**stored, "traceparent": trace}
-        if state == "pending":
+        if state in ("pending", "stale"):  # 다시 claim해도 stale이면(거의 없는 경우) 처리 중으로 답한다
             return None
         # 5) 이 요청이 실행 권리를 얻었다. upstream이 요청을 받지 못한 것이 확실한 실패면 줄을 지워(release)
         #    같은 키로 다시 시도할 수 있게 한다. 쓰기 도구의 응답을 잃은 경우는 execute가 unknown_outcome 결과를 돌려준다.
@@ -163,19 +185,12 @@ class ToolRoute:
         self.broker.consume(lease["credentialRef"], identity["workloadId"], body["invocationId"], tool["resource"])
         write = tool["effect"] == "write"
 
-        # 결과 하나를 만든다(succeeded 또는 unknown_outcome).
-        def result(status, content):
-            out = {"invocationId": body["invocationId"], "toolId": body["toolId"], "status": status,
-                   "output": {"content": content}, "traceparent": trace}
-            ref.validate("tool-result", out)
-            return out
-
         try:
             status, _, out = call_json("POST", self.upstream + UPSTREAM_PATHS[body["toolId"]], body["arguments"],
                                        timeout=budget)
         except (TimeoutError, ResponseLost, ValueError) as exc:
             if write:
-                return result("unknown_outcome", UNKNOWN_CONTENT)
+                return tool_result(body, trace, "unknown_outcome", UNKNOWN_CONTENT)
             if isinstance(exc, TimeoutError):
                 raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Tool upstream timed out") from None
             if isinstance(exc, ResponseLost):
@@ -190,9 +205,9 @@ class ToolRoute:
             ref.validate("tool-output", output)
         except (KeyError, TypeError, ref.Fault):
             if write:
-                return result("unknown_outcome", UNKNOWN_CONTENT)
+                return tool_result(body, trace, "unknown_outcome", UNKNOWN_CONTENT)
             raise ref.Fault(502, "UPSTREAM_ERROR", "Tool upstream returned an invalid response") from None
-        return result("succeeded", output["content"])
+        return tool_result(body, trace, "succeeded", output["content"])
 
 
 # HTTP 서버를 만든다. port 0이면 OS가 빈 포트를 골라 준다.
