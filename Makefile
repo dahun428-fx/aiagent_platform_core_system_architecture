@@ -1,7 +1,7 @@
 # Uses .venv/bin/python when `make setup` has created it, otherwise python3. Override with PYTHON=...
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
-.PHONY: setup scenarios stack test-impl
+.PHONY: setup scenarios demo stack test-impl
 
 # Create .venv and install the Python dependencies (jsonschema and friends).
 # Uses uv when it is installed. Otherwise venv and ensurepip run as separate steps so a pip bootstrap
@@ -18,6 +18,10 @@ setup:
 # Run every scenario against a fresh local stack and print the pass/fail table.
 scenarios:
 	$(PYTHON) impl/scenarios/run.py
+
+# Start the stack and open the scenario page in the browser (http://127.0.0.1:8700).
+demo:
+	$(PYTHON) impl/demo/server.py
 
 # Keep the local stack up (fake model, Agent Gateway model route, Platform APIs).
 stack:
