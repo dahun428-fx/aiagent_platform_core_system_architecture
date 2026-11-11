@@ -1,12 +1,12 @@
-"""Scenario page: start the local stack, serve one static HTML page, and run scenarios from the browser.
+"""시나리오 화면: 로컬 스택을 띄우고, 정적 HTML 한 장을 제공하고, 브라우저에서 시나리오를 실행하게 한다.
 
-python impl/demo/server.py            http://127.0.0.1:8700 (opens the browser)
-python impl/demo/server.py --port 0   any free port; --no-open to skip the browser
+python impl/demo/server.py            http://127.0.0.1:8700 (브라우저를 연다)
+python impl/demo/server.py --port 0   빈 포트 사용. --no-open 이면 브라우저를 열지 않는다
 
-GET  /                 the page (impl/demo/index.html)
-GET  /api/scenarios    scenario definitions from impl/scenarios/scenarios.json and the service URLs
-POST /api/run          {"id": "<scenario id>"} runs one scenario, {} runs all; returns the same results as run.py --json
-Binds to 127.0.0.1 only. Scenarios run one at a time because they reset and read the shared fake upstream counters.
+GET  /                 화면 (impl/demo/index.html)
+GET  /api/scenarios    scenarios.json 의 시나리오 정의와 서비스별 주소
+POST /api/run          {"id": "<시나리오 id>"} 는 하나만, {} 는 전부 실행한다. 결과 모양은 run.py --json 과 같다
+127.0.0.1 에만 바인딩한다. 시나리오는 가짜 upstream 의 호출 횟수를 초기화하고 읽으므로 한 번에 하나씩만 실행한다.
 """
 from __future__ import annotations
 
@@ -27,10 +27,12 @@ from stack import Stack  # noqa: E402
 PAGE = HERE / "index.html"
 
 
+# 화면 서버를 만든다. 이미 떠 있는 stack 을 받아서, 시나리오 실행을 그 스택에 보낸다.
 def make_server(stack, port=8700, scenarios_path=run.SCENARIOS):
-    lock = threading.Lock()
+    lock = threading.Lock()  # 동시에 두 실행이 들어와도 차례로 돌게 한다
 
     class Handler(JsonHandler):
+        # GET: 화면 HTML, 시나리오 목록, 기동 확인.
         def do_GET(self):
             if self.path in ("/", "/index.html"):
                 raw = PAGE.read_bytes()
@@ -48,6 +50,7 @@ def make_server(stack, port=8700, scenarios_path=run.SCENARIOS):
             else:
                 self.send_json(404, {"detail": "not found"})
 
+        # POST /api/run: 요청한 시나리오(없으면 전부)를 run.run_scenario 로 실행해 결과를 돌려준다.
         def do_POST(self):
             if self.path != "/api/run":
                 self.send_json(404, {"detail": "not found"})
@@ -72,6 +75,7 @@ def make_server(stack, port=8700, scenarios_path=run.SCENARIOS):
     return serve(Handler, port)
 
 
+# make demo 의 진입점: 스택을 띄우고, 화면 서버를 열고, 브라우저를 띄운다. Ctrl-C 로 둘 다 끈다.
 def main(argv=None):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
