@@ -43,7 +43,7 @@ class DemoServerTests(unittest.TestCase):
         status, _, data = call_json("GET", self.url + "/api/scenarios")
         self.assertEqual(status, 200)
         self.assertEqual([s["id"] for s in data["scenarios"]], [s["id"] for s in run.load_scenarios()])
-        self.assertEqual(set(data["services"]), {"fake-model", "model-route", "platform-api"})
+        self.assertEqual(set(data["services"]), {"fake-model", "fake-tool", "model-route", "tool-route", "platform-api"})
 
     # /api/run 으로 전부 실행하면 모두 초록이어야 한다.
     def test_run_all_is_green(self):

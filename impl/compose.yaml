@@ -1,0 +1,12 @@
+# 로컬 PostgreSQL (도구 경로의 effect ledger용). `make db`로 띄운다.
+# 띄운 뒤 IMPL_DATABASE_URL=postgresql://impl:impl@127.0.0.1:55432/impl 를 주면 stack.py가 임시 DB 대신 이 DB를 쓴다.
+# 로컬 확인용 비밀번호다. 운영에서는 쓰지 않는다.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: impl
+      POSTGRES_PASSWORD: impl
+      POSTGRES_DB: impl
+    ports:
+      - "127.0.0.1:55432:5432"

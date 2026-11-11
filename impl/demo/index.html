@@ -39,7 +39,7 @@ button:disabled { opacity: .55; cursor: progress; }
 .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
 .hop { flex: 1 1 180px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 .hop b { display: block; font-size: 14px; }
-.hop span { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+.hop span { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; white-space: pre-line; }
 .arrow { align-self: center; color: var(--muted); }
 .card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .card-head h2 { flex: 1 1 200px; }
@@ -119,13 +119,13 @@ function renderSummary() {
   box.replaceChildren(...pills);
 }
 
-// 요청 경로 띠: 클라이언트 → Platform APIs → 모델 경로 → 가짜 모델, 서비스별 실제 주소 표시
+// 요청 경로 띠: 클라이언트 → Platform APIs → Gateway 모델·도구 경로 → 가짜 모델·도구, 서비스별 실제 주소 표시
 function renderFlow(services) {
   const hops = [
     ["클라이언트", "이 화면 / make scenarios"],
     ["Platform APIs + Runtime", services["platform-api"]],
-    ["Agent Gateway 모델 경로", services["model-route"]],
-    ["가짜 모델", services["fake-model"]],
+    ["Agent Gateway", `모델 경로 ${services["model-route"] || ""}\n도구 경로 ${services["tool-route"] || ""} + PostgreSQL`],
+    ["가짜 upstream", `모델 ${services["fake-model"] || ""}\n도구 ${services["fake-tool"] || ""}`],
   ];
   const parts = [];
   hops.forEach(([name, where], i) => {
@@ -151,6 +151,12 @@ function requestSummary(s) {
     return el("div", { class: "meta" }, "요청 ", el("code", {}, "POST /v1/model-invocations"),
       " (Platform을 건너뛰고 모델 경로에 직접) · ", bits.join(" · ") + tail);
   }
+  // 도구 경로 직접 호출: 도구 이름·버전·인자와 멱등성 키
+  if (r.target === "tool-route") {
+    return el("div", { class: "meta" }, "요청 ", el("code", {}, "POST /v1/tool-invocations"),
+      " (Platform을 건너뛰고 도구 경로에 직접) · 도구 ", el("code", {}, `${r.toolId} ${r.version}`),
+      " · 인자 ", el("code", {}, JSON.stringify(r.arguments)), " · 멱등성 키 ", el("code", {}, r.idempotencyKey + "-<실행마다 새 값>"), tail);
+  }
   const b = r.body || {};
   return el("div", { class: "meta" },
     "요청 ", el("code", {}, `POST /v1/agents/${r.agentId}/invocations`),
@@ -167,7 +173,9 @@ function expectSummary(s) {
   return el("div", {}, ...s.steps.map((st, i) => {
     const how = [];
     for (const [svc, f] of Object.entries(st.fault || {})) how.push(`고장 ${svc} ${JSON.stringify(f)}`);
+    if (st.restart) how.push(`${st.restart} 재시작 뒤`);
     if (st.waitMs) how.push(`${st.waitMs}ms 기다린 뒤`);
+    if (st.request) how.push(`요청 바꿈 ${JSON.stringify(st.request)}`);
     how.push(`${st.repeat || 1}번 보냄`);
     return el("div", { class: "meta" }, `${i + 1}단계 `, how.join(" · "), " → 기대 ", expectBits(st.expect).join(" · "));
   }));

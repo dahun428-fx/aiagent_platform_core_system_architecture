@@ -634,6 +634,172 @@
           }
         }
       ]
+    },
+    {
+      "id": "tool-agent",
+      "title": "도구 쓰는 Agent",
+      "slice": "S5",
+      "request": {
+        "agentId": "my-tool-agent",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-tool-agent",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        }
+      },
+      "expect": {
+        "status": 200,
+        "outputContent": "mock:Summarize: tool:hello",
+        "upstreamCalls": {
+          "fake-model": 1,
+          "fake-tool": 1
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": [
+            "model-gateway"
+          ],
+          "tool-route": [
+            "credential-broker",
+            "tool-gateway"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tool-replay-after-restart",
+      "title": "재시작 후 같은 키",
+      "slice": "S5",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-search",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-tool-replay-after-restart"
+      },
+      "steps": [
+        {
+          "expect": {
+            "status": 200,
+            "outputContent": "tool:hello",
+            "upstreamCalls": {
+              "fake-tool": 1
+            },
+            "auditFields": {
+              "tool-route": {
+                "outcome": "executed"
+              }
+            }
+          }
+        },
+        {
+          "restart": "tool-route",
+          "expect": {
+            "status": 200,
+            "outputContent": "tool:hello",
+            "upstreamCalls": {
+              "fake-tool": 0
+            },
+            "auditFields": {
+              "tool-route": {
+                "outcome": "replayed"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "tool-key-conflict",
+      "title": "같은 키 다른 인자",
+      "slice": "S5",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-search",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-tool-key-conflict"
+      },
+      "steps": [
+        {
+          "expect": {
+            "status": 200,
+            "outputContent": "tool:hello",
+            "upstreamCalls": {
+              "fake-tool": 1
+            },
+            "auditFields": {
+              "tool-route": {
+                "outcome": "executed"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "arguments": {
+              "query": "something else"
+            }
+          },
+          "expect": {
+            "status": 409,
+            "body": {
+              "code": "CONFLICT"
+            },
+            "upstreamCalls": {
+              "fake-tool": 0
+            },
+            "auditComponents": {
+              "tool-route": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "tool-not-approved",
+      "title": "미승인 도구",
+      "slice": "S5",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-unknown",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "idempotencyKey": "scenario-tool-not-approved"
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Tool not approved"
+        },
+        "upstreamCalls": {
+          "fake-tool": 0
+        },
+        "auditComponents": {
+          "tool-route": []
+        }
+      }
     }
   ]
 }

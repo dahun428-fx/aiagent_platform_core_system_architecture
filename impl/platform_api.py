@@ -1,10 +1,10 @@
-"""참조 구현의 Agent Platform APIs + Runtime을 그대로 띄우되, 모델 호출만 별도 Agent Gateway 모델 경로 서비스로
-HTTP를 거쳐 보내도록 바꾼다.
+"""참조 구현의 Agent Platform APIs + Runtime을 그대로 띄우되, 모델·도구 호출을 별도 Agent Gateway 서비스
+(모델 경로, 도구 경로)로 HTTP를 거쳐 보내도록 바꾼다.
 
 모델 경로로 가는 요청에는 공유 비밀값(환경 변수 IMPL_INTERNAL_KEY)으로 만든 서명을 붙인다.
 Agent 호출마다 deadline을 정한다: 요청 본문의 execution.timeoutMs와 앱이 보낸 Request-Timeout-Ms 중 짧은 쪽.
 모델 경로에는 남은 시간을 Request-Timeout-Ms로 넘기고, 시간이 다 되면 504 UPSTREAM_TIMEOUT.
-네트워크 경계를 넘는 것은 아직 모델 경로뿐이다. 도구 경로와 Credential Broker는 아직 같은 프로세스 안에 있다.
+Credential Broker는 아직 도구 경로 프로세스 안에 있다(네트워크 분리는 후속 조각).
 GET /_audit 은 이 프로세스의 감사 기록을 돌려준다 (로컬 시나리오 확인용).
 """
 from __future__ import annotations
@@ -45,6 +45,39 @@ def deadline_for(body, header_value):
     return time.monotonic() + min(limits) / 1000 if limits else None
 
 
+# Gateway의 한 경로(모델·도구)에 서명한 요청을 보내고 (상태, 헤더, 본문)을 돌려준다. 두 경로가 함께 쓰는 부분:
+#   남은 시간을 Request-Timeout-Ms로 넘기고(이미 다 썼으면 보내지 않고 504), 연결 실패는 503, 시간 초과는 504.
+#   정책 거부 403과 Gateway가 정한 upstream 실패(429·502·503·504)는 같은 상태로 전하고, Retry-After도 앱 응답까지 전한다.
+# 재시도는 Gateway가 이미 했으므로 여기서는 다시 시도하지 않는다(단계마다 재시도하면 횟수가 곱해진다).
+def post_signed(url, body, key, traceparent, idempotency_key, name):
+    # 본문 전체에 서명해서, Gateway가 identity·policy가 중간에 바뀌지 않았음을 확인할 수 있게 한다.
+    headers = {"traceparent": traceparent, "Idempotency-Key": idempotency_key, SIGNATURE_HEADER: sign(key, body)}
+    deadline = getattr(current, "deadline", None)
+    left = None if deadline is None else deadline - time.monotonic()
+    if left is not None and left * 1000 < 1:
+        raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Invocation deadline exceeded")
+    if left is not None:
+        headers[TIMEOUT_HEADER] = str(int(left * 1000))
+    try:
+        # Gateway가 남은 시간에 맞춰 먼저 504를 줄 수 있도록 여기서는 조금 더(ANSWER_MARGIN_S) 기다린다.
+        status, resp_headers, out = call_json("POST", url, body, headers,
+                                              timeout=(left if left is not None else 5.0) + ANSWER_MARGIN_S)
+    except TimeoutError:
+        raise ref.Fault(504, "UPSTREAM_TIMEOUT", f"Agent Gateway {name} route timed out") from None
+    except ConnectionError:
+        raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", f"Agent Gateway {name} route unreachable") from None
+    if status == 403:
+        raise ref.Fault(403, "FORBIDDEN", "Policy denied")
+    if status in UPSTREAM_FAULTS:
+        # Gateway가 준 Retry-After(초)를 앱 응답까지 전한다. 아래 Handler.end_headers가 헤더로 붙인다.
+        retry_after = {k.lower(): v for k, v in resp_headers.items()}.get("retry-after")
+        if retry_after and retry_after.isascii() and retry_after.isdigit():
+            current.retry_after = retry_after
+        detail = "Rate limit exceeded" if status == 429 else f"{name.capitalize()} upstream failed"
+        raise ref.Fault(status, UPSTREAM_FAULTS[status], detail)
+    return status, out
+
+
 class HttpModelRoute:
     """ref.ModelGateway.invoke 와 같은 모양의 함수를 HTTP로 구현한다. 오류 응답은 다시 ref.Fault 로 바꾼다.
 
@@ -59,38 +92,11 @@ class HttpModelRoute:
     def invoke(self, content, identity, policy, traceparent):
         body = {"capability": "chat", "messages": [{"role": "user", "content": content}],
                 "identity": identity, "policy": policy, "traceparent": traceparent}
-        # shortcut: 모델 호출마다 새 키를 만들어서 앱이 재시도해도 여기서는 중복이 걸러지지 않는다. S5에서 앱 키로부터 만든다.
-        # 본문 전체에 서명해서, 모델 경로가 identity·policy가 중간에 바뀌지 않았음을 확인할 수 있게 한다.
-        headers = {"traceparent": traceparent, "Idempotency-Key": "model-" + uuid.uuid4().hex,
-                   SIGNATURE_HEADER: sign(self.key, body)}
-        # 남은 시간을 계산해 모델 경로에 넘긴다. 이미 다 썼으면 모델 경로를 부르지 않고 바로 504.
-        deadline = getattr(current, "deadline", None)
-        left = None if deadline is None else deadline - time.monotonic()
-        if left is not None and left * 1000 < 1:
-            raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Invocation deadline exceeded")
-        if left is not None:
-            headers[TIMEOUT_HEADER] = str(int(left * 1000))
-        try:
-            status, resp_headers, out = call_json("POST", self.base_url + "/v1/model-invocations", body, headers,
-                                       timeout=(left if left is not None else 5.0) + ANSWER_MARGIN_S)
-        except TimeoutError:
-            # 모델 경로마저 시간 안에 답하지 않은 경우. 연결은 여기서 끊긴다.
-            raise ref.Fault(504, "UPSTREAM_TIMEOUT", "Agent Gateway model route timed out") from None
-        except ConnectionError:
-            # 모델 경로 서비스에 연결조차 안 되는 경우
-            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Agent Gateway model route unreachable") from None
-        # 정책 거부(403)만 호출자 책임이다. 모델 경로가 정한 upstream 실패(502·503·504)는 같은 상태로 전한다.
+        # shortcut: 모델 호출마다 새 키를 만들어서 앱이 재시도해도 여기서는 중복이 걸러지지 않는다.
+        #           모델 호출은 외부 효과가 없어 지금은 문제가 없다. 비용 중복을 막아야 할 때 앱 키로부터 만든다.
+        status, out = post_signed(self.base_url + "/v1/model-invocations", body, self.key, traceparent,
+                                  "model-" + uuid.uuid4().hex, "model")
         # 모델 경로의 그 밖의 응답(4xx, 500, 계약에 안 맞는 200)은 우리 쪽 upstream이 잘못 답한 것이므로 502.
-        # 재시도는 모델 경로가 이미 했으므로 여기서는 다시 시도하지 않는다(단계마다 재시도하면 횟수가 곱해진다).
-        if status == 403:
-            raise ref.Fault(403, "FORBIDDEN", "Policy denied")
-        if status in UPSTREAM_FAULTS:
-            # 모델 경로가 준 Retry-After(초)를 앱 응답까지 전한다. 아래 Handler.end_headers가 헤더로 붙인다.
-            retry_after = {k.lower(): v for k, v in resp_headers.items()}.get("retry-after")
-            if retry_after and retry_after.isascii() and retry_after.isdigit():
-                current.retry_after = retry_after
-            detail = "Rate limit exceeded" if status == 429 else "Model upstream failed"
-            raise ref.Fault(status, UPSTREAM_FAULTS[status], detail)
         if status != 200:
             raise ref.Fault(502, "UPSTREAM_ERROR", "Model route failed")
         try:
@@ -100,14 +106,46 @@ class HttpModelRoute:
         return out
 
 
-# 참조 구현 서버를 만들고, 모델 호출 부분만 HttpModelRoute로 교체한다.
-def make_server(gateway_url, key, port=0):
-    server = ref.make_server(port)
+class HttpToolRoute:
+    """ref.ToolGateway.invoke 와 같은 모양의 함수를 HTTP로 구현한다. Runtime이 만든 tool-invoke를 그대로 도구 경로로 보낸다.
+
+    Runtime은 앱의 Idempotency-Key에 ":tool-<순번>"을 붙여 도구 호출 키를 만들므로, 앱이 같은 키로 다시 보내면
+    도구 경로의 effect ledger가 같은 키를 보고 도구를 다시 실행하지 않는다.
+    """
+
+    def __init__(self, base_url, key):
+        self.base_url = base_url.rstrip("/")
+        self.key = key  # 도구 경로와 공유하는 서명 키
+
+    def invoke(self, request):
+        status, out = post_signed(self.base_url + "/v1/tool-invocations", request, self.key, request["traceparent"],
+                                  request["idempotencyKey"], "tool")
+        # 같은 키를 다른 인자로 보냈으면 409를 그대로 전한다(호출자 책임).
+        if status == 409:
+            raise ref.Fault(409, "CONFLICT", "Idempotency key reused for different tool request")
+        # 같은 키 요청이 아직 실행 중(202). 동기 호출이라 기다릴 수 없으므로 잠시 뒤 다시 보내라고 알린다.
+        if status == 202:
+            current.retry_after = "1"
+            raise ref.Fault(503, "UPSTREAM_UNAVAILABLE", "Same tool request still in progress")
+        if status != 200:
+            raise ref.Fault(502, "UPSTREAM_ERROR", "Tool route failed")
+        try:
+            ref.validate("tool-result", out)
+        except ref.Fault:
+            raise ref.Fault(502, "UPSTREAM_ERROR", "Tool route returned an invalid result") from None
+        return out
+
+
+# 참조 구현 서버를 만들고, 모델·도구 호출 부분만 HttpModelRoute·HttpToolRoute로 교체한다.
+# 내장 agent-demo 외에 templates/agents 의 템플릿 Agent(도구를 쓰는 my-tool-agent 포함)도 등록한다.
+def make_server(gateway_url, tools_url, key, port=0):
+    server = ref.make_server(port, agents_dir=ref.ROOT / "templates/agents")
     platform = ref.platform_of(server)
     route = HttpModelRoute(gateway_url, key)
-    # Runtime도 모델 참조를 따로 들고 있으므로 두 곳을 모두 바꿔야 한다.
+    # Runtime도 모델·도구 참조를 따로 들고 있으므로 두 곳을 모두 바꿔야 한다.
     platform.model = route
     platform.runtime.model = route
+    platform.tools = platform.runtime.tools = HttpToolRoute(tools_url, key)
     base = server.RequestHandlerClass
     invoke = platform.invoke
 
@@ -151,11 +189,12 @@ def make_server(gateway_url, key, port=0):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--gateway", required=True)
+    parser.add_argument("--tools", required=True)
     parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
     # 키가 없으면 모델 경로가 모든 요청을 거부하므로 아예 뜨지 않는다.
     if not os.environ.get(KEY_ENV):
         sys.exit(f"{KEY_ENV} is required")
-    server = make_server(args.gateway, os.environ[KEY_ENV], args.port)
+    server = make_server(args.gateway, args.tools, os.environ[KEY_ENV], args.port)
     print(server.server_address[1], flush=True)
     server.serve_forever()

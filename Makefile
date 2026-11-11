@@ -1,7 +1,7 @@
 # `make setup`으로 만든 .venv/bin/python 이 있으면 그것을, 없으면 python3 을 쓴다. PYTHON=... 으로 바꿀 수 있다.
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
-.PHONY: setup scenarios demo stack test-impl
+.PHONY: setup scenarios demo stack test-impl db
 
 # .venv 를 만들고 Python 의존성(jsonschema 등)을 설치한다.
 # uv 가 있으면 uv 를 쓴다. 없으면 venv 와 ensurepip 를 따로 실행해서, pip 설치가 실패할 때 실제 오류가 보이게 한다.
@@ -22,10 +22,15 @@ scenarios:
 demo:
 	$(PYTHON) impl/demo/server.py
 
-# 로컬 스택(가짜 모델, Agent Gateway 모델 경로, Platform APIs)을 띄운 채로 둔다.
+# 로컬 스택(가짜 모델·도구, Agent Gateway 모델·도구 경로, Platform APIs)을 띄운 채로 둔다.
 stack:
 	$(PYTHON) impl/stack.py
 
 # impl/ 자동 테스트를 실행한다.
 test-impl:
 	$(PYTHON) -m unittest discover -s impl/tests -v
+
+# Docker로 로컬 PostgreSQL을 띄운다(선택). 쓰려면 IMPL_DATABASE_URL=postgresql://impl:impl@127.0.0.1:55432/impl 을 함께 준다.
+# 주지 않으면 stack.py가 설치된 PostgreSQL(initdb)로 실행마다 임시 DB를 만들고 끝나면 지운다.
+db:
+	docker compose -f impl/compose.yaml up -d
