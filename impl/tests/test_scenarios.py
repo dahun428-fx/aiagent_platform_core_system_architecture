@@ -84,6 +84,35 @@ class ScenarioTests(unittest.TestCase):
                 route.invoke("hi", ref.load("identity"), ref.load("policy"), run.new_traceparent())
             self.assertEqual((caught.exception.status, caught.exception.code), (503, "UPSTREAM_UNAVAILABLE"))
 
+    # Request-Timeout-Ms가 1 이상의 정수가 아니면 모델 경로는 422로 거부한다(계약 0.2.0).
+    def test_model_route_rejects_bad_timeout_header(self):
+        ref = load_ref()
+        body = {"capability": "chat", "messages": [{"role": "user", "content": "hi"}],
+                "identity": ref.load("identity"), "policy": ref.load("policy"), "traceparent": run.new_traceparent()}
+        for value in ("0", "-5", "1.5", "soon"):
+            with self.subTest(value):
+                status, _, problem = call_json("POST", self.stack.urls["model-route"] + "/v1/model-invocations", body,
+                                               {"Idempotency-Key": "k", "Request-Timeout-Ms": value,
+                                                SIGNATURE_HEADER: sign(self.stack.internal_key, body)})
+                self.assertEqual((status, problem["code"]), (422, "VALIDATION_ERROR"))
+
+    # 모델 경로 자체가 답하지 않아도 Platform은 deadline에 맞춰 504로 끝낸다(연결만 받고 아무 말도 하지 않는 서버).
+    def test_platform_times_out_silent_gateway(self):
+        import socket
+        import time
+        import platform_api
+        ref = load_ref()
+        silent = socket.create_server(("127.0.0.1", 0))
+        self.addCleanup(silent.close)
+        route = platform_api.HttpModelRoute(f"http://127.0.0.1:{silent.getsockname()[1]}", "test-key")
+        platform_api.current.deadline = time.monotonic() + 0.2
+        self.addCleanup(setattr, platform_api.current, "deadline", None)
+        started = time.monotonic()
+        with self.assertRaises(ref.Fault) as caught:
+            route.invoke("hi", ref.load("identity"), ref.load("policy"), run.new_traceparent())
+        self.assertEqual((caught.exception.status, caught.exception.code), (504, "UPSTREAM_TIMEOUT"))
+        self.assertLess(time.monotonic() - started, 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

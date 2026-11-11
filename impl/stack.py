@@ -47,7 +47,7 @@ class Stack:
             try:
                 if call_json("GET", url + "/health/ready", timeout=1)[0] == 200:
                     break
-            except ConnectionError:
+            except (ConnectionError, TimeoutError):
                 pass
             if time.monotonic() > deadline:
                 raise RuntimeError(f"{name} did not become ready")

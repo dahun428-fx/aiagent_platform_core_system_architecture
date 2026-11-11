@@ -217,6 +217,113 @@
           "model-route": []
         }
       }
+    },
+    {
+      "id": "model-timeout",
+      "title": "모델 응답 지연",
+      "slice": "S2",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-model-timeout",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 500
+          }
+        }
+      },
+      "expect": {
+        "status": 504,
+        "elapsedMs": [
+          500,
+          650
+        ],
+        "body": {
+          "code": "UPSTREAM_TIMEOUT"
+        },
+        "upstreamCalls": {
+          "fake-model": 1
+        },
+        "upstreamDisconnects": {
+          "fake-model": 1
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": []
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "delayMs": 2000
+        }
+      }
+    },
+    {
+      "id": "app-deadline-header",
+      "title": "앱이 남은 시간 전달",
+      "slice": "S2",
+      "request": {
+        "agentId": "agent-demo",
+        "authorization": "Bearer mock-user",
+        "idempotencyKey": "scenario-app-deadline-header",
+        "body": {
+          "input": {
+            "type": "message",
+            "content": "hello"
+          },
+          "context": {
+            "tenantId": "tenant-demo",
+            "dataClassification": "internal"
+          },
+          "execution": {
+            "mode": "sync",
+            "timeoutMs": 5000
+          }
+        },
+        "headers": {
+          "Request-Timeout-Ms": "300"
+        }
+      },
+      "expect": {
+        "status": 504,
+        "elapsedMs": [
+          300,
+          450
+        ],
+        "body": {
+          "code": "UPSTREAM_TIMEOUT"
+        },
+        "upstreamCalls": {
+          "fake-model": 1
+        },
+        "upstreamDisconnects": {
+          "fake-model": 1
+        },
+        "auditComponents": {
+          "platform-api": [
+            "agent-gateway",
+            "runtime"
+          ],
+          "model-route": []
+        }
+      },
+      "fault": {
+        "fake-model": {
+          "delayMs": 2000
+        }
+      }
     }
   ]
 }

@@ -138,13 +138,18 @@ function renderFlow(services) {
 // 시나리오가 보내는 요청 한 줄 요약
 function requestSummary(s) {
   const r = s.request;
+  // 심은 고장(fault)과 추가 헤더(예: 남은 시간)를 요청 줄 뒤에 덧붙인다
+  const extra = [];
+  for (const [svc, f] of Object.entries(s.fault || {})) extra.push(`고장 ${svc} ${JSON.stringify(f)}`);
+  for (const [k, v] of Object.entries(r.headers || {})) extra.push(`헤더 ${k}: ${v}`);
+  const tail = extra.length ? " · " + extra.join(" · ") : "";
   // 모델 경로 직접 호출: 서명 여부, fixture에 덮어쓴 값, 서명 뒤에 바꾼 값(변조)을 보여 준다
   if (r.target === "model-route") {
     const bits = [r.sign === false ? "서명 없음" : "서명 있음"];
     for (const part of ["identity", "policy"]) if (r[part]) bits.push(`${part} ${JSON.stringify(r[part])}`);
     if (r.afterSigning) bits.push(`서명 뒤 변조 ${JSON.stringify(r.afterSigning)}`);
     return el("div", { class: "meta" }, "요청 ", el("code", {}, "POST /v1/model-invocations"),
-      " (Platform을 건너뛰고 모델 경로에 직접) · ", bits.join(" · "));
+      " (Platform을 건너뛰고 모델 경로에 직접) · ", bits.join(" · ") + tail);
   }
   const b = r.body || {};
   return el("div", { class: "meta" },
@@ -152,15 +157,18 @@ function requestSummary(s) {
     " · 입력 ", el("code", {}, show(b.input && b.input.content)),
     " · tenant ", el("code", {}, show(b.context && b.context.tenantId)),
     " · 분류 ", el("code", {}, show(b.context && b.context.dataClassification)),
-    " · 인증 ", el("code", {}, r.authorization || "없음"));
+    " · timeoutMs ", el("code", {}, show(b.execution && b.execution.timeoutMs)),
+    " · 인증 ", el("code", {}, r.authorization || "없음"), tail);
 }
 
 // 시나리오의 기대값 한 줄 요약
 function expectSummary(s) {
   const e = s.expect, bits = [`상태 ${e.status}`];
   if ("outputContent" in e) bits.push(`출력 "${e.outputContent}"`);
+  if (e.elapsedMs) bits.push(`${e.elapsedMs[0]}~${e.elapsedMs[1]}ms 안에 응답`);
   for (const [k, v] of Object.entries(e.body || {})) bits.push(`${k} "${v}"`);
   for (const [svc, n] of Object.entries(e.upstreamCalls || {})) bits.push(`${svc} 호출 ${n}회`);
+  for (const [svc, n] of Object.entries(e.upstreamDisconnects || {})) bits.push(`${svc} 연결 끊김 ${n}회`);
   for (const [svc, comps] of Object.entries(e.auditComponents || {})) bits.push(`${svc} 감사 ${comps.length ? comps.join("·") : "없음"}`);
   for (const [svc, fields] of Object.entries(e.auditFields || {}))
     for (const [k, v] of Object.entries(fields)) bits.push(`${svc} 감사 ${k}=${v}`);
@@ -182,7 +190,7 @@ function renderResult(r) {
     }
   }
   return el("div", {},
-    el("div", { class: "meta" }, `응답 상태 ${r.status} · trace id `, el("code", {}, r.traceId)),
+    el("div", { class: "meta" }, `응답 상태 ${r.status} · ${r.elapsedMs}ms · trace id `, el("code", {}, r.traceId)),
     el("h3", {}, "기대값과 실제값"),
     el("div", { class: "table-wrap" }, el("table", {},
       el("thead", {}, el("tr", {}, el("th", {}, "항목"), el("th", {}, "기대"), el("th", {}, "실제"), el("th", {}, "판정"))),

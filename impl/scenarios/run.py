@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -34,7 +35,7 @@ def new_traceparent():
 def call_platform(stack, req, trace):
     # Idempotency-Key 뒤에 무작위 값을 붙여서, 다시 실행해도 이전 결과(멱등성 캐시)가 돌아오지 않게 한다.
     headers = {"Authorization": req["authorization"], "Idempotency-Key": req["idempotencyKey"] + "-" + uuid.uuid4().hex[:8],
-               "traceparent": trace}
+               "traceparent": trace, **req.get("headers", {})}
     url = stack.urls["platform-api"] + "/v1/agents/" + req["agentId"] + "/invocations"
     return call_json("POST", url, req["body"], headers)
 
@@ -47,7 +48,7 @@ def call_model_route(stack, req, trace):
     body = {"capability": "chat", "messages": [{"role": "user", "content": "hello"}],
             "identity": {**ref.load("identity"), **req.get("identity", {})},
             "policy": {**ref.load("policy"), **req.get("policy", {})}, "traceparent": trace}
-    headers = {"Idempotency-Key": "scenario-" + uuid.uuid4().hex, "traceparent": trace}
+    headers = {"Idempotency-Key": "scenario-" + uuid.uuid4().hex, "traceparent": trace, **req.get("headers", {})}
     if req.get("sign", True):
         headers[SIGNATURE_HEADER] = sign(stack.internal_key, body)
     for part, values in req.get("afterSigning", {}).items():
@@ -60,19 +61,39 @@ def trace_records(stack, service, trace_id):
     return [r for r in call_json("GET", stack.urls[service] + "/_audit")[2] if r["traceparent"].split("-")[1] == trace_id]
 
 
+# 가짜 upstream의 호출 통계를 읽는다.
+def upstream_stats(stack, service):
+    return call_json("GET", stack.urls[service] + "/_stats")[2]
+
+
+# 호출자가 연결을 끊은 횟수를 읽는다. 가짜 upstream은 끊김을 응답이 돌아온 직후에 알아챌 수 있으므로,
+# 기대값에 이를 때까지 최대 1초 다시 읽는다.
+def disconnects(stack, service, expected):
+    end = time.monotonic() + 1
+    while (n := upstream_stats(stack, service)["disconnects"]) != expected and time.monotonic() < end:
+        time.sleep(0.02)
+    return n
+
+
 # 시나리오 하나를 실행하고, 기대값과 실제값을 항목별로 비교한 결과를 돌려준다.
 def run_scenario(stack, scenario):
     req, expect = scenario["request"], scenario["expect"]
-    # 가짜 모델의 호출 횟수를 0으로 맞춰서, 이번 요청이 부른 횟수만 세게 한다.
-    call_json("POST", stack.urls["fake-model"] + "/_reset", {})
+    # 가짜 모델의 호출 횟수를 0으로 맞춰서 이번 요청이 부른 횟수만 세게 하고, 시나리오의 고장(fault)을 심는다.
+    call_json("POST", stack.urls["fake-model"] + "/_reset", scenario.get("fault", {}).get("fake-model", {}))
     trace = new_traceparent()
     trace_id = trace.split("-")[1]
     # target 이 model-route 면 모델 경로에 직접, 아니면 Platform APIs로 보낸다.
     send = call_model_route if req.get("target") == "model-route" else call_platform
+    started = time.monotonic()
     status, resp_headers, body = send(stack, req, trace)
+    elapsed_ms = round((time.monotonic() - started) * 1000)
 
     # 판정 항목을 (이름, 기대값, 실제값)으로 모은다.
     checks = [("status", expect["status"], status)]
+    # 걸린 시간이 [최소, 최대] ms 안인지. 실제값은 범위 안이면 기대 범위 그대로, 밖이면 걸린 시간을 보여 준다.
+    if "elapsedMs" in expect:
+        low, high = expect["elapsedMs"]
+        checks.append(("elapsed ms", [low, high], [low, high] if low <= elapsed_ms <= high else elapsed_ms))
     if "outputContent" in expect:
         actual = body.get("output", {}).get("content") if isinstance(body, dict) else None
         checks.append(("output", expect["outputContent"], actual))
@@ -81,7 +102,10 @@ def run_scenario(stack, scenario):
         checks.append((field, value, body.get(field) if isinstance(body, dict) else None))
     # 서비스별 upstream 호출 횟수
     for service, count in expect.get("upstreamCalls", {}).items():
-        checks.append((service + " calls", count, call_json("GET", stack.urls[service] + "/_stats")[2]["calls"]))
+        checks.append((service + " calls", count, upstream_stats(stack, service)["calls"]))
+    # 서비스별로 호출자가 답을 기다리다 연결을 끊은 횟수(timeout 뒤 upstream 연결을 정말 끊었는지)
+    for service, count in expect.get("upstreamDisconnects", {}).items():
+        checks.append((service + " disconnects", count, disconnects(stack, service, count)))
     # 서비스별 감사 기록: 이번 trace id로 남은 것만 골라서, 어떤 컴포넌트가 기록했는지 비교한다.
     audit = {}
     for service, components in expect.get("auditComponents", {}).items():
@@ -102,7 +126,7 @@ def run_scenario(stack, scenario):
 
     results = [{"name": n, "expected": e, "actual": a, "passed": e == a} for n, e, a in checks]
     return {"id": scenario["id"], "title": scenario["title"], "slice": scenario.get("slice"),
-            "passed": all(r["passed"] for r in results), "traceId": trace_id, "status": status,
+            "passed": all(r["passed"] for r in results), "traceId": trace_id, "status": status, "elapsedMs": elapsed_ms,
             "checks": results, "response": body, "audit": audit}
 
 
@@ -114,10 +138,10 @@ def run_all(path=SCENARIOS):
 
 # 터미널용 표: 시나리오마다 한 줄, 틀린 항목은 기대·실제를 덧붙이고, 마지막에 초록·빨강 개수와 감사 기록을 출력한다.
 def print_table(results):
-    print(f"{'결과':4} {'조각':4} {'시나리오':16} {'상태':4} trace id")
+    print(f"{'결과':4} {'조각':4} {'시나리오':16} {'상태':4} {'시간':>7} trace id")
     for r in results:
         mark = "초록" if r["passed"] else "빨강"
-        print(f"{mark:4} {r['slice'] or '-':4} {r['title']:16} {r['status']:<4} {r['traceId']}")
+        print(f"{mark:4} {r['slice'] or '-':4} {r['title']:16} {r['status']:<4} {str(r['elapsedMs']) + 'ms':>7} {r['traceId']}")
         for c in r["checks"]:
             if not c["passed"]:
                 print(f"       {c['name']}: 기대 {c['expected']!r}, 실제 {c['actual']!r}")
