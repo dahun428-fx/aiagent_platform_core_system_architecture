@@ -69,8 +69,14 @@ def sign(key, body):
     return hmac.new(key.encode(), load_ref().canonical_digest(body).encode(), "sha256").hexdigest()
 
 
+class ResponseLost(ConnectionError):
+    """요청을 보낸 뒤 답을 받기 전에 연결이 끊겼다. upstream이 요청을 실행했는지 알 수 없다.
+    (보내기 전의 연결 실패는 그냥 ConnectionError다. 그때는 upstream이 요청을 받지 못한 것이 확실하다.)"""
+
+
 # JSON HTTP 요청을 보내고 (상태 코드, 헤더, JSON 본문)을 돌려준다.
-# 4xx·5xx 응답도 예외 없이 그대로 돌려준다. 시간 안에 답이 없으면 TimeoutError, 연결 자체가 안 되면 ConnectionError.
+# 4xx·5xx 응답도 예외 없이 그대로 돌려준다. 시간 안에 답이 없으면 TimeoutError, 연결 자체가 안 되면 ConnectionError,
+# 보낸 뒤 답을 받다가 끊기면 ResponseLost.
 # shortcut: urllib의 timeout은 소켓 동작 하나(연결, 읽기 한 번)마다 걸린다. 조금씩 흘려 보내는 upstream은 전체로는 더 오래 걸릴 수 있다.
 #           실제 upstream을 붙일 때 전체 시간 상한을 따로 둔다.
 def call_json(method, url, body=None, headers=None, timeout=5.0):
@@ -88,5 +94,5 @@ def call_json(method, url, body=None, headers=None, timeout=5.0):
         if isinstance(exc.reason, TimeoutError):  # 연결하는 중 시간 초과
             raise TimeoutError(str(exc)) from exc
         raise ConnectionError(str(exc)) from exc
-    except OSError as exc:
-        raise ConnectionError(str(exc)) from exc
+    except OSError as exc:  # 요청은 이미 보냈는데 답을 읽다가 연결이 끊겼다
+        raise ResponseLost(str(exc)) from exc

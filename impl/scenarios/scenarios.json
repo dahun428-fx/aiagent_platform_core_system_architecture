@@ -244,7 +244,7 @@
       "expect": {
         "status": 504,
         "elapsedMs": [
-          500,
+          480,
           650
         ],
         "body": {
@@ -299,7 +299,7 @@
       "expect": {
         "status": 504,
         "elapsedMs": [
-          300,
+          280,
           450
         ],
         "body": {
@@ -800,6 +800,224 @@
           "tool-route": []
         }
       }
+    },
+    {
+      "id": "write-no-approval",
+      "title": "승인 없는 쓰기",
+      "slice": "S6a",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "idempotencyKey": "scenario-write-no-approval"
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Write tool requires approval"
+        },
+        "upstreamCalls": {
+          "fake-tool": 0
+        },
+        "auditComponents": {
+          "tool-route": []
+        }
+      }
+    },
+    {
+      "id": "write-approval-expired",
+      "title": "만료된 승인",
+      "slice": "S6a",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "idempotencyKey": "scenario-write-approval-expired",
+        "approval": {
+          "expiresAt": "2020-01-01T00:00:00Z"
+        }
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Approval is stale or not bound to this request"
+        },
+        "upstreamCalls": {
+          "fake-tool": 0
+        },
+        "auditComponents": {
+          "tool-route": []
+        }
+      }
+    },
+    {
+      "id": "write-approval-other-request",
+      "title": "다른 요청의 승인",
+      "slice": "S6a",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "idempotencyKey": "scenario-write-approval-other-request",
+        "approval": {
+          "subjectDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": {
+        "status": 403,
+        "body": {
+          "code": "FORBIDDEN",
+          "detail": "Approval is stale or not bound to this request"
+        },
+        "upstreamCalls": {
+          "fake-tool": 0
+        },
+        "auditComponents": {
+          "tool-route": []
+        }
+      }
+    },
+    {
+      "id": "write-approved",
+      "title": "승인된 쓰기",
+      "slice": "S6a",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "idempotencyKey": "scenario-write-approved",
+        "approval": {}
+      },
+      "expect": {
+        "status": 200,
+        "outputContent": "ticket:hello",
+        "body": {
+          "status": "succeeded"
+        },
+        "upstreamCalls": {
+          "fake-tool": 1
+        },
+        "auditComponents": {
+          "tool-route": [
+            "credential-broker",
+            "tool-gateway"
+          ]
+        },
+        "auditFields": {
+          "tool-route": {
+            "outcome": "executed"
+          }
+        }
+      }
+    },
+    {
+      "id": "write-response-lost",
+      "title": "쓰기 응답 끊김",
+      "slice": "S6a",
+      "request": {
+        "target": "tool-route",
+        "toolId": "tool-ticket",
+        "version": "0.1.0",
+        "arguments": {
+          "query": "hello"
+        },
+        "grant": {
+          "scopes": [
+            "tools.write"
+          ],
+          "resources": [
+            "tool-ticket"
+          ]
+        },
+        "idempotencyKey": "scenario-write-response-lost",
+        "approval": {}
+      },
+      "steps": [
+        {
+          "fault": {
+            "fake-tool": {
+              "drop": true
+            }
+          },
+          "expect": {
+            "status": 200,
+            "body": {
+              "status": "unknown_outcome"
+            },
+            "upstreamCalls": {
+              "fake-tool": 1
+            },
+            "noInternalAddress": true,
+            "auditFields": {
+              "tool-route": {
+                "outcome": "unknown_outcome"
+              }
+            }
+          }
+        },
+        {
+          "expect": {
+            "status": 200,
+            "body": {
+              "status": "unknown_outcome"
+            },
+            "upstreamCalls": {
+              "fake-tool": 0
+            },
+            "auditFields": {
+              "tool-route": {
+                "outcome": "replayed"
+              }
+            }
+          }
+        }
+      ]
     }
   ]
 }

@@ -151,11 +151,17 @@ function requestSummary(s) {
     return el("div", { class: "meta" }, "요청 ", el("code", {}, "POST /v1/model-invocations"),
       " (Platform을 건너뛰고 모델 경로에 직접) · ", bits.join(" · ") + tail);
   }
-  // 도구 경로 직접 호출: 도구 이름·버전·인자와 멱등성 키
+  // 도구 경로 직접 호출: 도구 이름·버전·인자와 멱등성 키, 쓰기 도구면 더한 권한과 승인
   if (r.target === "tool-route") {
+    const extra = [];
+    if (r.grant) extra.push(" · 더한 권한 ", el("code", {}, JSON.stringify(r.grant)));
+    if (r.approval) extra.push(" · 승인 ", el("code", {}, Object.keys(r.approval).length
+      ? `이 요청용, 바꾼 값 ${JSON.stringify(r.approval)}` : "이 요청용"));
+    else if (r.grant) extra.push(" · 승인 ", el("code", {}, "없음"));
     return el("div", { class: "meta" }, "요청 ", el("code", {}, "POST /v1/tool-invocations"),
       " (Platform을 건너뛰고 도구 경로에 직접) · 도구 ", el("code", {}, `${r.toolId} ${r.version}`),
-      " · 인자 ", el("code", {}, JSON.stringify(r.arguments)), " · 멱등성 키 ", el("code", {}, r.idempotencyKey + "-<실행마다 새 값>"), tail);
+      " · 인자 ", el("code", {}, JSON.stringify(r.arguments)), " · 멱등성 키 ", el("code", {}, r.idempotencyKey + "-<실행마다 새 값>"),
+      ...extra, tail);
   }
   const b = r.body || {};
   return el("div", { class: "meta" },
