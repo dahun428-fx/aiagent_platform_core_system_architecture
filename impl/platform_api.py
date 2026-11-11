@@ -24,7 +24,7 @@ ref = load_ref()
 # 모델 경로가 남은 시간에 맞춰 먼저 504를 돌려줄 수 있도록, 여기서는 그보다 조금 더 기다린다.
 ANSWER_MARGIN_S = 0.1
 # 모델 경로가 돌려준 upstream 실패 상태와 오류 코드(계약 0.2.0, ADR-038)
-UPSTREAM_FAULTS = {502: "UPSTREAM_ERROR", 503: "UPSTREAM_UNAVAILABLE", 504: "UPSTREAM_TIMEOUT"}
+UPSTREAM_FAULTS = {429: "RATE_LIMITED", 502: "UPSTREAM_ERROR", 503: "UPSTREAM_UNAVAILABLE", 504: "UPSTREAM_TIMEOUT"}
 # 요청 스레드마다 지금 처리 중인 Agent 호출의 deadline(time.monotonic 기준)을 담는다.
 # ThreadingHTTPServer는 요청 하나를 스레드 하나가 끝까지 처리하므로, Runtime을 고치지 않고 모델 호출까지 전달된다.
 current = threading.local()
@@ -71,7 +71,7 @@ class HttpModelRoute:
         if left is not None:
             headers[TIMEOUT_HEADER] = str(int(left * 1000))
         try:
-            status, _, out = call_json("POST", self.base_url + "/v1/model-invocations", body, headers,
+            status, resp_headers, out = call_json("POST", self.base_url + "/v1/model-invocations", body, headers,
                                        timeout=(left if left is not None else 5.0) + ANSWER_MARGIN_S)
         except TimeoutError:
             # 모델 경로마저 시간 안에 답하지 않은 경우. 연결은 여기서 끊긴다.
@@ -85,7 +85,12 @@ class HttpModelRoute:
         if status == 403:
             raise ref.Fault(403, "FORBIDDEN", "Policy denied")
         if status in UPSTREAM_FAULTS:
-            raise ref.Fault(status, UPSTREAM_FAULTS[status], "Model upstream failed")
+            # 모델 경로가 준 Retry-After(초)를 앱 응답까지 전한다. 아래 Handler.end_headers가 헤더로 붙인다.
+            retry_after = {k.lower(): v for k, v in resp_headers.items()}.get("retry-after")
+            if retry_after and retry_after.isascii() and retry_after.isdigit():
+                current.retry_after = retry_after
+            detail = "Rate limit exceeded" if status == 429 else "Model upstream failed"
+            raise ref.Fault(status, UPSTREAM_FAULTS[status], detail)
         if status != 200:
             raise ref.Fault(502, "UPSTREAM_ERROR", "Model route failed")
         try:
@@ -120,10 +125,17 @@ def make_server(gateway_url, key, port=0):
     class Handler(base):
         def do_POST(self):
             current.timeout_header = self.headers.get(TIMEOUT_HEADER)
+            current.retry_after = None
             try:
                 super().do_POST()
             finally:
-                current.timeout_header = None
+                current.timeout_header = current.retry_after = None
+
+        # 참조 구현의 send_json은 헤더를 더 받지 않으므로, 헤더를 닫기 직전에 Retry-After를 끼워 넣는다.
+        def end_headers(self):
+            if getattr(current, "retry_after", None):
+                self.send_header("Retry-After", current.retry_after)
+            super().end_headers()
 
         def do_GET(self):
             if self.path == "/_audit":

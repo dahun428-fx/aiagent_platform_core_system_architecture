@@ -126,6 +126,27 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual((caught.exception.status, caught.exception.code), (503, "UPSTREAM_UNAVAILABLE"))
         self.assertNotIn("127.0.0.1", json.dumps(caught.exception.problem()))
 
+    # circuit: 연속 실패 3번에 열리고, 대기 시간 뒤 시험 호출 1번만 통과시키며, 시험이 실패하면 바로 다시 열린다.
+    def test_circuit_breaker_reopens_when_trial_fails(self):
+        from unittest import mock
+        from gateway import model_route
+        ref = load_ref()
+        breaker = model_route.CircuitBreaker()
+        with mock.patch.object(model_route, "BREAKER_COOLDOWN_S", 0.05):
+            for _ in range(3):
+                breaker.before_call()
+                breaker.after_call(ok=False)
+            with self.assertRaises(ref.Fault) as caught:  # 열림: 바로 503
+                breaker.before_call()
+            self.assertEqual((caught.exception.status, caught.exception.retry_after), (503, 1))
+            model_route.time.sleep(0.06)
+            breaker.before_call()  # 반열림: 시험 호출 하나는 통과
+            with self.assertRaises(ref.Fault):  # 시험 중에는 다른 호출을 막는다
+                breaker.before_call()
+            breaker.after_call(ok=False)  # 시험 실패 → 다시 열림
+            with self.assertRaises(ref.Fault):
+                breaker.before_call()
+
 
 if __name__ == "__main__":
     unittest.main()
