@@ -15,6 +15,10 @@
 - Registry가 Agent Card를 발행하는 규칙을 설명할 수 있습니다.
 </div>
 
+## 장면
+
+재무팀의 출장 정산 Agent `expense-settlement`는 정산 중에 청구서 요약이 필요합니다. 민준이 이미 만든 `invoice-summary`를 부르면 됩니다. 그런데 다른 팀의 개발자는 그 Agent가 무엇을 할 수 있는지, 어디로 어떻게 인증해 불러야 하는지, 지금도 승인된 버전인지 알아야 합니다. 메신저로 물어본 주소는 다음 달이면 틀릴 수 있고, 누가 바꿔 놓았는지도 알 수 없습니다. 그래서 Registry가 승인된 Agent마다 명함 한 장을 만들어 서명해 둡니다. 이것이 Agent Card입니다.
+
 ## 배경
 
 <div class="opener" markdown="1">
@@ -111,7 +115,7 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를
 |---|---|
 | 생성 | Registry가 Manifest와 등록 정보에서 생성합니다. 수동 작성 카드는 받지 않습니다 |
 | 필드 대응 | `metadata.name`·`version` → `name`·`version`, 기능 선언 → `skills`, `identity.requiredScopes` → 보안 요구, 승인된 실행 환경 endpoint → `supportedInterfaces`, `metadata.owner.team` → `provider.organization` |
-| 상태 연동 | `production-approved` 버전만 발행하고, `deprecated`·`quarantined`·`retired` 전환 시 갱신·회수합니다(상태 정의: [Agent 수명주기](06-lifecycle.md)) |
+| 상태 연동 | `production-approved` 버전만 발행하고, `deprecated`·`quarantined`·`retired` 전환 시 갱신·회수합니다(상태 정의: [수명주기와 프로덕션 승인](06-lifecycle.md)) |
 | 캐시 | `Cache-Control`과 카드 `version` 또는 내용 해시 기반 `ETag`를 제공합니다 |
 | 버전 | A2A 1.0.0을 기준으로 하며 `A2A-Version` 헤더를 사용합니다 |
 | 조회 API | A2A는 레지스트리 API를 표준으로 정하지 않으므로 Agent Platform APIs에 Registry 조회 API를 정의합니다 |
@@ -151,4 +155,3 @@ production-approved 상태의 버전에만 발행합니다.
 - 서명·정규화 규격: [IETF·OAuth](10-references.md#ref-identity)
 </div>
 
-<nav class="pager"><a href="12-observability-evaluation.md"><small>이전</small><b>Agent Observability와 Agent Evaluation</b></a><a class="next" href="06-lifecycle.md"><small>다음</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a></nav>

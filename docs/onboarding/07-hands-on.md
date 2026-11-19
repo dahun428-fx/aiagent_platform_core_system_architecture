@@ -14,6 +14,18 @@
 - 인증 실패와 멱등성 충돌 시 반환되는 오류 응답을 확인합니다.
 </div>
 
+## 이야기와 실습의 대응
+
+이 실습은 저장소에 내장된 `agent-demo`를 씁니다. 앞 장들의 청구서 이야기와는 이름이 이렇게 대응합니다.
+
+| 이야기 | 이 실습(로컬 mock) |
+|---|---|
+| `invoice-summary` | `agent-demo`. 청구서 예제를 그대로 띄우려면 `--agents-dir examples/agents`를 붙이고 Agent ID를 `invoice-summary`로 바꿉니다([Agent Tools](15-agent-tools.md)) |
+| `tool-erp-read` `1.0.0` | `tool-search` `0.1.0` |
+| 테넌트 `finance` | `tenant-demo` |
+| 서연의 토큰 | `Bearer mock-user` |
+| 요약문 | `mock:`으로 시작하는 글. 로컬 모델은 받은 글 앞에 `mock:`을 붙여 돌려줍니다 |
+
 ## 사전 요구사항
 
 <div class="cards">
@@ -105,7 +117,7 @@ Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
 }
 ```
 
-응답 필드를 [Agent 요청 처리 흐름](03-one-request.md)과 대조합니다.
+응답 필드를 [Agent Platform APIs: 요청 하나 따라가기](03-one-request.md)과 대조합니다.
 
 | 필드 | 생성 주체 | 의미 |
 |---|---|---|
@@ -229,4 +241,3 @@ JSON Schema, API, 인가, 멱등성, 승인, 모델 정책, 평가, 포털 정�
 - 기본 거부 원칙에 따라 토큰 누락이나 멱등성 키 재사용 요청은 실행되지 않습니다.
 </div>
 
-<nav class="pager"><a href="06-lifecycle.md"><small>이전</small><b>Agent 수명주기·Tuning과 프로덕션 승인</b></a><a class="next" href="14-connect-your-agent.md"><small>다음</small><b>내 Agent 연결과 적합성 검증</b></a></nav>

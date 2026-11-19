@@ -1,47 +1,50 @@
-# Agent 요청 처리 흐름
+# Agent Platform APIs: 요청 하나 따라가기
 
 > 개발자 가이드 문서입니다. 규범은 [아키텍처](../architecture.md), [Agent Tools](../agent-tools.md), [Agent Identity](../identity-and-credentials.md) 기술 표준 문서가 기준입니다.
 
-<div class="terms" markdown="1">
-<span class="label">주요 용어</span> [멱등성 키](09-glossary.md#term-idempotency) [identity context](09-glossary.md#term-identity-context) [Lease](09-glossary.md#term-lease) [routeDecisionId](09-glossary.md#term-route-decision) [traceparent](09-glossary.md#term-trace) [Problem Details](09-glossary.md#term-problem) [Credential Broker](09-glossary.md#term-credential-broker) [테넌트](09-glossary.md#term-tenant) [감사](09-glossary.md#term-audit)
+{{journey:1}}
+
+<div class="sofar" markdown="1">
+**지금까지** [청구서 Agent의 하루](02-big-picture.md)에서 장면 열한 개를 한 번 훑었습니다. 이제 첫 장면부터 하나씩 들여다봅니다. 등장인물은 재무팀 담당자 서연, Agent를 만든 개발자 민준입니다.
 </div>
 
-<div class="goals" markdown="1">
-**{{icon:target}} 학습 목표**
+## 장면
 
-- Agent 호출 요청의 5단계 처리 흐름을 설명할 수 있습니다.
-- 단계별 검증 대상과 신뢰하지 않는 입력을 구분할 수 있습니다.
-- 도구 호출 시 자격증명이 Runtime과 LLM에 노출되지 않는 구조를 설명할 수 있습니다.
+서연이 재무팀 업무 앱에 "청구서 INV-2048 요약해 줘"라고 입력합니다(요청 A). 앱은 이 문장을 플랫폼의 정문인 Agent Platform APIs로 보냅니다. 응답이 조금 늦자 앱이 같은 요청을 한 번 더 보냅니다. 그런데 Agent는 한 번만 실행됩니다. 정문이 "이 요청은 이미 받았다"는 것을 알아봤기 때문입니다. 정문은 그 전에 서연이 누구인지부터 확인했습니다.
+
+<div class="point" markdown="1">
+**{{icon:bulb}} Agent Platform APIs가 없다면** Agent마다 주소와 인증 방식이 달라지고, 같은 요청이 두 번 오면 두 번 실행됩니다.
 </div>
 
-## 배경
+## 무슨 일이 일어나나
 
-<div class="opener" markdown="1">
-<span class="tag">{{icon:question}} 문제 정의</span> 사용자가 "청구서 INV-2048 요약"을 요청했을 때, 응답 생성까지 어떤 구성요소가 어떤 검증을 수행하는지 정의해야 합니다.
-
-<span class="tag">{{icon:eye}} 현황</span> 예시 Agent는 사내 ERP에서 청구서를 조회(도구 호출)하고 모델로 요약합니다. 데이터 분류는 `confidential`입니다. 하나의 요청에 인증·인가, 도구 권한, 데이터 반출 통제가 모두 관여합니다.
-
-<span class="tag">{{icon:bulb}} 설계 방향</span> 각 Core System이 **자신의 경계에서 하나의 책임**을 수행합니다. 한 지점의 통제가 실패해도 다른 지점에서 차단할 수 있습니다.
-</div>
-
-## 처리 단계
+요청 하나가 응답이 되기까지 다섯 단계를 지납니다. 이 장은 첫 단계인 정문을 자세히 보고, 나머지 단계는 각 장으로 이어집니다.
 
 <ol class="flow">
 <li data-say="정문 단계입니다. 토큰으로 호출자가 누구인지 확인하고(인증), 어떤 Agent를 부르는지 찾고, 그 Agent를 부를 권한이 있는지(인가), 같은 요청이 이미 처리됐는지(멱등성)를 봅니다.">{{icon:gateway}}<b>1. 진입</b><span>Agent Platform APIs<br>인증 · 해석 · 인가 · 멱등성</span></li>
-<li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 팀이 만든 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다.">{{icon:runtime}}<b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
+<li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 민준이 만든 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다.">{{icon:runtime}}<b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
 <li data-say="Agent가 ERP 같은 도구를 써야 하면 Agent Gateway의 도구 경로에 요청합니다. 실제 접속 정보는 Credential Broker가 그 호출 한 번에만 쓸 수 있게 발급합니다.">{{icon:tools}}<b>3. 도구 호출</b><span>Agent Gateway 도구 경로<br>+ Credential Broker</span></li>
 <li data-say="Agent가 모델에게 묻는 단계입니다. 모델 경로가 데이터 분류를 보고 갈 수 있는 모델만 고릅니다. 기밀 데이터는 외부 모델로 보내지 않습니다.">{{icon:model}}<b>4. 모델 호출</b><span>Agent Gateway 모델 경로<br>분류 기반 라우팅</span></li>
 <li data-say="처음부터 끝까지 같은 추적 번호로 기록이 남고, 결과가 호출자에게 돌아갑니다. 문제가 생기면 이 기록으로 원인을 찾습니다.">{{icon:trace}}<b>5. 기록</b><span>Agent Observability<br>종단 간 실행 추적</span></li>
 </ol>
 
-<div class="sim" data-sim="request"></div>
+정문이 하는 일은 넷입니다.
 
-## 1단계. Agent Platform APIs 진입
+<div class="cards">
+<div class="card">{{icon:lock}}<b>인증</b><p>토큰의 발급자, 대상(audience), 서명, 만료를 확인해 서연이 누구인지 정합니다.</p></div>
+<div class="card">{{icon:manifest}}<b>Agent 해석</b><p>Registry에서 <code>invoice-summary</code>의 고정된 버전을 찾습니다.</p></div>
+<div class="card">{{icon:user}}<b>테넌트 인가</b><p>서연이 재무팀(<code>finance</code>)의 이 Agent를 부를 권한이 있는지 봅니다.</p></div>
+<div class="card">{{icon:check}}<b>멱등성 처리</b><p>같은 요청 번호로 같은 내용이 또 오면 저장해 둔 결과를 돌려주고, 다른 내용이 오면 거부합니다.</p></div>
+</div>
 
-클라이언트는 Agent Platform APIs의 Agent 호출 API(계약 파일 `agent-gateway.openapi.json`)에 HTTP 요청을 전송합니다.
+## 실물 보기
+
+서연의 앱이 보낸 요청입니다.
+
+<!-- kind: example -->
 
 ```text
-POST /v1/agents/{agentId}/invocations
+POST /v1/agents/invoice-summary/invocations
 Authorization: Bearer <회사 IdP가 발급한 access token>
 traceparent: 00-<trace-id>-<span-id>-01
 Idempotency-Key: <재전송 요청을 식별하는 키>
@@ -55,12 +58,109 @@ Idempotency-Key: <재전송 요청을 식별하는 키>
 }
 ```
 
-<div class="cards">
-<div class="card">{{icon:lock}}<b>인증</b><p>access token의 발급자, 대상(audience), 서명, 만료를 검증합니다.</p></div>
-<div class="card">{{icon:manifest}}<b>Agent 해석</b><p>Registry에서 Git revision과 artifact digest로 고정된 불변 버전을 조회합니다.</p></div>
-<div class="card">{{icon:user}}<b>테넌트 인가</b><p>호출 주체가 해당 테넌트의 Agent를 호출할 권한이 있는지 판단합니다.</p></div>
-<div class="card">{{icon:check}}<b>멱등성 처리</b><p>동일 키에 다른 요청이 오면 거부하고, 동일 요청이면 저장된 결과를 반환합니다.</p></div>
+- `Authorization`: 서연이 누구인지는 여기서만 정해집니다. 본문에 `"role": "admin"`을 적어도 권한이 생기지 않습니다.
+- `Idempotency-Key`: 앱이 요청마다 붙이는 번호입니다. 다시 보낼 때 같은 번호를 쓰면 정문이 한 번으로 셉니다.
+- `context.tenantId`: 토큰의 테넌트와 **비교하는 데만** 씁니다. 다르면 거부합니다.
+- `execution.timeoutMs`: 앱이 기다릴 수 있는 시간입니다. 뒤의 모든 구간이 이 시간 안에서 움직입니다.
+
+서연이 받은 응답과, 같은 문장을 내 PC의 로컬 mock에 보냈을 때의 실제 응답입니다. 필드 구성은 같고 `agentVersion`과 `output.content`가 다릅니다.
+
+<!-- kind: example -->
+
+```json
+{
+  "invocationId": "inv-…",
+  "agentVersion": "1.2.0",
+  "status": "succeeded",
+  "output": {"type": "message", "content": "한빛상사 2026년 10월분 청구서(INV-2048)입니다. 합계 12,400,000원, 납기 11월 30일입니다."},
+  "traceparent": "00-…-…-01",
+  "routeDecisionId": "route-self-hosted",
+  "usage": {"inputTokens": 412, "outputTokens": 58}
+}
+```
+
+<!-- kind: run boundary: local -->
+
+```json
+{
+  "invocationId": "inv-9946215c02f347bd8ba5de71ca079905",
+  "agentVersion": "0.1.0",
+  "status": "succeeded",
+  "output": {"type": "message", "content": "mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘"},
+  "traceparent": "00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01",
+  "routeDecisionId": "route-self-hosted",
+  "usage": {"inputTokens": 7, "outputTokens": 7}
+}
+```
+
+- `invocationId`: 이 호출의 번호입니다. 문제가 생기면 이 번호로 기록을 찾습니다. 앱은 이 번호를 사용자에게 보여 줍니다.
+- `routeDecisionId`: 어느 모델로 갔는지입니다. 기밀이라 회사 안 모델(`route-self-hosted`)로 갔습니다.
+- 로컬 mock의 도구와 모델은 받은 글 앞에 `tool:`, `mock:`을 붙여 돌려주는 대역이라 실제 요약은 나오지 않습니다.
+
+## 직접 해 보기
+
+<div class="sim" data-sim="request"></div>
+
+<ol class="mission">
+<li>토큰을 빼고 보내 보세요. 어느 단계에서 멈추나요.</li>
+<li>하준처럼 권한이 모자란 사용자로 보내면 Agent 코드가 실행되나요.</li>
+</ol>
+
+<details class="more" markdown="1"><summary>더 해 보기: 같은 요청을 여러 번 보내기</summary>
+
+<div class="sim" data-sim="idempotency"></div>
+
+<ol class="mission">
+<li>같은 키로 같은 요청을 두 번 보내면 Agent는 몇 번 실행되나요.</li>
+<li>같은 키에 다른 내용을 실으면 어떻게 되나요.</li>
+</ol>
+</details>
+
+## 잘못되면
+
+**서연의 앱을 만든 개발자가 토큰을 붙이지 않으면** 401을 받습니다. 정문은 누가 보냈는지 모르는 요청을 안으로 들이지 않습니다. Agent 코드는 한 줄도 실행되지 않습니다. 로그인한 사용자의 토큰을 `Authorization`에 실어 보냅니다.
+
+**요청 본문에 다른 팀의 테넌트를 적으면** 403을 받습니다. 테넌트는 검증된 토큰에서만 정하고 본문의 값은 비교에만 씁니다. 본문을 바꿔 다른 팀의 데이터에 닿을 수 없습니다.
+
+오류는 RFC 9457 Problem Details(`application/problem+json`) 형식으로 옵니다. 로컬 mock이 실제로 돌려주는 403입니다.
+
+<!-- kind: run boundary: local -->
+
+```json
+{"type": "about:blank", "title": "FORBIDDEN", "status": 403, "detail": "Tenant assertion does not match authenticated identity", "code": "FORBIDDEN", "traceId": "…"}
+```
+
+<details class="more" markdown="1"><summary>더 보기: 권한 부족, 같은 키에 다른 내용, 그리고 비동기 호출</summary>
+
+| 상황 | 응답 | 뜻 |
+|---|---|---|
+| Agent가 요구하는 권한이 호출자에게 없음 | 403 | Manifest의 `requiredScopes`를 모두 갖지 못했습니다. 코드는 실행되지 않습니다([Agent Identity](16-agent-identity.md)) |
+| 같은 `Idempotency-Key`에 다른 내용 | 409 `CONFLICT` | 실수나 재전송 공격일 수 있어 거부합니다 |
+| `Idempotency-Key`가 없음 | 422 `VALIDATION_ERROR` | 다시 보내도 안전하도록 키는 필수입니다 |
+
+메일을 보내는 요청 C처럼 오래 걸리는 호출은 `execution.mode`를 `durable`로 보내고 202를 받은 뒤, 상태 조회(`getInvocation`)와 승인 제출(`submitApproval`)로 이어 갑니다. 이 흐름은 계약만 있고 로컬 mock은 501을 돌려줍니다([AI Platform Applications](20-applications.md)).
+</details>
+
+## 내가 할 일
+
+1. 호출 코드를 씁니다. 주소는 `POST /v1/agents/{agentId}/invocations` 하나입니다.
+2. 요청마다 `Idempotency-Key`를 붙이고, 다시 보낼 때는 같은 키를 씁니다.
+3. 응답의 `invocationId`를 사용자에게 보여 주고 기록에 남깁니다.
+4. 오류 응답은 상태 코드와 `code`로 처리합니다.
+
+**내 PC에서 해 보기** [로컬 환경 구성 및 호출 실습](07-hands-on.md)의 실습 2가 이 요청을 그대로 보내 봅니다. 이 장의 응답을 그대로 재현하려면 [Agent Tools](15-agent-tools.md)의 명령을 씁니다.
+
+<div class="scope" markdown="1">
+**제공 범위 (v0.1)**
+
+| 항목 | 등급 | 확인하는 곳 |
+|---|---|---|
+| Agent 호출 API(동기), 테넌트 비교, 멱등성, Problem Details | 실행 | 로컬 mock, 적합성 C3~C6 |
+| 목록·상태 조회·취소·이벤트·승인 API | 계약 | `contracts/agent-gateway.openapi.json`. 로컬 mock은 501 |
+| 회사 IdP의 토큰 검증 | 정의 | 로컬 mock은 고정 토큰 `Bearer mock-user`만 받습니다 |
 </div>
+
+## 규칙으로 정리
 
 <div class="compare" markdown="1">
 <div class="bad" markdown="1">
@@ -75,140 +175,44 @@ Idempotency-Key: <재전송 요청을 식별하는 키>
 </div>
 </div>
 
-## 2단계. Agent Runtime 실행
+- 앱과 외부 솔루션은 Agent Platform APIs로만 들어옵니다(MUST). 장면 ①
+- 정문은 Agent 버전, 검증된 실행 주체 정보(identity context), 정책 컨텍스트(policy context)를 Runtime에 넘깁니다. Runtime은 이 권한을 임의로 바꿀 수 없습니다(MUST NOT).
+- 같은 키·같은 내용은 저장된 결과를 돌려주고, 같은 키·다른 내용은 409로 거부합니다(MUST). 장면 ①
+- `traceparent`는 정문에서 받거나 만들어 뒤의 모든 구간에 전파합니다(MUST).
 
-Agent Platform APIs는 Agent 버전, **검증된 실행 주체 식별 정보(identity context)**, **정책 컨텍스트(policy context)**를 Runtime에 전달합니다.
-
-Runtime은 Manifest에 선언된 framework adapter로 Agent를 실행합니다. LangGraph 기반 Agent와 자체 구현 Agent는 Runtime에 동일한 계약으로 노출되므로, 프레임워크를 교체해도 플랫폼 측 변경은 필요하지 않습니다.
-
-<div class="point" markdown="1">
-**{{icon:bulb}} 핵심 포인트** Runtime은 보안·정책 권한을 임의로 변경할 수 없습니다(MUST NOT). 전달받은 권한 범위 안에서만 동작합니다.
-</div>
-
-## 3단계. Agent Gateway 도구 경로를 통한 도구 호출
-
-Agent가 ERP에서 청구서를 조회하는 단계입니다. 각 구간이 보유하는 정보를 확인하십시오.
-
-<ol class="flow">
-<li data-say="Agent(Runtime)는 &#x27;어떤 도구를, 어떤 버전으로, 어떤 값으로&#x27; 부를지만 말합니다. 비밀번호나 토큰은 Agent 손에 아예 없습니다.">{{icon:runtime}}<b>Runtime</b><span>도구 ID · 버전 · 인자<br><strong>자격증명 없음</strong></span></li>
-<li data-say="도구 경로가 그 도구가 승인된 것인지, 입력 값 형식이 맞는지, 정책상 허용되는지, 사람 승인이 필요한지를 확인합니다.">{{icon:gateway}}<b>도구 경로</b><span>승인된 endpoint 해석<br>입력 스키마 · 정책 · 승인</span></li>
-<li data-say="Credential Broker가 정책을 다시 확인한 뒤, 이 호출 한 번에만 쓸 수 있는 임시 사용권(lease)을 발급합니다. 다른 호출에 재사용할 수 없습니다." class="hi">{{icon:key}}<b>Credential Broker</b><span>정책 근거 재검증 후<br>호출에 결합된 lease</span></li>
-<li data-say="Tool adapter가 신뢰 경계 안쪽에서만 임시 사용권을 실제 자격증명으로 바꿔 ERP에 접속합니다. 자격증명은 이 안에서만 존재합니다.">{{icon:tools}}<b>Tool adapter</b><span>신뢰 경계 내부에서<br>lease를 자격증명으로 교환</span></li>
-<li data-say="ERP의 응답도 그대로 믿지 않습니다. 형식과 데이터 분류를 검사한 뒤에야 Agent에게 돌려줍니다.">{{icon:server}}<b>ERP</b><span>출력 스키마·분류 검증 후<br>Runtime에 반환</span></li>
-</ol>
-
-1. Runtime은 Agent Gateway의 도구 경로(tool route)에 **도구 ID, 버전, 인자**만 전달합니다. URL이나 토큰은 전달할 수 없습니다.
-2. 도구 경로는 Agent Tools의 Tool Registry에서 **승인된 endpoint**를 해석하고 입력 스키마와 정책을 검증합니다. 쓰기(write) 작업은 유효한 승인 여부도 확인합니다.
-3. Credential Broker에 요청하는 범위는 **사용자 권한 ∩ Agent 권한 ∩ 도구 허용 범위 ∩ 정책**을 초과할 수 없습니다.
-4. Credential Broker는 토큰 원문 대신 **단기·호출 결합형 불투명 lease**를 발급합니다.
-5. 결과는 출력 스키마와 데이터 분류 검증, Guardrail 검사(간접 인젝션·민감정보, [신뢰 경계와 Guardrails](04-trust.md)), 감사 기록을 거쳐 반환됩니다. 결과에는 토큰과 lease가 포함되지 않습니다.
-
-<div class="compare" markdown="1">
-<div class="bad" markdown="1">
-**{{icon:cross}} 허용하지 않는 구조**
-
-```text
-Runtime → 저장된 API 키 조회 → LLM·도구 코드 → ERP
-```
-
-LLM이 자격증명에 접근하면 프롬프트 인젝션으로 유출될 수 있습니다.
-</div>
-<div class="good" markdown="1">
-**{{icon:check}} 표준 구조**
-
-```text
-Runtime → Agent Gateway(도구 경로)
-→ Credential Broker → 단기 lease
-→ adapter → ERP
-```
-
-LLM은 자격증명에 접근하지 않으므로 유출 경로가 없습니다.
-</div>
-</div>
-
-시퀀스 도식입니다.
+나머지 네 단계는 각 장에서 자세히 봅니다. 실행은 [Agent Runtime과 Memory](11-runtime-memory.md), 도구 호출은 [Agent Tools](15-agent-tools.md)와 [Agent Identity](16-agent-identity.md), 모델 호출은 [Agent Gateway](17-agent-gateway.md), 기록은 [Agent Observability](12-observability-evaluation.md)입니다. 도구 호출의 구간별 순서는 아래 그림과 같습니다.
 
 ![Tool 호출과 Credential 발급 순서](../../diagrams/tool-credential.svg)
 
-## 4단계. Agent Gateway 모델 경로를 통한 모델 호출
-
-Agent는 특정 공급사의 모델을 직접 호출하지 않고, Agent Gateway의 모델 경로(model route)에 **논리 모델 이름**과 **정책 컨텍스트**를 전달합니다. 모델 입력과 출력은 Guardrail 검사를 거칩니다. 입력 검사 대상에는 사용자 메시지뿐 아니라 도구 결과와 검색 문서도 포함됩니다.
-
-<div class="lanes">
-<div class="lane" data-say="공개(public)나 사내(internal) 데이터는 정책이 허용하면 외부 모델과 자체 호스팅 모델 중 어느 쪽으로도 갈 수 있습니다."><div>{{icon:shield}} <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div>{{icon:cloud}} 외부 또는 자체 호스팅 모델</div></div>
-<div class="lane" data-say="기밀(confidential)이나 제한(restricted) 데이터는 외부 모델로 가는 길을 막고, 회사 안에서 운영하는 자체 호스팅 모델로만 보냅니다."><div>{{icon:lock}} <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>외부 경로 거부</small></span></div><i>&#8594;</i><div>{{icon:server}} 자체 호스팅 모델</div></div>
-<div class="lane" data-say="갈 수 있는 모델이 하나도 없으면 다른 길로 몰래 돌아가지 않고 요청을 실패시킵니다. 이것을 실패 시 거부(fail closed)라고 합니다."><div>{{icon:warn}} 허용 경로 없음</div><i>&#8594;</i><div class="gate">{{icon:model}}<span>모델 경로<small>우회 없음</small></span></div><i>&#8594;</i><div>{{icon:cross}} 요청 실패</div></div>
+<div class="terms" markdown="1">
+<span class="label">주요 용어</span> [Agent Platform APIs](09-glossary.md#term-platform-apis) [멱등성 키](09-glossary.md#term-idempotency) [identity context](09-glossary.md#term-identity-context) [routeDecisionId](09-glossary.md#term-route-decision) [traceparent](09-glossary.md#term-trace) [Problem Details](09-glossary.md#term-problem) [테넌트](09-glossary.md#term-tenant)
 </div>
 
-<div class="sim" data-sim="routing"></div>
+## 한 문장으로
 
-예시 데이터는 `confidential`이므로 자체 호스팅 모델로 라우팅됩니다. 응답에는 라우팅 결정을 기록한 `routeDecisionId`가 포함됩니다.
-
-![모델 routing 순서](../../diagrams/model-routing.svg)
-
-## 5단계. 실행 추적과 응답
-
-요청의 `traceparent`는 Agent Platform APIs → Runtime → Agent Gateway(도구·모델 경로) → Knowledge → 하위 Agent의 모든 구간에 전파됩니다. 각 구간은 OpenTelemetry GenAI 규격의 span(`invoke_agent`, 모델 추론 span 등)으로 기록되어, 요청 하나의 처리 경로를 종단 간으로 추적할 수 있습니다.
-
-<div class="compare" markdown="1">
-<div class="good" markdown="1">
-**{{icon:check}} 기록 대상**
-
-테넌트 별칭, 호출 ID, adapter, 정책 결정, 오류 분류
-</div>
-<div class="bad" markdown="1">
-**{{icon:cross}} 기록 제외 대상**
-
-프롬프트 원문, 토큰, 검색된 개인정보 원문
-</div>
-</div>
-
-다음은 이 패키지의 로컬 mock을 실행한 실제 응답입니다.
-
-```json
-{
-  "invocationId": "inv-79b4fa3420244ae4bccb3b4a3473dea6",
-  "agentVersion": "0.1.0",
-  "status": "succeeded",
-  "output": {"type": "message", "content": "mock:hello"},
-  "traceparent": "00-1b0f13dcfd2f426a87937b2bb6d7f852-ac2cb29d6d8f4c46-01",
-  "routeDecisionId": "route-self-hosted",
-  "usage": {"inputTokens": 1, "outputTokens": 1}
-}
-```
-
-오류는 RFC 9457 Problem Details(`application/problem+json`) 형식으로 반환됩니다.
+모든 요청이 지나는 정문이고, 누가 보냈는지와 같은 요청이 또 왔는지를 여기서 가립니다.
 
 <div class="check" markdown="1">
-**{{icon:question}} 이해도 점검**
+**{{icon:question}} 이해 점검**
 
-<details markdown="1"><summary>Q1. 요청 본문에 다른 팀의 tenantId를 지정하면 해당 팀 데이터에 접근할 수 있습니까?</summary>
-접근할 수 없습니다. 테넌트는 검증된 토큰에서 도출하며, 요청 본문의 값은 비교에만 사용합니다. 두 값이 다르면 요청을 거부합니다.
+<details markdown="1"><summary>Q1. 서연의 앱이 응답을 기다리다 같은 요청을 한 번 더 보냈습니다. Agent는 몇 번 실행되고 왜 그런가요?</summary>
+한 번입니다. 두 요청의 Idempotency-Key와 내용이 같으므로 정문이 저장해 둔 결과를 돌려주고 다시 실행하지 않습니다.
 </details>
 
-<details markdown="1"><summary>Q2. Runtime이 Agent Gateway 도구 경로에 전달하는 정보는 무엇입니까?</summary>
-도구 ID, 버전, 인자입니다. URL과 토큰은 전달하지 않으며, endpoint는 Agent Tools의 Registry, 자격증명은 Credential Broker가 결정합니다.
+<details markdown="1"><summary>Q2. 요청 본문에 다른 팀의 tenantId를 적으면 그 팀의 데이터에 접근할 수 있나요?</summary>
+없습니다. 테넌트는 검증된 토큰에서 정하고 본문의 값은 비교에만 씁니다. 두 값이 다르면 403입니다.
 </details>
 
-<details markdown="1"><summary>Q3. confidential 데이터 요청 시 자체 호스팅 모델을 사용할 수 없으면 어떻게 처리됩니까?</summary>
-요청이 실패합니다. 허용된 경로가 없을 때 외부 모델로 우회하지 않습니다.
+<details markdown="1"><summary>Q3. 토큰 없이 보낸 요청에서 Agent 코드는 어디까지 실행되나요?</summary>
+한 줄도 실행되지 않습니다. 정문에서 401로 돌려보냅니다.
 </details>
-</div>
-
-<div class="summary" markdown="1">
-**요약**
-
-- 진입(Agent Platform APIs) → 실행(Agent Runtime) → 도구·모델 호출(Agent Gateway) → 기록(Agent Observability)의 각 단계에서 담당 Core System이 하나의 책임을 수행합니다.
-- Identity는 토큰에서만 도출하며, 자격증명은 Runtime과 LLM에 노출하지 않습니다.
-- 데이터 분류가 모델 경로를 결정하며, 허용 경로가 없으면 요청이 실패합니다.
 </div>
 
 <div class="refs" markdown="1">
 **{{icon:book}} 근거와 참고 자료**
 
-- 실행 추적 규격: [OpenTelemetry GenAI](10-references.md#ref-otel)
-- 모델 입출력 검사 위치: [Guardrails](10-references.md#ref-guardrails)
 - 오류 형식과 토큰 교환: [IETF·OAuth](10-references.md#ref-identity)
+- 실행 추적 규격: [OpenTelemetry GenAI](10-references.md#ref-otel)
 </div>
 
-<nav class="pager"><a href="02-big-picture.md"><small>이전</small><b>Core Systems 아키텍처</b></a><a class="next" href="05-agents-and-manifest.md"><small>다음</small><b>Agent Factory와 Manifest 명세</b></a></nav>
+다음 장면은 ②입니다. 정문이 찾아낸 `invoice-summary`는 어떻게 거기 등록돼 있었을까요.

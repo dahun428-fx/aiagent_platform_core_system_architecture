@@ -164,7 +164,7 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 | `adapter-path` | 이 adapter가 자기 코드 경로로 유효한 결과를 만듦 | 응답의 정확성·업무 품질 |
 | `platform-enforcement` | 이 adapter 주변에서 플랫폼 규칙이 집행되고 adapter가 규칙을 약화하지 못함 | adapter의 모든 실패 동작, 모든 형태의 정보 유출 탐지 |
 
-C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 [평가 3단계](12-observability-evaluation.md), 운영 승인은 [수명주기](06-lifecycle.md)에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.
+C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 [Agent Evaluation](18-agent-evaluation.md), 운영 승인은 [수명주기](06-lifecycle.md)에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.
 
 ## 신원 모드: delegated와 independent
 
@@ -199,7 +199,7 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 
 신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(`tests/test_conformance.py`의 `ManifestEnforcementTests`: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.
 
-<div class="sim" data-sim="permission"></div>
+<div class="sim" data-sim="authz"></div>
 
 ## Manifest 필드 지원 범위 (로컬 mock)
 
@@ -267,4 +267,3 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 - in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.
 </div>
 
-<nav class="pager"><a href="07-hands-on.md"><small>이전</small><b>로컬 환경 구성 및 호출 실습</b></a><a class="next" href="08-reading-the-spec.md"><small>다음</small><b>기술 표준 해석과 FAQ</b></a></nav>
