@@ -1,0 +1,53 @@
+{
+  "apiVersion": "agent.platform/v1alpha1",
+  "kind": "Agent",
+  "metadata": {
+    "id": "invoice-summary",
+    "name": "Invoice summary Agent",
+    "version": "0.1.0",
+    "owner": {
+      "team": "finance"
+    }
+  },
+  "source": {
+    "repository": "https://example.invalid/agents/invoice-summary.git",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifactDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "runtime": {
+    "framework": "custom",
+    "adapter": "python-inprocess-v1",
+    "entrypoint": "agent:create",
+    "executionMode": "sync"
+  },
+  "capabilities": {
+    "type": "tool",
+    "tools": [
+      "tool-search"
+    ],
+    "knowledge": [],
+    "agents": []
+  },
+  "identity": {
+    "mode": "delegated",
+    "requiredScopes": [
+      "agents.invoke",
+      "models.invoke",
+      "tools.read"
+    ]
+  },
+  "governance": {
+    "classification": "confidential",
+    "risk": "medium",
+    "policyProfile": "policy-demo",
+    "evaluationProfile": "eval-demo"
+  },
+  "deployment": {
+    "profile": "local",
+    "environmentRef": "environment-demo"
+  },
+  "contracts": {
+    "inputSchema": "https://agent.example.invalid/contracts/invocation.schema.json",
+    "outputSchema": "https://agent.example.invalid/contracts/result.schema.json"
+  }
+}
