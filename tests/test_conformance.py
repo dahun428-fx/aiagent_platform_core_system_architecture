@@ -26,6 +26,9 @@ class ConformanceTests(unittest.TestCase):
     def test_builtin_agent_demo_passes(self):
         self.assertEqual(failed(ROOT / "examples/agents/agent-demo"), set())
 
+    def test_guide_invoice_summary_example_passes(self):
+        self.assertEqual(failed(ROOT / "examples/agents/invoice-summary"), set())
+
     def test_broken_adapters_fail_the_matching_check(self):
         self.assertIn("C2", failed(FIXTURES / "bad-output"))
         self.assertIn("C8", failed(FIXTURES / "leaks-credential"))

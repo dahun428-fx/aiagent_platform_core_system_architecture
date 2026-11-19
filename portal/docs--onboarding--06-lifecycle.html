@@ -1,33 +1,74 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
-<title>Agent 수명주기·Tuning과 프로덕션 승인 · Agent Platform</title><link rel="stylesheet" href="styles.css">
-<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="interactive.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 아키텍처</a><a href="docs--onboarding--03-one-request.html">Agent 요청 처리 흐름</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest 명세</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability와 Agent Evaluation</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--06-lifecycle.html" aria-current="page">Agent 수명주기·Tuning과 프로덕션 승인</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<title>수명주기와 프로덕션 승인 · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html" aria-current="page">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
-<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-수명주기tuning과-프로덕션-승인">Agent 수명주기·Tuning과 프로덕션 승인</h1>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="수명주기와-프로덕션-승인">수명주기와 프로덕션 승인</h1>
 <blockquote>
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--operating-model.html">운영·평가</a>, <a href="docs--deployment.html">배포 프로파일</a>, <a href="docs--execution.html">Durable / HITL</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
-<div class="terms">
-<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-local-first">Local-First</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-approved">등록 / 승인 / 배포</a> <a href="docs--onboarding--09-glossary.html#term-profile">배포 프로파일</a> <a href="docs--onboarding--09-glossary.html#term-durable">Durable 실행</a> <a href="docs--onboarding--09-glossary.html#term-contract-as-code">Contract-as-Code</a> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a> <a href="docs--onboarding--09-glossary.html#term-production">프로덕션</a> <a href="docs--onboarding--09-glossary.html#term-evidence">승인 검증 근거</a></p>
+<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 10번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="done"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class="done"><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class="done"><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class="done"><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class="on"><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+
+<div class="sofar">
+<p><strong>지금까지</strong> 민준이 지시문 두 문장을 고친 <code>invoice-summary 1.3.0</code>이 시험지 <code>3.0.0</code>에서 37/40 = 0.925를 받아 승격 후보가 됐습니다. 운영 중인 것은 아직 <code>1.2.0</code>입니다.</p>
 </div>
-<div class="goals">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg> 학습 목표</strong></p>
+<h2 id="장면">장면</h2>
+<p><code>1.3.0</code>은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 <code>1.2.0</code>이 받습니다. 업무 요청을 받으려면 프로덕션 승인이 필요하기 때문입니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모읍니다. 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 <code>1.3.0</code>이 업무 요청을 받습니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 승인 단계가 없다면</strong> 등록만 하면 곧바로 업무 데이터를 만지게 되고, 무엇을 근거로 올렸는지 나중에 아무도 답하지 못합니다.</p>
+</div>
+<h2 id="실물-보기">실물 보기</h2>
+<p>지훈이 본 <code>1.3.0</code>의 승인 기록입니다. 승인 요건 여섯 가지가 한 줄씩입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>승인 요건</th>
+<th><code>invoice-summary 1.3.0</code>의 근거</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>불변 버전과 digest</td>
+<td><code>1.3.0</code>, revision은 커밋 SHA, 산출물 <code>sha256:…</code></td>
+</tr>
+<tr>
+<td>계약 적합성</td>
+<td>Manifest 스키마 검증 통과, 적합성 C1~C11 통과</td>
+</tr>
+<tr>
+<td>보안 검토</td>
+<td>지시문만 바뀜. 권한, 도구, 데이터 이동은 <code>1.2.0</code>과 같음</td>
+</tr>
+<tr>
+<td>평가 결과</td>
+<td>시험지 <code>3.0.0</code>에서 두 지표 모두 37/40 = 0.925(번호 질문 28/28, 거래처명 질문 9/12). 따로 남겨 둔 시험지 18/20 = 0.90</td>
+</tr>
+<tr>
+<td>롤백 검증</td>
+<td><code>1.2.0</code>으로 되돌린 뒤 요청 A가 통과하는 것을 확인</td>
+</tr>
+<tr>
+<td>사람 승인</td>
+<td>지훈(재무팀장, 예시 역할). 위험도 medium</td>
+</tr>
+<tr>
+<td>알려진 한계</td>
+<td>남은 오답 3행(<code>row-29</code>, <code>row-30</code>, <code>row-40</code>). 3회 채점에서 흔들리는 2행(<code>row-09</code>, <code>row-21</code>). 다음 개선 대상</td>
+</tr>
+</tbody>
+</table></div>
 <ul>
-<li>로컬 실험부터 폐기까지 Agent 수명주기 7단계를 설명할 수 있습니다.</li>
-<li>프로덕션 승인에 필요한 검증 근거 6가지를 나열할 수 있습니다.</li>
-<li>배포 프로파일 3가지와 실행 상태 전이를 설명할 수 있습니다.</li>
-<li>Agent Tuning의 개선 흐름과 승인 요건의 관계를 설명할 수 있습니다.</li>
+<li>평가 결과 칸에는 전체 점수 하나가 아니라 질문 유형별 점수와 따로 남겨 둔 시험지의 점수를 함께 적습니다.</li>
+<li>"알려진 한계"는 요건이 아니지만 승인자가 무엇을 받아들이는지 알고 승인하게 합니다.</li>
 </ul>
-</div>
-<h2 id="배경">배경</h2>
-<div class="opener">
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 문제 정의</span> 로컬 환경에서 동작이 확인된 Agent를 업무에 적용하기 위한 기준과 절차가 필요합니다.</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> 현황</span> 로컬 동작 확인과 업무 데이터 처리 적합성은 별개입니다. 반면 초기 단계부터 중앙 절차를 강제하면 실험 속도가 저하됩니다.</p>
-<p><span class="tag"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 설계 방향</span> <strong>개발과 실험은 팀 자율로, 승격은 검증 근거로</strong> 진행합니다. 단계별로 필요한 검증 근거가 정의되어 있습니다.</p>
-</div>
+<h2 id="잘못되면">잘못되면</h2>
+<p><strong>"지시문만 고쳤으니 평가는 건너뛰자"고 하면</strong> 수단 나 같은 수정이 그대로 올라갑니다. 월 누락을 고치려다 번호 질문 6행을 망가뜨린 그 수정입니다(<a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.</p>
+<p><strong>롤백을 검증하지 않고 올리면</strong> 문제가 생긴 날 되돌리는 방법을 그때 처음 시험하게 됩니다. <code>1.2.0</code>으로 실제로 되돌려 보고 요청 A가 통과하는지 확인한 뒤에 올립니다.</p>
 <h2 id="개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</h2>
 <div class="compare">
 <div class="bad">
@@ -83,72 +124,7 @@
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 주의</strong> 등록된 실행 환경은 프로덕션 승인 환경이 아닙니다. 개발자 PC나 Mac mini가 의도치 않게 프로덕션 환경으로 사용되는 것은 이 설계가 방지하려는 위험입니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.</p>
 </div>
-<h2 id="장시간-실행과-사람의-승인-durable-hitl">장시간 실행과 사람의 승인 (Durable, HITL)</h2>
-<p>workflow Agent는 장시간 실행되거나 중간에 사람의 승인을 대기할 수 있으므로 실행 상태를 관리합니다.</p>
-<ol class="flow">
-<li data-say="요청을 접수했습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>accepted</b><span>요청 접수</span></li>
-<li data-say="Agent가 실행 중입니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>running</b><span>실행 중</span></li>
-<li data-say="위험한 작업을 앞두고 사람의 승인을 기다리며 멈춰 있습니다. 승인 없이는 진행하지 않습니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>waiting_approval</b><span>승인 대기</span></li>
-<li data-say="승인을 받으면 권한을 다시 확인한 뒤 멈췄던 곳부터 이어서 실행합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>running</b><span>승인 및 재인가 후 재개</span></li>
-<li data-say="성공 또는 실패로 끝났습니다. 끝난 결과는 나중에 덮어쓰지 않습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><b>succeeded · failed</b><span>종료 상태는 덮어쓰지 않음</span></li>
-</ol>
-
-<div class="sim" data-sim="durable"></div>
-
-<ul>
-<li>승인 대기 상태는 <code>rejected</code>, <code>expired</code>, <code>cancelled</code>로 종료될 수도 있습니다.</li>
-<li>실행 중 취소를 요청하면 <code>cancel_requested</code>가 되고, <code>cancelled</code> 또는 이미 확정된 <code>succeeded</code>·<code>failed</code>로 종료됩니다.</li>
-<li>취소는 best effort이며, 이미 발생한 부작용을 롤백하지 않습니다.</li>
-<li>재개 시 승인 대상 digest, 테넌트, 정책 버전, 만료, 취소 여부를 모두 재검증합니다.</li>
-</ul>
-<p>Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TBD이며, 이 패키지는 계약만 제공합니다.</p>
-<h2 id="agent-tuning">Agent Tuning</h2>
-<p>Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. 개선은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름으로 수행합니다.</p>
-<ol class="flow">
-<li data-say="평가 결과와 실행 기록을 보고 어디를 고칠지 고릅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
-<li data-say="내 PC에서 고친 새 버전을 만듭니다. 기존 버전은 그대로 둡니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>개선안 작성</b><span>새 revision (Local-First)</span></li>
-<li data-say="새 버전을 기존 버전과 같은 기준으로 평가해 실제로 나아졌는지 비교합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>배포 전 평가</b><span>기존 버전과 비교</span></li>
-<li data-say="나아진 버전을 승격 후보로 Registry에 등록합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>eligible 등록</b><span>Registry</span></li>
-<li data-say="프로덕션 승인은 개선 버전이라도 똑같은 요건을 거칩니다. 빠른 길이라고 검사를 건너뛰지 않습니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 15c-1.5 1.2-2 3.5-2 6 2.5 0 4.8-.5 6-2"/><path d="M9 18l-3-3c1.5-5 5.5-10 13-12-2 7.5-7 11.5-12 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg><b>프로덕션 승인</b><span>승인 요건 그대로 적용</span></li>
-</ol>
-
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>개선 대상</th>
-<th>예</th>
-<th>산출물</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>프롬프트·지시문</td>
-<td>시스템 지시문, few-shot 예시</td>
-<td>새 Agent 버전</td>
-</tr>
-<tr>
-<td>도구·검색 구성</td>
-<td>도구 선택, 검색 파라미터</td>
-<td>새 Agent 버전 또는 Manifest 변경</td>
-</tr>
-<tr>
-<td>모델 선택</td>
-<td>논리 모델 capability 변경</td>
-<td>Manifest 변경</td>
-</tr>
-<tr>
-<td>미세조정(fine-tuning)</td>
-<td>평가 데이터 기반 모델 조정</td>
-<td>Agent Gateway 모델 경로에 새 endpoint 등록</td>
-</tr>
-</tbody>
-</table></div>
-<ul>
-<li>개선 흐름은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).</li>
-<li>Tuning 결과는 항상 새 불변 버전으로 등록하며, 기존 버전을 덮어쓰지 않습니다(MUST).</li>
-<li>미세조정 데이터는 데이터 분류와 반출 정책을 따르며, 외부 튜닝 서비스도 Agent Gateway 모델 경로 정책을 적용합니다(MUST).</li>
-<li>v0.1은 흐름과 규칙을 정의하며, 자동 개선안 생성과 미세조정 파이프라인은 후속 단계에서 구현합니다.</li>
-</ul>
+<p>멈췄다 이어 하는 실행(Durable, HITL)은 <a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a>와 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>에서, 평가 결과로 Agent를 고치는 흐름은 <a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>에서 다룹니다.</p>
 <h2 id="초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</h2>
 <p>플랫폼은 전체 모듈을 동시에 구현하지 않습니다. 다음 종단 간 실행 경로를 먼저 완성한 뒤, 도구·RAG·Durable 실행·Multi-Agent·분산 실행 환경을 단계적으로 추가합니다.</p>
 <ol class="flow">
@@ -163,8 +139,13 @@
 <p><img alt="Local-First MVP 흐름" src="../diagrams/mvp.svg" /></p>
 <h2 id="ci-품질-게이트">CI 품질 게이트</h2>
 <p>계약 검증은 문서가 아닌 코드로 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 <code>scripts/release.py</code>로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.</p>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-local-first">Local-First</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-approved">등록 / 승인 / 배포</a> <a href="docs--onboarding--09-glossary.html#term-profile">배포 프로파일</a> <a href="docs--onboarding--09-glossary.html#term-contract-as-code">Contract-as-Code</a> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a> <a href="docs--onboarding--09-glossary.html#term-production">프로덕션</a> <a href="docs--onboarding--09-glossary.html#term-evidence">승인 검증 근거</a></p>
+</div>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>등록은 존재를 알리는 일이고, 업무 요청을 받으려면 근거 여섯 가지와 사람의 승인이 필요합니다.</p>
 <div class="check">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>
 <summary>Q1. registered 상태의 Agent는 업무 트래픽을 처리할 수 있습니까?</summary>
 <p>처리할 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.</p>
@@ -174,8 +155,8 @@
 <p>필요합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책의 변경도 재평가 대상입니다.</p>
 </details>
 <details>
-<summary>Q3. 승인 대기 중인 작업을 취소하면 이미 발송된 메일도 취소됩니까?</summary>
-<p>취소되지 않습니다. 취소는 best effort이며, 이미 발생한 부작용은 롤백하지 않습니다.</p>
+<summary>Q3. 민준이 승인 기록에 "3회 채점에서 흔들리는 2행"을 적었습니다. 적지 않았다면 무엇이 달라지나요?</summary>
+<p>지훈은 0.925만 보고 승인하게 됩니다. 한계를 적어야 승인자가 무엇을 받아들이는지 알고 결정하고, 다음 개선 대상도 남습니다.</p>
 </details>
 </div>
 <div class="summary">
@@ -192,4 +173,4 @@
 <li>평가 기반 개선과 운영 모니터링: <a href="docs--onboarding--10-references.html#ref-industry">클라우드 Agent 플랫폼</a></li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--13-agent-card.html"><small>이전</small><b>Agent Card와 Agent 간 통신</b></a><a class="next" href="docs--onboarding--07-hands-on.html"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#배경">배경</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#장시간-실행과-사람의-승인-durable-hitl">장시간 실행과 사람의 승인 (Durable, HITL)</a><a href="#agent-tuning">Agent Tuning</a><a href="#초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--19-agent-tuning.html"><small>이전</small><b>Agent Tuning</b></a><a class="next" href="docs--onboarding--20-applications.html"><small>다음</small><b>AI Platform Applications</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#실물-보기">실물 보기</a><a href="#잘못되면">잘못되면</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

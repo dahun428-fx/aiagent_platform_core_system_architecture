@@ -190,3 +190,20 @@ class PackagingTests(unittest.TestCase):
             self.assertIn(required, names)
         self.assertFalse(any("\\" in n for n in names))
 
+
+
+class GuideScenarioTests(unittest.TestCase):
+    """The guide's running case quotes these numbers in several chapters; they must add up."""
+
+    def test_evaluation_scores_add_up(self):
+        import json
+        from pathlib import Path
+        e = json.loads((Path(__file__).resolve().parents[1] / "docs/onboarding/scenario.json").read_text(encoding="utf-8"))["evaluation"]
+        for r in e["results"]:
+            d = e["datasets"][r["dataset"]]
+            self.assertEqual(r["retrieved"], r["number"] + r["name"], r)
+            self.assertLessEqual(r["number"], d["number"])
+            self.assertLessEqual(r["name"], d["name"])
+            self.assertLessEqual(r["retrieved"], r["amount"])
+        self.assertEqual(sum(1 for r in e["results"] if min(r["retrieved"], r["amount"]) / e["datasets"][r["dataset"]]["rows"] >= e["threshold"]
+                             and r["dataset"] == "3.0.0"), 1)

@@ -106,4 +106,3 @@
 
 </div>
 
-<nav class="pager"><a href="08-reading-the-spec.md"><small>이전</small><b>기술 표준 해석과 FAQ</b></a><a class="next" href="09-glossary.md"><small>다음</small><b>주요 용어 정의</b></a></nav>

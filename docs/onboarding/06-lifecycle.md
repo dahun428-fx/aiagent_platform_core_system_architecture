@@ -1,29 +1,45 @@
-# Agent 수명주기·Tuning과 프로덕션 승인
+# 수명주기와 프로덕션 승인
 
 > 개발자 가이드 문서입니다. 규범은 [운영·평가](../operating-model.md), [배포 프로파일](../deployment.md), [Durable / HITL](../execution.md) 기술 표준 문서가 기준입니다.
 
-<div class="terms" markdown="1">
-<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [등록 / 승인 / 배포](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Durable 실행](09-glossary.md#term-durable) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning) [프로덕션](09-glossary.md#term-production) [승인 검증 근거](09-glossary.md#term-evidence)
+{{journey:10}}
+
+<div class="sofar" markdown="1">
+**지금까지** 민준이 지시문 두 문장을 고친 `invoice-summary 1.3.0`이 시험지 `3.0.0`에서 37/40 = 0.925를 받아 승격 후보가 됐습니다. 운영 중인 것은 아직 `1.2.0`입니다.
 </div>
 
-<div class="goals" markdown="1">
-**{{icon:target}} 학습 목표**
+## 장면
 
-- 로컬 실험부터 폐기까지 Agent 수명주기 7단계를 설명할 수 있습니다.
-- 프로덕션 승인에 필요한 검증 근거 6가지를 나열할 수 있습니다.
-- 배포 프로파일 3가지와 실행 상태 전이를 설명할 수 있습니다.
-- Agent Tuning의 개선 흐름과 승인 요건의 관계를 설명할 수 있습니다.
+`1.3.0`은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 `1.2.0`이 받습니다. 업무 요청을 받으려면 프로덕션 승인이 필요하기 때문입니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모읍니다. 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 `1.3.0`이 업무 요청을 받습니다.
+
+<div class="point" markdown="1">
+**{{icon:bulb}} 승인 단계가 없다면** 등록만 하면 곧바로 업무 데이터를 만지게 되고, 무엇을 근거로 올렸는지 나중에 아무도 답하지 못합니다.
 </div>
 
-## 배경
+## 실물 보기
 
-<div class="opener" markdown="1">
-<span class="tag">{{icon:question}} 문제 정의</span> 로컬 환경에서 동작이 확인된 Agent를 업무에 적용하기 위한 기준과 절차가 필요합니다.
+지훈이 본 `1.3.0`의 승인 기록입니다. 승인 요건 여섯 가지가 한 줄씩입니다.
 
-<span class="tag">{{icon:eye}} 현황</span> 로컬 동작 확인과 업무 데이터 처리 적합성은 별개입니다. 반면 초기 단계부터 중앙 절차를 강제하면 실험 속도가 저하됩니다.
+<!-- kind: example -->
 
-<span class="tag">{{icon:bulb}} 설계 방향</span> **개발과 실험은 팀 자율로, 승격은 검증 근거로** 진행합니다. 단계별로 필요한 검증 근거가 정의되어 있습니다.
-</div>
+| 승인 요건 | `invoice-summary 1.3.0`의 근거 |
+|---|---|
+| 불변 버전과 digest | `1.3.0`, revision은 커밋 SHA, 산출물 `sha256:…` |
+| 계약 적합성 | Manifest 스키마 검증 통과, 적합성 C1~C11 통과 |
+| 보안 검토 | 지시문만 바뀜. 권한, 도구, 데이터 이동은 `1.2.0`과 같음 |
+| 평가 결과 | 시험지 `3.0.0`에서 두 지표 모두 37/40 = 0.925(번호 질문 28/28, 거래처명 질문 9/12). 따로 남겨 둔 시험지 18/20 = 0.90 |
+| 롤백 검증 | `1.2.0`으로 되돌린 뒤 요청 A가 통과하는 것을 확인 |
+| 사람 승인 | 지훈(재무팀장, 예시 역할). 위험도 medium |
+| 알려진 한계 | 남은 오답 3행(`row-29`, `row-30`, `row-40`). 3회 채점에서 흔들리는 2행(`row-09`, `row-21`). 다음 개선 대상 |
+
+- 평가 결과 칸에는 전체 점수 하나가 아니라 질문 유형별 점수와 따로 남겨 둔 시험지의 점수를 함께 적습니다.
+- "알려진 한계"는 요건이 아니지만 승인자가 무엇을 받아들이는지 알고 승인하게 합니다.
+
+## 잘못되면
+
+**"지시문만 고쳤으니 평가는 건너뛰자"고 하면** 수단 나 같은 수정이 그대로 올라갑니다. 월 누락을 고치려다 번호 질문 6행을 망가뜨린 그 수정입니다([Agent Tuning](19-agent-tuning.md)). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.
+
+**롤백을 검증하지 않고 올리면** 문제가 생긴 날 되돌리는 방법을 그때 처음 시험하게 됩니다. `1.2.0`으로 실제로 되돌려 보고 요청 A가 통과하는지 확인한 뒤에 올립니다.
 
 ## 개발 방식 (Local-First, CLI-First)
 
@@ -87,50 +103,7 @@ Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리
 **{{icon:warn}} 주의** 등록된 실행 환경은 프로덕션 승인 환경이 아닙니다. 개발자 PC나 Mac mini가 의도치 않게 프로덕션 환경으로 사용되는 것은 이 설계가 방지하려는 위험입니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.
 </div>
 
-## 장시간 실행과 사람의 승인 (Durable, HITL)
-
-workflow Agent는 장시간 실행되거나 중간에 사람의 승인을 대기할 수 있으므로 실행 상태를 관리합니다.
-
-<ol class="flow">
-<li data-say="요청을 접수했습니다.">{{icon:check}}<b>accepted</b><span>요청 접수</span></li>
-<li data-say="Agent가 실행 중입니다.">{{icon:runtime}}<b>running</b><span>실행 중</span></li>
-<li data-say="위험한 작업을 앞두고 사람의 승인을 기다리며 멈춰 있습니다. 승인 없이는 진행하지 않습니다." class="hi">{{icon:approve}}<b>waiting_approval</b><span>승인 대기</span></li>
-<li data-say="승인을 받으면 권한을 다시 확인한 뒤 멈췄던 곳부터 이어서 실행합니다.">{{icon:runtime}}<b>running</b><span>승인 및 재인가 후 재개</span></li>
-<li data-say="성공 또는 실패로 끝났습니다. 끝난 결과는 나중에 덮어쓰지 않습니다.">{{icon:target}}<b>succeeded · failed</b><span>종료 상태는 덮어쓰지 않음</span></li>
-</ol>
-
-<div class="sim" data-sim="durable"></div>
-
-- 승인 대기 상태는 `rejected`, `expired`, `cancelled`로 종료될 수도 있습니다.
-- 실행 중 취소를 요청하면 `cancel_requested`가 되고, `cancelled` 또는 이미 확정된 `succeeded`·`failed`로 종료됩니다.
-- 취소는 best effort이며, 이미 발생한 부작용을 롤백하지 않습니다.
-- 재개 시 승인 대상 digest, 테넌트, 정책 버전, 만료, 취소 여부를 모두 재검증합니다.
-
-Durable 실행 엔진(체크포인트 저장소, 큐, 스케줄러) 제품은 TBD이며, 이 패키지는 계약만 제공합니다.
-
-## Agent Tuning
-
-Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하는 Core System입니다. 개선은 평가 → 개선안 → 재평가 → 승격 후보 등록을 하나의 반복 경로로 묶은 흐름으로 수행합니다.
-
-<ol class="flow">
-<li data-say="평가 결과와 실행 기록을 보고 어디를 고칠지 고릅니다.">{{icon:eye}}<b>개선 대상 선정</b><span>평가 결과 · 실행 추적</span></li>
-<li data-say="내 PC에서 고친 새 버전을 만듭니다. 기존 버전은 그대로 둡니다.">{{icon:code}}<b>개선안 작성</b><span>새 revision (Local-First)</span></li>
-<li data-say="새 버전을 기존 버전과 같은 기준으로 평가해 실제로 나아졌는지 비교합니다.">{{icon:test}}<b>배포 전 평가</b><span>기존 버전과 비교</span></li>
-<li data-say="나아진 버전을 승격 후보로 Registry에 등록합니다.">{{icon:approve}}<b>eligible 등록</b><span>Registry</span></li>
-<li data-say="프로덕션 승인은 개선 버전이라도 똑같은 요건을 거칩니다. 빠른 길이라고 검사를 건너뛰지 않습니다." class="hi">{{icon:rocket}}<b>프로덕션 승인</b><span>승인 요건 그대로 적용</span></li>
-</ol>
-
-| 개선 대상 | 예 | 산출물 |
-|---|---|---|
-| 프롬프트·지시문 | 시스템 지시문, few-shot 예시 | 새 Agent 버전 |
-| 도구·검색 구성 | 도구 선택, 검색 파라미터 | 새 Agent 버전 또는 Manifest 변경 |
-| 모델 선택 | 논리 모델 capability 변경 | Manifest 변경 |
-| 미세조정(fine-tuning) | 평가 데이터 기반 모델 조정 | Agent Gateway 모델 경로에 새 endpoint 등록 |
-
-- 개선 흐름은 평가와 등록을 자동화하는 경로이며, 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).
-- Tuning 결과는 항상 새 불변 버전으로 등록하며, 기존 버전을 덮어쓰지 않습니다(MUST).
-- 미세조정 데이터는 데이터 분류와 반출 정책을 따르며, 외부 튜닝 서비스도 Agent Gateway 모델 경로 정책을 적용합니다(MUST).
-- v0.1은 흐름과 규칙을 정의하며, 자동 개선안 생성과 미세조정 파이프라인은 후속 단계에서 구현합니다.
+멈췄다 이어 하는 실행(Durable, HITL)은 [Agent Runtime과 Memory](11-runtime-memory.md)와 [Agent Tools](15-agent-tools.md)에서, 평가 결과로 Agent를 고치는 흐름은 [Agent Tuning](19-agent-tuning.md)에서 다룹니다.
 
 ## 초기 구현 범위: 종단 간 실행 경로
 
@@ -151,8 +124,16 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 
 계약 검증은 문서가 아닌 코드로 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 `scripts/release.py`로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.
 
+<div class="terms" markdown="1">
+<span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [등록 / 승인 / 배포](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning) [프로덕션](09-glossary.md#term-production) [승인 검증 근거](09-glossary.md#term-evidence)
+</div>
+
+## 한 문장으로
+
+등록은 존재를 알리는 일이고, 업무 요청을 받으려면 근거 여섯 가지와 사람의 승인이 필요합니다.
+
 <div class="check" markdown="1">
-**{{icon:question}} 이해도 점검**
+**{{icon:question}} 이해 점검**
 
 <details markdown="1"><summary>Q1. registered 상태의 Agent는 업무 트래픽을 처리할 수 있습니까?</summary>
 처리할 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.
@@ -162,9 +143,10 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 필요합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책의 변경도 재평가 대상입니다.
 </details>
 
-<details markdown="1"><summary>Q3. 승인 대기 중인 작업을 취소하면 이미 발송된 메일도 취소됩니까?</summary>
-취소되지 않습니다. 취소는 best effort이며, 이미 발생한 부작용은 롤백하지 않습니다.
+<details markdown="1"><summary>Q3. 민준이 승인 기록에 "3회 채점에서 흔들리는 2행"을 적었습니다. 적지 않았다면 무엇이 달라지나요?</summary>
+지훈은 0.925만 보고 승인하게 됩니다. 한계를 적어야 승인자가 무엇을 받아들이는지 알고 결정하고, 다음 개선 대상도 남습니다.
 </details>
+
 </div>
 
 <div class="summary" markdown="1">
@@ -181,4 +163,3 @@ Agent Tuning은 평가 결과와 실행 추적을 근거로 Agent를 개선하�
 - 평가 기반 개선과 운영 모니터링: [클라우드 Agent 플랫폼](10-references.md#ref-industry)
 </div>
 
-<nav class="pager"><a href="13-agent-card.md"><small>이전</small><b>Agent Card와 Agent 간 통신</b></a><a class="next" href="07-hands-on.md"><small>다음</small><b>로컬 환경 구성 및 호출 실습</b></a></nav>

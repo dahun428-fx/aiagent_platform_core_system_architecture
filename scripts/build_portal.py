@@ -23,20 +23,57 @@ def link(p):
 
 onboarding = [
     ("docs/onboarding/01-why.md", "플랫폼 도입 배경과 설계 원칙", "5분", "팀별 Agent 개발 환경과 전사 공통 보안·운영 통제의 책임 구분", "target"),
-    ("docs/onboarding/02-big-picture.md", "Core Systems 아키텍처", "15분", "10개 Core System의 층 구조, 책임, 진입·반출 경계와 배치 관점", "map"),
-    ("docs/onboarding/03-one-request.md", "Agent 요청 처리 흐름", "15분", "Agent Platform APIs 진입부터 Agent Gateway를 통한 모델·도구 호출, 실행 추적까지", "trace"),
-    ("docs/onboarding/05-agents-and-manifest.md", "Agent Factory와 Manifest 명세", "10분", "생성·선언·검증·등록 흐름, Agent 유형과 Manifest 검증 규칙", "manifest"),
-    ("docs/onboarding/11-runtime-memory.md", "Agent Runtime과 Memory", "10분", "framework adapter, Durable 실행, 단기·장기 Memory의 범위와 규칙", "runtime"),
-    ("docs/onboarding/04-trust.md", "신뢰 경계와 Guardrails", "15분", "신뢰하지 않는 입력, Guardrail의 공통 검사 서비스와 네 집행 지점", "shield"),
-    ("docs/onboarding/12-observability-evaluation.md", "Agent Observability와 Agent Evaluation", "10분", "OpenTelemetry GenAI 실행 추적과 평가 3단계", "eye"),
+    ("docs/onboarding/02-big-picture.md", "청구서 Agent의 하루: Core Systems 지도", "10분", "요청 하나가 10개 Core System을 지나는 순서를 장면 11개로 먼저 봅니다", "map"),
+    ("docs/onboarding/03-one-request.md", "Agent Platform APIs: 요청 하나 따라가기", "10분", "모든 요청이 지나는 정문. 누가 보냈는지, 같은 요청이 또 왔는지를 가립니다", "trace"),
+    ("docs/onboarding/05-agents-and-manifest.md", "Agent Factory와 Manifest", "10분", "Agent를 만들어 올리는 곳. 신청서(Manifest)를 먼저 검사합니다", "manifest"),
+    ("docs/onboarding/11-runtime-memory.md", "Agent Runtime과 Memory", "10분", "내 함수 하나를 플랫폼이 불러 주고, 대화 중 기억할 것을 맡아 줍니다", "runtime"),
+    ("docs/onboarding/15-agent-tools.md", "Agent Tools", "10분", "Agent는 도구의 이름만 압니다. 읽기는 바로 되고 보내기는 승인까지 멈춥니다", "tools"),
+    ("docs/onboarding/16-agent-identity.md", "Agent Identity", "10분", "같은 Agent인데 왜 누구는 되고 누구는 안 되는지, 관문 순서대로 봅니다", "identity"),
+    ("docs/onboarding/17-agent-gateway.md", "Agent Gateway", "10분", "모델로 가는 길목. 어느 모델로 보낼지 정하고 모델이 아플 때 대신 버팁니다", "gateway"),
+    ("docs/onboarding/04-trust.md", "신뢰 경계와 Guardrails", "10분", "문서에 숨은 지시문을 네 군데 집행 지점에서 걸러 냅니다", "shield"),
+    ("docs/onboarding/12-observability-evaluation.md", "Agent Observability", "10분", "답이 틀렸을 때 호출 번호 하나로 어디까지 좁힐 수 있는지 봅니다", "eye"),
+    ("docs/onboarding/18-agent-evaluation.md", "Agent Evaluation", "10분", "만점을 받은 버전이 왜 운영에서 틀렸는지, 시험지와 채점으로 봅니다", "test"),
+    ("docs/onboarding/19-agent-tuning.md", "Agent Tuning", "10분", "틀린 문제를 이유별로 묶어 고치고, 같은 시험으로 확인한 뒤 새 버전으로 올립니다", "rocket"),
+    ("docs/onboarding/06-lifecycle.md", "수명주기와 프로덕션 승인", "10분", "등록부터 승인까지의 단계와, 승인 기록 한 장에 담기는 것", "approve"),
+    ("docs/onboarding/20-applications.md", "AI Platform Applications", "5분", "터미널에서 하든 화면에서 하든 같은 API를 부릅니다. 지금 되는 것과 아닌 것", "laptop"),
     ("docs/onboarding/13-agent-card.md", "Agent Card와 Agent 간 통신", "10분", "A2A 1.0.0 Agent Card의 필드, 확장 카드, 서명과 Registry 발행 규칙", "agents"),
-    ("docs/onboarding/06-lifecycle.md", "Agent 수명주기·Tuning과 프로덕션 승인", "10분", "등록·검증·평가·승인 단계, 승인 요건, Agent Tuning 개선 흐름", "rocket"),
     ("docs/onboarding/07-hands-on.md", "로컬 환경 구성 및 호출 실습", "30분", "로컬 mock 환경에서 Manifest 검증, Agent 호출 및 오류 응답 확인", "code"),
-    ("docs/onboarding/14-connect-your-agent.md", "내 Agent 연결과 적합성 검증", "30분", "템플릿으로 adapter와 Manifest를 작성해 새 Agent ID로 호출하고 적합성 9항목 통과", "agent"),
+    ("docs/onboarding/14-connect-your-agent.md", "내 Agent 연결과 적합성 검증", "30분", "템플릿으로 adapter와 Manifest를 작성해 새 Agent ID로 호출하고 적합성 11항목 통과", "agent"),
     ("docs/onboarding/08-reading-the-spec.md", "기술 표준 해석과 FAQ", "10분", "MUST·SHOULD·MAY, TBD 및 버전 표기의 의미", "question"),
     ("docs/onboarding/10-references.md", "근거와 참고 자료", "참조용", "클라우드 Agent 플랫폼, OpenTelemetry, MCP, A2A, IETF, OWASP 등 외부 근거", "book"),
     ("docs/onboarding/09-glossary.md", "주요 용어 정의", "참조용", "Core Systems, 실행 모델 및 기술 계약의 주요 용어", "book"),
 ]
+# The running case of the guide: one invoice request, eleven scenes, one chapter each.
+SCENES = [("부른다", "03-one-request.md"), ("어떻게 여기 있나", "05-agents-and-manifest.md"), ("실행된다", "11-runtime-memory.md"),
+          ("ERP를 읽고 메일을 보내려 한다", "15-agent-tools.md"), ("누구 권한으로", "16-agent-identity.md"), ("모델에 묻는다", "17-agent-gateway.md"),
+          ("함정을 만난다", "04-trust.md"), ("답이 틀렸다", "12-observability-evaluation.md"), ("점수를 매긴다", "18-agent-evaluation.md"),
+          ("고쳐서 다시 올린다", "19-agent-tuning.md"), ("어디서 이 일을 하나", "20-applications.md")]
+KINDS = {"run": "실행 결과", "example": "예시"}
+BOUNDARIES = {"app": "앱이 받은 응답", "route": "내부 진단 · 내부 경로를 직접 호출한 값", "dev": "개발 환경에서 다시 실행", "local": "내 PC의 로컬 mock"}
+
+
+def journey(m):
+    """`{{journey:4}}` becomes the progress bar: where this chapter sits in the eleven scenes."""
+    now = int(m.group(1))
+    items = "".join(f'<li class="{"on" if n == now else "done" if n < now else ""}"><a href="{f}"><i>{chr(0x2460 + n - 1)}</i>{html.escape(t)}</a></li>'
+                    for n, (t, f) in enumerate(SCENES, 1))
+    return f'<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 {now}번째"><ol>{items}</ol></nav>'
+
+
+def kind_label(m):
+    """`<!-- kind: run boundary: app -->` becomes a visible label on the block that follows."""
+    kind, boundary = m.group(1), m.group(2)
+    text = KINDS[kind] + (" · " + BOUNDARIES[boundary] if boundary else "")
+    return f'<p class="kind {kind}" data-kind="{kind}"' + (f' data-boundary="{boundary}"' if boundary else "") + f">{text}</p>"
+
+
+def pager(relative):
+    paths = [p for p, *_ in onboarding]
+    i = paths.index(relative)
+    cell = lambda j, cls, word: f'<a{cls} href="{Path(paths[j]).name}"><small>{word}</small><b>{onboarding[j][1]}</b></a>'
+    return '\n\n<nav class="pager">' + (cell(i - 1, "", "이전") if i else "") + (cell(i + 1, ' class="next"', "다음") if i + 1 < len(paths) else "") + "</nav>\n"
+
+
 navigation = [
     ("개발자 가이드", [("index.html", "가이드 개요")] + [(p, t) for p, t, _, _, _ in onboarding]),
     ("설계 정의", [("docs/core-systems.md", "Core Systems"), ("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/guardrails.md", "Guardrails"), ("docs/memory.md", "Memory"), ("docs/agent-card.md", "Agent Card"), ("docs/execution.md", "Durable / HITL")]),
@@ -59,7 +96,7 @@ def layout(title, body, current="", source=None, toc=""):
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>{html.escape(title)} · Agent Platform</title><link rel="stylesheet" href="styles.css">
-<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="interactive.js"></script></head>
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
 <body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색">{nav}</nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
@@ -94,10 +131,13 @@ for source in sources:
     if source.suffix == ".json" or relative.startswith("sources/") and source.name != "README.md":
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
     else:
+        if relative in [p for p, *_ in onboarding]:
+            text = re.sub(r"\{\{journey:(\d+)\}\}", journey, text) + pager(relative)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", TocExtension(slugify=slugify_unicode, toc_depth="2")])
         body = rewrite_links(body, source)
         body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
         body = expand_icons(body)
+        body = re.sub(r"<!-- kind: (run|example)(?: boundary: (app|route|dev|local))? -->", kind_label, body)
     out = mapping[source.resolve()]
     toc = ""
     sections = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body)
@@ -110,16 +150,16 @@ G = "docs--onboarding--"
 home = f"""<h1>AI Agent Platform 개발자 가이드</h1>
 <p class="lead thesis">팀은 원하는 프레임워크와 도구로 Agent를 만들고, 플랫폼은 그 Agent를 <b>등록·실행·통제·관측·평가</b>하는 공통 계층을 제공합니다. 아래 10개 Core System이 그 공통 계층이며, 이 가이드는 각 Core System의 책임과 Agent가 이 구조 위에서 실행되는 방식을 정의합니다.</p>
 <div class="stack home-stack" aria-label="AI Agent Platform Core Systems 구성도">
-<a href="{G}07-hands-on.html" class="s-app"><b>{{{{icon:laptop}}}} AI Platform Applications</b><small>DevTools(CLI · SDK · 템플릿) · Space(공유 작업 공간)</small></a>
+<a href="{G}20-applications.html" class="s-app"><b>{{{{icon:laptop}}}} AI Platform Applications</b><small>DevTools(CLI · SDK · 템플릿) · Space(공유 작업 공간)</small></a>
 <a href="{G}03-one-request.html" class="s-api"><b>{{{{icon:gateway}}}} Agent Platform APIs</b><small>모든 진입의 단일 관문: 인증 · 테넌트 인가 · Agent 해석 · 멱등성</small></a>
 <a href="{G}05-agents-and-manifest.html" class="s-factory"><b>{{{{icon:manifest}}}} Agent Factory</b><small>생성 · Manifest 선언 · 검증 · 등록</small></a>
 <a href="{G}11-runtime-memory.html" class="s-runtime"><b>{{{{icon:runtime}}}} Agent Runtime</b><small>framework adapter · Durable 실행 · Memory</small></a>
-<a href="{G}04-trust.html" class="s-tools"><b>{{{{icon:tools}}}} Agent Tools</b><small>Tool Registry · 도구 정책</small></a>
-<a href="{G}04-trust.html" class="s-identity"><b>{{{{icon:identity}}}} Agent Identity</b><small>사용자·workload Identity · Credential Broker</small></a>
+<a href="{G}15-agent-tools.html" class="s-tools"><b>{{{{icon:tools}}}} Agent Tools</b><small>Tool Registry · 도구 정책</small></a>
+<a href="{G}16-agent-identity.html" class="s-identity"><b>{{{{icon:identity}}}} Agent Identity</b><small>사용자·workload Identity · Credential Broker</small></a>
 <a href="{G}12-observability-evaluation.html" class="s-obs"><b>{{{{icon:eye}}}} Agent Observability</b><small>실행 추적 · 지표 · 로그</small></a>
-<a href="{G}12-observability-evaluation.html" class="s-eval"><b>{{{{icon:test}}}} Agent Evaluation</b><small>배포 전 평가 · 운영 모니터링</small></a>
-<a href="{G}04-trust.html" class="s-gateway"><b>{{{{icon:gateway}}}} Agent Gateway</b><small>모든 반출의 단일 관문: 모델 경로 · 도구 경로 · Guardrail 집행</small></a>
-<a href="{G}06-lifecycle.html" class="s-tuning"><b>{{{{icon:rocket}}}} Agent Tuning</b><small>평가 기반 개선</small></a>
+<a href="{G}18-agent-evaluation.html" class="s-eval"><b>{{{{icon:test}}}} Agent Evaluation</b><small>배포 전 평가 · 운영 모니터링</small></a>
+<a href="{G}17-agent-gateway.html" class="s-gateway"><b>{{{{icon:gateway}}}} Agent Gateway</b><small>모든 반출의 단일 관문: 모델 경로 · 도구 경로 · Guardrail 집행</small></a>
+<a href="{G}19-agent-tuning.html" class="s-tuning"><b>{{{{icon:rocket}}}} Agent Tuning</b><small>평가 기반 개선</small></a>
 <a href="{G}02-big-picture.html" class="s-ext-app"><b>{{{{icon:user}}}} External Applications and Solutions</b><small>Agent Platform APIs로만 접근</small></a>
 <a href="{G}02-big-picture.html" class="s-ext-tool"><b>{{{{icon:cloud}}}} External Tools and Models</b><small>Agent Gateway로만 접근</small></a>
 <a href="{G}02-big-picture.html" class="s-infra"><b>{{{{icon:server}}}} 실행 인프라 (Distributed Execution Plane)</b><small>개발자 로컬 · Mac mini · 사내 서버 · 클라우드 · 모델 endpoint</small></a>
@@ -197,6 +237,7 @@ def glossary_terms():
     return terms
 
 
+files["portal/scenario.js"] = "window.PLATFORM_SCENARIO = " + json.dumps(json.loads((ROOT / "docs/onboarding/scenario.json").read_text(encoding="utf-8")), ensure_ascii=False).replace("</", "<" + chr(92) + "/") + ";\n"
 files["portal/glossary-index.js"] = "window.PLATFORM_TERMS = " + json.dumps(glossary_terms(), ensure_ascii=False).replace("</", "<" + chr(92) + "/") + ";\n"
 if "--write" in sys.argv:
     for p, content in files.items():

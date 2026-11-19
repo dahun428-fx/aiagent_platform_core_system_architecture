@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>AI Platform Applications · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html" aria-current="page">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="ai-platform-applications">AI Platform Applications</h1>
+<blockquote>
+<p>개발자 가이드 문서입니다. 규범은 <a href="docs--core-systems.html">Core Systems</a> 기술 표준 문서와 계약 <code>agent-gateway.openapi.json</code>이 기준입니다.</p>
+</blockquote>
+<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 11번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="done"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class="done"><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class="done"><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class="done"><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class="done"><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class="on"><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+
+<div class="sofar">
+<p><strong>지금까지</strong> <code>invoice-summary</code>는 등록되고, 실행되고, 한 번 틀리고, 고쳐져 <code>1.3.0</code>으로 승인됐습니다. 장면 열 개에서 플랫폼 안쪽을 봤습니다. 마지막 장면은 사람들이 그 플랫폼을 어디서 만지는지입니다.</p>
+</div>
+<h2 id="장면">장면</h2>
+<p>같은 하루를 사람 기준으로 다시 봅니다. 민준은 터미널에서 Manifest를 검증하고 Agent를 띄웠습니다. 서연은 재무팀 업무 앱에서 질문을 보냈습니다. 지훈은 승인함에서 메일 발송과 <code>1.3.0</code>의 승격을 승인했습니다. 도구는 셋이 달랐지만, Agent를 부르고 상태를 보고 승인하는 일은 모두 같은 정문의 같은 API로 갑니다. 다만 이 가운데 지금 실제로 해 볼 수 있는 것과 아직 약속만 있는 것이 섞여 있습니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> AI Platform Applications가 없다면</strong> 팀마다 검증 스크립트와 승인 화면을 따로 만들고, 화면마다 다른 뒷문이 생깁니다.</p>
+</div>
+<h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
+<ol class="flow">
+<li data-say="민준은 DevTools의 명령으로, 서연은 업무 앱으로, 지훈은 승인함으로 일합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>1. 저마다의 도구로 일한다</b><span>DevTools · 업무 앱 · Space</span></li>
+<li data-say="어느 도구든 Agent를 부르면 같은 주소로 같은 모양의 요청이 나갑니다. 화면 전용 뒷문은 없습니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>2. 같은 요청이 나간다</b><span>Agent Platform APIs</span></li>
+<li data-say="아직 화면이나 구현이 없는 일이 있습니다. 표에서 실행, 계약만, 정의를 먼저 확인합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><b>3. 아직 없는 일은 표에서 확인한다</b><span>실행 · 계약만 · 정의</span></li>
+</ol>
+
+<h2 id="실물-보기">실물 보기</h2>
+<p>하는 일과 길의 대응표입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>하는 일</th>
+<th>터미널(DevTools)</th>
+<th>Space 화면</th>
+<th>API</th>
+<th>v0.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manifest 검증</td>
+<td><code>agentctl validate</code></td>
+<td>—</td>
+<td>계약에 API 없음</td>
+<td>실행</td>
+</tr>
+<tr>
+<td>Agent 호출</td>
+<td>클라이언트 예제, curl</td>
+<td>카탈로그에서 실행</td>
+<td><code>invokeAgent</code></td>
+<td>실행</td>
+</tr>
+<tr>
+<td>실행 상태 보기</td>
+<td>—</td>
+<td>실행 목록</td>
+<td><code>getInvocation</code>, <code>listEvents</code></td>
+<td>계약만(mock은 501)</td>
+</tr>
+<tr>
+<td>승인</td>
+<td>—</td>
+<td>승인함</td>
+<td><code>submitApproval</code></td>
+<td>계약만(mock은 501)</td>
+</tr>
+<tr>
+<td>추적 보기</td>
+<td>—</td>
+<td>실행 추적</td>
+<td>계약에 API 없음</td>
+<td>정의</td>
+</tr>
+<tr>
+<td>평가 결과 보기</td>
+<td>—</td>
+<td>평가</td>
+<td>계약에 API 없음</td>
+<td>정의</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>실행</strong>: 내 PC에서 지금 돌아갑니다.</li>
+<li><strong>계약만</strong>: 요청과 응답의 모양은 정해져 있지만 로컬 mock은 501을 돌려줍니다.</li>
+<li><strong>정의</strong>: 무엇을 하는 곳인지만 정해져 있습니다. Space의 화면은 모두 여기에 해당합니다.</li>
+</ul>
+<p>같은 호출이 두 길로 나가는 모습입니다. 민준이 터미널에서 보낸 요청과, Space 카탈로그가 만들어지면 "실행" 버튼이 보낼 요청은 같은 HTTP 요청입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-text">POST /v1/agents/invoice-summary/invocations
+Authorization: Bearer &lt;부른 사람의 토큰&gt;
+Idempotency-Key: &lt;요청 번호&gt;
+
+{&quot;input&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;청구서 INV-2048 요약해 줘&quot;},
+ &quot;context&quot;: {&quot;tenantId&quot;: &quot;finance&quot;, &quot;dataClassification&quot;: &quot;confidential&quot;},
+ &quot;execution&quot;: {&quot;mode&quot;: &quot;sync&quot;, &quot;timeoutMs&quot;: 30000}}
+</code></pre>
+<ul>
+<li>달라지는 것은 <code>Authorization</code>의 토큰, 곧 누가 불렀는지뿐입니다. 하준이 어느 화면에서 누르든 403인 이유입니다.</li>
+<li>화면이 Agent를 직접 실행하거나 ERP에 직접 닿는 길은 없습니다.</li>
+</ul>
+<h2 id="직접-해-보기">직접 해 보기</h2>
+<div class="sim" data-sim="roles"></div>
+
+<ol class="mission">
+<li>Agent 호출을 터미널과 Space로 각각 골라 나가는 요청을 비교하세요.</li>
+<li>지훈이 승인을 지금 해 볼 수 있나요. 무엇이 돌아오나요.</li>
+</ol>
+
+<h2 id="잘못되면">잘못되면</h2>
+<p><strong>mock의 501을 장애로 오해하면</strong> 시간을 잃습니다. 민준이 서연의 앱에 실행 상태 조회를 붙이려고 <code>GET /v1/invocations/{invocationId}</code>를 불렀더니 501이 왔습니다.</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-json">{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;NOT_IMPLEMENTED&quot;, &quot;status&quot;: 501, &quot;detail&quot;: &quot;This target API is contract-only&quot;, &quot;code&quot;: &quot;NOT_IMPLEMENTED&quot;, &quot;traceId&quot;: &quot;…&quot;}
+</code></pre>
+<p>고장이 아니라 "계약만 있다"는 뜻입니다. 위 표에서 그 일이 "실행"인지 "계약만"인지 먼저 확인합니다. 계약만인 API는 응답 모양에 맞춰 앱을 준비해 둘 수는 있지만 지금 동작을 시험할 수는 없습니다.</p>
+<p><strong>화면에서 손으로만 확인하고 CI에 넣지 않으면</strong> 다음 버전에서 같은 검증을 빠뜨립니다. 민준이 <code>1.3.0</code>을 만들 때 <code>validate</code>와 <code>conformance</code>를 깜빡하면 형식이 깨진 Manifest가 등록 단계까지 갑니다. 터미널 명령으로 할 수 있는 일은 CI에 넣어 매번 자동으로 돌립니다.</p>
+<details class="more">
+<summary>더 보기: 없는 API를 가정할 때, Space의 세 화면</summary>
+<p><strong>계약에 없는 API가 있다고 가정하고 팀 화면을 설계하면</strong> 붙일 곳이 없어 다시 만듭니다. 추적 보기와 평가 결과 보기는 v0.1 계약에 API가 없습니다. 대응표의 "계약에 API 없음"을 먼저 확인합니다.</p>
+<p>Space는 Agent를 찾아 쓰고, 실행을 살피고, 승인하는 공유 작업 공간입니다. 아래 세 화면은 모두 정의 단계이고 구현이 없습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>화면</th>
+<th>누가</th>
+<th>하는 일</th>
+<th>부르는 API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>카탈로그</td>
+<td>서연</td>
+<td>승인된 Agent를 찾아 실행</td>
+<td><code>listAgents</code>, <code>getAgent</code>, <code>invokeAgent</code></td>
+</tr>
+<tr>
+<td>실행 추적</td>
+<td>민준</td>
+<td>호출 번호로 실행 상태와 이벤트 확인</td>
+<td><code>getInvocation</code>, <code>listEvents</code></td>
+</tr>
+<tr>
+<td>승인함</td>
+<td>지훈</td>
+<td>기다리는 쓰기 작업을 승인하거나 거절</td>
+<td><code>submitApproval</code>, <code>cancelInvocation</code></td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<h2 id="내가-할-일">내가 할 일</h2>
+<ol>
+<li>DevTools의 첫 명령 세 개를 익힙니다. <code>validate</code>, <code>conformance</code>, <code>run</code>입니다.</li>
+<li><code>validate</code>와 <code>conformance</code>를 CI에 넣습니다.</li>
+<li>앱에 기능을 붙이기 전에 대응표에서 그 API의 등급을 확인합니다.</li>
+</ol>
+<p><strong>내 PC에서 해 보기</strong> 저장소 루트에서 실행합니다.</p>
+<pre><code class="language-bash">python scripts/agentctl.py validate examples/agents/invoice-summary/agent-manifest.json
+python scripts/agentctl.py conformance examples/agents/invoice-summary
+python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
+curl -i -H &quot;Authorization: Bearer mock-user&quot; http://127.0.0.1:8765/v1/invocations/x
+</code></pre>
+<p>마지막 명령이 위의 501을 돌려줍니다.</p>
+<div class="scope">
+<p><strong>제공 범위 (v0.1)</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>등급</th>
+<th>확인하는 곳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DevTools CLI(<code>agentctl</code>), 템플릿, 클라이언트 예제</td>
+<td>실행</td>
+<td><code>scripts/agentctl.py</code>, <code>templates/agents/</code>, <code>examples/</code></td>
+</tr>
+<tr>
+<td>Agent 호출 API</td>
+<td>실행</td>
+<td>로컬 mock</td>
+</tr>
+<tr>
+<td>Agent 목록·상태 조회·취소·이벤트·승인 API</td>
+<td>계약</td>
+<td><code>contracts/agent-gateway.openapi.json</code>. 로컬 mock은 501</td>
+</tr>
+<tr>
+<td>Space(카탈로그, 실행 추적, 승인함)</td>
+<td>정의</td>
+<td><a href="docs--core-systems.html">Core Systems</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<h2 id="규칙으로-정리">규칙으로 정리</h2>
+<ul>
+<li>AI Platform Applications는 DevTools(CLI, SDK, 템플릿)와 Space(공유 작업 공간)로 이루어집니다.</li>
+<li>Applications와 외부 앱은 Agent Platform APIs로만 플랫폼에 들어옵니다. 화면 전용 경로를 두지 않습니다(MUST NOT). 장면 ⑪</li>
+<li>화면에서 한 일도 API를 지나므로 같은 인증, 인가, 감사가 적용됩니다.</li>
+</ul>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-applications">AI Platform Applications</a> <a href="docs--onboarding--09-glossary.html#term-devtools">DevTools</a> <a href="docs--onboarding--09-glossary.html#term-space">Space</a> <a href="docs--onboarding--09-glossary.html#term-platform-apis">Agent Platform APIs</a> <a href="docs--onboarding--09-glossary.html#term-mock">로컬 mock</a> <a href="docs--onboarding--09-glossary.html#term-conformance">적합성 검증</a></p>
+</div>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>터미널에서 하든 화면에서 하든 결국 같은 정문을 두드립니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
+<details>
+<summary>Q1. 실행 상태 조회나 승인을 지금 어디서 해 볼 수 있나요?</summary>
+<p>아직 해 볼 수 없습니다. 두 API는 계약만 있고 로컬 mock은 501을 돌려줍니다. Space의 화면도 정의 단계입니다. 승인 검증 자체는 참조 구현의 도구 경로(S6a)에서만 실행됩니다.</p>
+</details>
+<details>
+<summary>Q2. 서연이 Space 카탈로그에서 Agent를 실행하는 것과 민준이 curl로 부르는 것은 플랫폼 입장에서 무엇이 다른가요?</summary>
+<p>토큰이 가리키는 사람만 다릅니다. 같은 API에 같은 모양의 요청이 도착하고 같은 관문을 지납니다.</p>
+</details>
+<details>
+<summary>Q3. 민준의 팀이 추적 화면을 직접 만들려고 합니다. 먼저 무엇을 확인해야 하나요?</summary>
+<p>대응표에서 추적 보기의 등급입니다. v0.1 계약에는 그 일을 위한 API가 없으므로 붙일 곳이 없습니다.</p>
+</details>
+</div>
+<p>여기까지가 청구서 Agent의 하루입니다. 이어지는 장은 Agent끼리 서로를 찾고 부르는 방법(<a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a>)과, 내 PC에서 직접 따라 하는 실습입니다.</p>
+<nav class="pager"><a href="docs--onboarding--06-lifecycle.html"><small>이전</small><b>수명주기와 프로덕션 승인</b></a><a class="next" href="docs--onboarding--13-agent-card.html"><small>다음</small><b>Agent Card와 Agent 간 통신</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/20-applications.md">docs/onboarding/20-applications.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

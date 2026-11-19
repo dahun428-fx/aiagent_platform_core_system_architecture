@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Agent Evaluation · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html" aria-current="page">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-evaluation">Agent Evaluation</h1>
+<blockquote>
+<p>개발자 가이드 문서입니다. 규범은 <a href="docs--evaluation.html">평가</a> 기술 표준 문서가 기준입니다.</p>
+</blockquote>
+<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 9번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="done"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class="done"><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class="done"><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class="on"><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+
+<div class="sofar">
+<p><strong>지금까지</strong> 서연이 "한빛상사 10월 청구서"를 물었더니 금액이 틀렸습니다. 민준이 추적 기록을 보니 오류는 없었습니다. 개발 환경에서 다시 실행해 보고 조회할 때 월이 빠진 것을 찾았습니다.</p>
+</div>
+<h2 id="장면">장면</h2>
+<p>민준은 이상했습니다. <code>invoice-summary 1.2.0</code>은 시험에서 만점을 받고 승인된 버전이었기 때문입니다. 시험지를 열어 보니 질문 28개가 전부 "청구서 INV-○○○○ 요약해 줘" 형태였습니다. 민준은 서연처럼 거래처명으로 묻는 질문 12개를 시험지에 더하고 같은 버전을 다시 채점했습니다. 결과는 0.70, 기준은 0.90입니다. 시험지에 없던 질문은 한 번도 검사받은 적이 없었던 것입니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Evaluation이 없다면</strong> "몇 번 써 보니 잘 되더라"가 배포 기준이 됩니다.</p>
+</div>
+<h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
+<ol class="flow">
+<li data-say="질문과 정답을 묶은 시험지가 있습니다. 이것을 평가 데이터셋이라고 합니다. 시험지에도 버전이 있습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>1. 시험지가 있다</b><span>평가 데이터셋<br>질문 + 정답</span></li>
+<li data-say="Agent가 시험지의 질문 40개를 모두 풉니다. 운영과 같은 버전, 같은 지시문으로 풉니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4"/><circle cx="12" cy="3.5" r="1"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg><b>2. Agent가 모두 푼다</b><span>invoice-summary 1.2.0</span></li>
+<li data-say="채점기가 답의 금액과 가져온 청구서 번호를 정답과 견줍니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>3. 채점기가 견준다</b><span>지표마다 점수 하나</span></li>
+<li data-say="점수가 기준을 넘어야 다음 단계로 올라갈 수 있습니다. 이 관문을 게이트라고 합니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>4. 기준을 넘어야 올라간다</b><span>게이트</span></li>
+</ol>
+
+<h2 id="실물-보기">실물 보기</h2>
+<p>민준이 추가한 33번째 행입니다. 서연이 운영에서 물었던 바로 그 문장입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;row-33&quot;,
+  &quot;input&quot;: &quot;한빛상사 10월 청구서 요약해 줘&quot;,
+  &quot;expected&quot;: {
+    &quot;invoiceId&quot;: &quot;INV-2048&quot;,
+    &quot;amount&quot;: 12400000
+  },
+  &quot;queryHint&quot;: &quot;한빛상사 2026-10&quot;
+}
+</code></pre>
+<ul>
+<li><code>input</code>: 사용자가 실제로 물은 문장입니다. 운영에서 틀린 요청이 그대로 시험 문제가 됩니다.</li>
+<li><code>expected.invoiceId</code>: 금액만이 아니라 어느 청구서를 가져왔어야 하는지도 정답에 넣습니다.</li>
+<li><code>queryHint</code>: 채점에는 쓰지 않습니다. 조회어는 여러 가지가 정답일 수 있기 때문입니다. 틀린 행의 원인을 찾을 때 비교해 봅니다.</li>
+</ul>
+<p><code>1.2.0</code>이 이 행에서 한 일입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{&quot;query&quot;: &quot;한빛상사&quot;, &quot;invoiceId&quot;: &quot;INV-2101&quot;, &quot;amount&quot;: 9800000}
+</code></pre>
+<p>월이 빠져 11월 청구서를 가져왔습니다. 이 행은 오답입니다. 추가한 12행이 모두 틀려 28/40 = 0.70이 됐습니다.</p>
+<p>채점이 끝나면 지표 하나에 결과 레코드 하나가 남습니다. 형식은 계약 <code>evaluation.schema.json</code>을 따릅니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{
+  &quot;evaluationId&quot;: &quot;eval-invoice-summary-0142&quot;,
+  &quot;datasetVersion&quot;: &quot;3.0.0&quot;,
+  &quot;agentVersion&quot;: &quot;1.2.0&quot;,
+  &quot;manifestDigest&quot;: &quot;sha256:…&quot;,
+  &quot;policyVersion&quot;: &quot;0.1.0&quot;,
+  &quot;metric&quot;: &quot;correct-invoice-retrieved&quot;,
+  &quot;score&quot;: 0.70,
+  &quot;threshold&quot;: 0.90,
+  &quot;passed&quot;: false,
+  &quot;traceId&quot;: &quot;…&quot;
+}
+</code></pre>
+<ul>
+<li><code>datasetVersion</code>과 <code>agentVersion</code>: 어느 시험지로 어느 버전을 채점했는지입니다. 둘 중 하나만 바뀌어도 다른 결과입니다.</li>
+<li><code>metric</code>: 무엇을 쟀는지입니다. 여기서는 "올바른 청구서를 가져왔는가"입니다. 금액을 잰 <code>amount-exact-match</code> 레코드가 하나 더 있고 점수는 29/40 = 0.725입니다.</li>
+<li><code>passed</code>: 점수가 기준 이상인가입니다. 두 지표가 모두 통과해야 승격 후보가 됩니다.</li>
+</ul>
+<p>전체 점수 옆에는 질문 유형별 점수를 항상 나란히 둡니다. <code>1.2.0</code>은 번호 질문 28/28, 거래처명 질문 0/12입니다. 0.70이라는 숫자 하나보다 이 두 숫자가 고장이 어디 있는지를 바로 알려 줍니다.</p>
+<h2 id="직접-해-보기">직접 해 보기</h2>
+<div class="sim" data-sim="eval-gate"></div>
+
+<ol class="mission">
+<li>시험지를 <code>2.0.0</code>으로 바꾸면 <code>1.2.0</code>은 몇 점인가요. 그 점수는 거래처명 질문에 대해 무엇을 말해 주나요.</li>
+<li>시험지를 <code>3.0.0</code>으로 두고 금액만 채점하면 몇 행을 놓치나요.</li>
+</ol>
+
+<h2 id="잘못되면">잘못되면</h2>
+<p><strong>시험지가 실제 질문을 닮지 않으면</strong> 만점도 소용이 없습니다. 민준의 <code>1.2.0</code>은 번호 질문 28행에서 만점을 받고 승인됐지만 서연의 첫 거래처명 질문에서 틀렸습니다. 고장을 먼저 발견한 사람은 사용자인 서연이었고, 그 사이 틀린 금액이 보고서에 들어갈 뻔했습니다. 운영에서 들어오는 질문 유형을 시험지에 넣고, 틀린 요청이 생기면 그대로 행으로 추가합니다.</p>
+<p><strong>금액만 채점하면</strong> 엉뚱한 청구서를 가져오고도 금액이 우연히 같은 행을 정답으로 셉니다. <code>row-36</code>이 그런 행이어서 금액 지표는 29/40으로 한 행 더 높게 나옵니다. 답이 맞았는지만이 아니라 과정(어느 청구서를 가져왔는지)도 채점합니다.</p>
+<details class="more">
+<summary>더 보기: 한 번만 채점할 때, 고치는 데 쓴 시험지만 볼 때, 기준을 낮출 때</summary>
+<p><strong>한 번만 실행해 채점하면</strong> 가끔 틀리는 행을 놓칩니다. 고친 버전 <code>1.3.0</code>은 지시문이 길어진 뒤 번호 질문 <code>row-09</code>와 <code>row-21</code>에서 세 번 중 한 번 거래처명 형식으로 조회합니다. 세 번 모두 맞아야 정답으로 치면 37/40 = 0.925가 35/40 = 0.875로 내려가 기준에 못 미칩니다. 이야기의 게이트는 1회 기준(예시)이라 통과했고, 민준은 흔들리는 두 행을 숨기지 않고 승인 기록의 "알려진 한계"에 적었습니다. 위험도가 high인 Agent라면 반복 채점을 게이트로 삼습니다.</p>
+<p><strong>고치는 데 쓴 시험지의 점수를 "처음 보는 질문에서도 잘한다"는 증거로 쓰면</strong> 과신하게 됩니다. 0.925는 민준이 열어 보고 고치는 데 쓴 40행에서의 점수입니다. 그래서 민준이 열어 보지 않은 20행을 따로 남겨 두고(<code>invoice-summary-holdout</code> <code>1.0.0</code>) 승인 직전에 한 번만 채점합니다. <code>1.3.0</code>은 18/20 = 0.90이고 번호 질문 10/10, 거래처명 질문 8/10입니다.</p>
+<p><strong>기준을 0.70으로 낮추면</strong> 12행이 틀리는 <code>1.2.0</code>이 그대로 통과합니다. 위 시뮬레이터에서 기준을 바꿔 확인할 수 있습니다. 기준은 Agent마다 편한 대로 정하는 값이 아니라 <code>evaluationProfile</code>로 묶어 관리하는 값입니다.</p>
+<p><strong>채점 방식 세 가지</strong> 같은 <code>row-33</code>에 적용하면 이렇습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>방식</th>
+<th>이 행에서 보는 것</th>
+<th>맞는 자리</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>코드 채점</td>
+<td>가져온 청구서 번호가 <code>INV-2048</code>인가, 금액이 12,400,000인가</td>
+<td>정답이 하나로 정해지는 값</td>
+</tr>
+<tr>
+<td>모델 채점</td>
+<td>요약이 청구서 원문에 없는 내용을 지어내지 않았는가</td>
+<td>글의 충실성처럼 규칙으로 쓰기 어려운 것</td>
+</tr>
+<tr>
+<td>사람 채점</td>
+<td>표본 5행을 사람이 읽고 확인</td>
+<td>모델 채점기 자체가 맞는지 확인할 때</td>
+</tr>
+</tbody>
+</table></div>
+<p>작은 사례 <code>policy-search</code>(사내 규정 검색 Agent)는 "출장비 한도가 얼마야"에 답할 때 검색된 규정 문서에 근거했는지를 재는 근거성 지표를 씁니다.</p>
+</details>
+<h2 id="내가-할-일">내가 할 일</h2>
+<ol>
+<li>운영에서 틀린 요청을 그대로 시험지의 행으로 추가합니다.</li>
+<li>행마다 기대 답과 함께 "무엇을 가져왔어야 하는지"를 적습니다.</li>
+<li>채점 방식을 고릅니다. 정해진 값은 코드로, 글의 품질은 모델과 사람 표본으로 봅니다.</li>
+<li>기준을 정합니다. 전체 점수와 질문 유형별 점수를 함께 봅니다.</li>
+<li>시험지 버전을 올리고, 운영 중인 버전을 새 시험지로 다시 채점합니다.</li>
+</ol>
+<p><strong>내 PC에서 해 보기</strong> 지금 실행되는 것은 결과 레코드의 형식 검증입니다. 저장소 루트에서 실행하면 <code>examples/fixtures/evaluation.json</code>을 포함한 fixture가 계약에 맞는지 확인합니다.</p>
+<pre><code class="language-bash">python -m unittest tests.test_contracts
+</code></pre>
+<div class="scope">
+<p><strong>제공 범위 (v0.1)</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>등급</th>
+<th>확인하는 곳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>평가 결과 레코드 형식</td>
+<td>계약</td>
+<td><code>contracts/evaluation.schema.json</code>, <code>examples/fixtures/evaluation.json</code></td>
+</tr>
+<tr>
+<td>데이터셋 저장소, 채점기, 게이트 실행</td>
+<td>정의</td>
+<td><a href="docs--evaluation.html">평가</a></td>
+</tr>
+<tr>
+<td>게이트의 회사 기준값</td>
+<td>정의</td>
+<td>이 장의 0.90은 예시입니다</td>
+</tr>
+</tbody>
+</table></div>
+<p>이 장의 점수는 모두 예시입니다. 내 PC에서 <code>invoice-summary</code>를 채점해 이 숫자를 얻을 수는 없습니다.</p>
+</div>
+<h2 id="규칙으로-정리">규칙으로 정리</h2>
+<ul>
+<li>평가는 세 단계입니다. 배포 전 평가(이 장), 실행 추적 분석(<a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a>), 운영 모니터링입니다.</li>
+<li>평가 결과는 <code>evaluation.schema.json</code>을 따르며 <code>datasetVersion</code>, <code>agentVersion</code>, <code>manifestDigest</code>, <code>policyVersion</code>, <code>metric</code>, <code>score</code>, <code>threshold</code>, <code>passed</code>, <code>traceId</code>를 포함합니다(MUST). 장면 ⑨</li>
+<li>재는 것은 품질(과제 완료, 정확성, 근거성, 도구 사용 정확성), 안전(인젝션 저항, 민감정보), 운영(지연, 비용)입니다.</li>
+<li>위험도 high Agent는 프로덕션 승인 전에 red teaming을 포함합니다(MUST).</li>
+<li>게이트를 통과한 버전은 승격 후보일 뿐이고 프로덕션 승인은 사람이 따로 합니다(<a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a>).</li>
+</ul>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-dataset">평가 데이터셋</a> <a href="docs--onboarding--09-glossary.html#term-gate">게이트</a> <a href="docs--onboarding--09-glossary.html#term-evaluation">평가 3단계</a> <a href="docs--onboarding--09-glossary.html#term-red-teaming">Red teaming</a> <a href="docs--onboarding--09-glossary.html#term-evidence">근거 자료</a></p>
+</div>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>내보내기 전에 시험을 치르게 하고, 시험지는 실제로 들어오는 질문을 닮아야 합니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
+<details>
+<summary>Q1. 번호 질문만 든 시험지에서 만점을 받은 버전이 있습니다. 이 점수로 알 수 없는 것은 무엇인가요?</summary>
+<p>번호가 아닌 방식으로 묻는 질문에서 어떻게 동작하는지입니다. 시험지에 없는 유형은 한 번도 검사받지 않았습니다.</p>
+</details>
+<details>
+<summary>Q2. 금액 지표는 0.725인데 가져온 청구서 지표는 0.70입니다. 왜 다른가요?</summary>
+<p>엉뚱한 청구서를 가져왔는데 금액이 우연히 같았던 행이 하나 있기 때문입니다. 금액만 보면 그 행을 정답으로 셉니다.</p>
+</details>
+<details>
+<summary>Q3. 고친 버전이 0.925를 받았습니다. 이 숫자가 배포 전에 알려 주는 것과 남기는 질문은 무엇인가요?</summary>
+<p>고치는 데 쓴 40행에서 전에 틀리던 문제를 맞히고 전에 맞던 문제를 계속 맞힌다는 것을 알려 줍니다. 처음 보는 질문에서도 그런지는 따로 남겨 둔 시험지로 확인해야 합니다.</p>
+</details>
+</div>
+<p>다음 장면은 ⑩입니다. 틀린 12행을 원인별로 묶어 고치고 새 버전으로 올립니다.</p>
+<nav class="pager"><a href="docs--onboarding--12-observability-evaluation.html"><small>이전</small><b>Agent Observability</b></a><a class="next" href="docs--onboarding--19-agent-tuning.html"><small>다음</small><b>Agent Tuning</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/18-agent-evaluation.md">docs/onboarding/18-agent-evaluation.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

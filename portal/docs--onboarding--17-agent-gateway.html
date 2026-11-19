@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>Agent Gateway · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html" aria-current="page">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-gateway">Agent Gateway</h1>
+<blockquote>
+<p>개발자 가이드 문서입니다. 규범은 <a href="docs--architecture.html">아키텍처</a>, <a href="docs--security.html">보안 경계</a> 기술 표준 문서가 기준입니다.</p>
+</blockquote>
+<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 6번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="on"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+
+<div class="sofar">
+<p><strong>지금까지</strong> 서연의 요청 A에서 <code>invoice-summary</code>가 ERP에서 청구서 <code>INV-2048</code>을 읽어 왔습니다. 서연의 권한 안에서, 잠깐 쓰고 사라지는 출입증으로 읽었습니다. 이제 읽어 온 내용을 모델에게 주고 요약을 받을 차례입니다.</p>
+</div>
+<h2 id="장면">장면</h2>
+<p>요약을 만들려는 순간 회사 안 모델이 오류를 냅니다. 민준의 코드에는 재시도가 한 줄도 없는데 서연은 정상 응답을 받습니다. 모델로 가는 길목에 있는 관문이 대신 다시 시도했기 때문입니다. 이 관문은 그 전에 한 가지를 더 했습니다. 청구서는 기밀이라 회사 밖 모델로는 보내지 않고 회사 안 모델로만 보냈습니다. 민준의 코드는 어느 모델로 갈지조차 정하지 않았습니다.</p>
+<div class="point">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Gateway가 없다면</strong> Agent마다 재시도와 시간 제한을 제각각 넣고, 기밀 데이터가 어느 모델로 나가는지는 각 팀의 코드를 열어 봐야 압니다.</p>
+</div>
+<h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
+<ol class="flow">
+<li data-say="Agent 코드는 모델 주소도 모델 이름도 모릅니다. 플랫폼에 '이 글로 답을 만들어 달라'고만 합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>1. Agent가 모델에 묻는다</b><span>ctx.generate(prompt)</span></li>
+<li data-say="관문이 데이터 등급을 보고 갈 수 있는 모델을 고릅니다. 기밀은 회사 안 모델로만 갑니다. 갈 곳이 없으면 돌아가지 않고 실패시킵니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>2. 등급을 보고 모델을 고른다</b><span>모델 경로 · 분류 기반 라우팅</span></li>
+<li data-say="모델이 오류를 내거나 응답이 깨지면 관문이 남은 시간 안에서 다시 시도합니다. 최대 3회입니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>3. 실패하면 관문이 다시 시도한다</b><span>최대 3회</span></li>
+<li data-say="실패가 이어지면 잠시 문을 닫고 모델을 두드리지 않습니다. 아픈 모델을 쉬게 하고 요청은 바로 돌려보냅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>4. 계속 실패하면 잠시 문을 닫는다</b><span>차단기 · 호출 한도</span></li>
+</ol>
+
+<h2 id="실물-보기">실물 보기</h2>
+<p>Agent 코드에서 모델을 부르는 한 줄입니다. 로컬 예제 <code>examples/agents/invoice-summary/agent.py</code>의 실제 코드입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-python">summary = ctx.generate(&quot;Summarize the invoice: &quot; + found)
+</code></pre>
+<ul>
+<li>모델 이름도, 주소도, 재시도도, 시간 제한도 없습니다. 관문이 이 호출에 호출자의 신원, 정책 결정, 남은 시간을 붙여 모델 경로로 보냅니다.</li>
+<li>어느 모델로 갔는지는 응답의 <code>routeDecisionId</code>에 남습니다. 요청 A는 <code>route-self-hosted</code>, 곧 회사 안 모델입니다.</li>
+</ul>
+<p>모델 쪽에 문제가 있을 때 서연의 앱이 받는 응답과 그때 할 일입니다. 참조 구현(<code>impl/</code>)의 실제 값입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="app">실행 결과 · 앱이 받은 응답</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>앱이 받은 응답</th>
+<th>이 값만으로 알 수 있는 것</th>
+<th>할 일</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>429 <code>RATE_LIMITED</code>, <code>Retry-After</code> 있음</td>
+<td>초당 호출 한도를 넘음</td>
+<td>그 시간만큼 기다렸다 다시</td>
+</tr>
+<tr>
+<td>503 <code>UPSTREAM_UNAVAILABLE</code>, <code>Retry-After: 1</code> 있음</td>
+<td>차단기가 열림</td>
+<td>그 시간만큼 기다렸다 다시</td>
+</tr>
+<tr>
+<td>503 <code>UPSTREAM_UNAVAILABLE</code>, <code>Retry-After</code> 없음</td>
+<td>모델 쪽으로 가지 못했다는 것까지만</td>
+<td>잠시 뒤 한 번만 다시. 또 같으면 호출 번호로 운영자에게 확인</td>
+</tr>
+<tr>
+<td>502 <code>UPSTREAM_ERROR</code></td>
+<td>관문이 3회 시도했지만 모델이 오류</td>
+<td>사용자에게 알림</td>
+</tr>
+<tr>
+<td>504 <code>UPSTREAM_TIMEOUT</code></td>
+<td>남은 시간 안에 답이 없음</td>
+<td>사용자에게 알림. 시간을 늘릴지 검토</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>본문의 <code>detail</code>은 <code>Model upstream failed</code>로 같습니다. 앱은 상태 코드와 <code>code</code>, <code>Retry-After</code>로 판단합니다.</li>
+<li>셋째 줄이 중요합니다. 연결 실패와 "이 데이터 등급으로 갈 수 있는 모델이 없음"이 앱에는 같은 응답으로 옵니다. 응답 본문만으로 원인을 가릴 수 없으므로 계속 다시 보내지 않습니다.</li>
+</ul>
+<h2 id="직접-해-보기">직접 해 보기</h2>
+<div class="sim" data-sim="model-health"></div>
+
+<ol class="mission">
+<li>모델이 한 번만 실패하면 서연은 무엇을 보나요.</li>
+<li>앱이 <code>Retry-After</code> 없는 503을 받았습니다. 이 값만으로 무엇을 결정할 수 있나요.</li>
+<li>실패가 이어진 뒤 다시 보내면 무엇이 달라지나요. "Agent 코드에 재시도"를 켜고 다시 보세요.</li>
+</ol>
+
+<details class="more">
+<summary>더 해 보기: 데이터 등급에 따라 모델 고르기</summary>
+<div class="sim" data-sim="routing"></div>
+<ol class="mission">
+<li>분류를 <code>confidential</code>로 두고 자체 호스팅 모델을 끄면 어디로 가나요.</li>
+<li>호출자가 분류를 낮춰 적으면 어떻게 되나요.</li>
+</ol>
+<div class="lanes">
+<div class="lane" data-say="공개(public)나 사내(internal) 데이터는 정책이 허용하면 외부 모델과 자체 호스팅 모델 중 어느 쪽으로도 갈 수 있습니다.">
+<div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg> <code>public</code> · <code>internal</code></div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>모델 경로<small>정책 허용 시</small></span></div><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg> 외부 또는 자체 호스팅 모델</div>
+</div>
+<div class="lane" data-say="기밀(confidential)이나 제한(restricted) 데이터는 외부 모델로 가는 길을 막고, 회사 안에서 운영하는 자체 호스팅 모델로만 보냅니다.">
+<div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> <code>confidential</code> · <code>restricted</code></div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>모델 경로<small>외부 경로 거부</small></span></div>
+<p><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg> 자체 호스팅 모델</div></div></p>
+<div class="lane" data-say="갈 수 있는 모델이 하나도 없으면 다른 길로 몰래 돌아가지 않고 요청을 실패시킵니다. 이것을 실패 시 거부(fail closed)라고 합니다.">
+<div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 허용 경로 없음</div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><span>모델 경로<small>우회 없음</small></span></div>
+<p><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 요청 실패</div></div>
+</div></p>
+<p><img alt="모델 routing 순서" src="../diagrams/model-routing.svg" /></p>
+</details>
+<h2 id="잘못되면">잘못되면</h2>
+<p><strong>모델 응답이 늦으면</strong> 서연의 요청 A는 남은 시간이 지나는 순간 504 <code>UPSTREAM_TIMEOUT</code>을 받습니다. 관문은 시간 초과를 다시 시도하지 않습니다. 다시 해도 남은 시간이 없기 때문입니다. 앱이 요청에 준 시간(<code>timeoutMs</code>)이 관문이 기다리는 한도가 됩니다. 사용자에게 "지금은 요약을 만들 수 없다"고 알리고, 자주 일어나면 시간을 늘릴지 검토합니다.</p>
+<p><strong>모델이 계속 죽어 있는데 요청이 계속 들어오면</strong> 요청 3건이 연속으로 실패한 뒤 차단기가 열립니다. 그 뒤 1초 동안은 모델을 두드리지 않고 바로 503과 <code>Retry-After: 1</code>을 돌려줍니다. 1초 뒤 시험 호출 하나가 성공하면 다시 열립니다. 앱은 <code>Retry-After</code>만큼 기다렸다 다시 보냅니다.</p>
+<details class="more">
+<summary>더 보기: 갈 모델이 없을 때, 분류를 낮춰 적을 때, 재시도를 직접 넣을 때</summary>
+<p><strong>기밀 데이터인데 쓸 수 있는 모델이 외부 모델뿐이면</strong> 관문은 외부로 돌아가지 않고 503으로 실패시킵니다. 모델 경로를 직접 호출해 보면 이유가 구분되어 보입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="route">실행 결과 · 내부 진단 · 내부 경로를 직접 호출한 값</p>
+<pre><code class="language-json">{&quot;status&quot;: 503, &quot;code&quot;: &quot;UPSTREAM_UNAVAILABLE&quot;, &quot;detail&quot;: &quot;No policy-approved model route&quot;}
+</code></pre>
+<p>참조 구현 S1 <code>confidential-external-only</code>의 값입니다. 이 문구는 앱까지 전해지지 않고 <code>Model upstream failed</code>로 바뀝니다. 그래서 앱 개발자는 위 표의 셋째 줄처럼 다룹니다.</p>
+<p><strong>호출자가 요청에 분류를 낮춰 적어도</strong> 관문은 플랫폼이 아는 분류와 비교해 더 높은 쪽을 씁니다. 높여 적는 것은 받아들이고 낮춰 적는 것은 무시합니다(적합성 C7, 참조 구현 S1 <code>downgrade-classification</code>).</p>
+<p><strong>1초에 5회를 넘겨 부르면</strong> 여섯 번째 요청부터 429 <code>RATE_LIMITED</code>와 <code>Retry-After</code>를 받습니다. 한도는 테넌트와 Agent별입니다.</p>
+<p><strong>민준이 Agent 코드에 재시도 3회를 직접 넣으면</strong> 관문의 재시도 3회와 곱해져 모델을 최대 9번 두드립니다. 아픈 모델을 더 아프게 하고 서연은 더 오래 기다립니다. 모델 호출의 재시도는 관문에 맡깁니다.</p>
+</details>
+<h2 id="내가-할-일">내가 할 일</h2>
+<ol>
+<li>모델 호출에 재시도를 직접 넣지 않습니다. <code>ctx.generate</code>만 부릅니다.</li>
+<li>앱은 요청에 남은 시간(<code>execution.timeoutMs</code>)을 줍니다.</li>
+<li>앱은 위 표대로 응답을 처리합니다. <code>Retry-After</code>가 있으면 그만큼 기다리고, 없으면 계속 다시 보내지 않습니다.</li>
+<li>문의할 때는 호출 번호(<code>invocationId</code>)를 함께 전달합니다.</li>
+</ol>
+<p><strong>내 PC에서 해 보기</strong> ZIP만 받았어도 되는 것은 둘입니다. 응답의 <code>routeDecisionId</code>가 <code>route-self-hosted</code>인지 보는 것(<a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>의 응답)과, 적합성 C7입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-text">PASS  C7   platform-enforcement  Classification downgrade  caller cannot downgrade classification; external route unused
+</code></pre>
+<p>저장소가 있으면 <code>make scenarios</code>의 S2, S3, S4 줄에서 위 표의 응답을 하나씩 확인합니다(PostgreSQL이 필요합니다).</p>
+<div class="scope">
+<p><strong>제공 범위 (v0.1)</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>등급</th>
+<th>확인하는 곳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>분류 기반 모델 경로 선택, 낮춘 분류 무시</td>
+<td>실행</td>
+<td>로컬 mock, 적합성 C7</td>
+</tr>
+<tr>
+<td>시간 초과, 재시도, 차단기, 호출 한도</td>
+<td>실행</td>
+<td>참조 구현 S2·S3·S4</td>
+</tr>
+<tr>
+<td>토큰·비용 한도와 비용 귀속</td>
+<td>정의</td>
+<td>수치는 회사 결정(TBD)</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<h2 id="규칙으로-정리">규칙으로 정리</h2>
+<ul>
+<li>모델과 도구로 나가는 호출은 모두 Agent Gateway를 지납니다. Agent가 모델 공급사를 직접 부르지 않습니다(MUST NOT). 장면 ⑥</li>
+<li>모델 경로는 데이터 분류와 정책으로 정합니다. 허용된 경로가 없으면 우회하지 않고 실패시킵니다(MUST, fail closed). 장면 ⑥</li>
+<li>호출자가 적은 분류는 주장일 뿐입니다. 높일 수는 있어도 낮출 수는 없습니다(MUST).</li>
+<li>라우팅 결정은 <code>routeDecisionId</code>로 기록합니다(MUST).</li>
+<li>관문은 모든 호출이 지나는 길목이므로 시간 제한, 재시도, 차단기, 호출 한도를 스스로 갖습니다.</li>
+</ul>
+<div class="terms">
+<p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent-gateway">Agent Gateway</a> <a href="docs--onboarding--09-glossary.html#term-model-gateway">모델 경로</a> <a href="docs--onboarding--09-glossary.html#term-classification">데이터 분류</a> <a href="docs--onboarding--09-glossary.html#term-fail-closed">fail closed</a> <a href="docs--onboarding--09-glossary.html#term-route-decision">routeDecisionId</a> <a href="docs--onboarding--09-glossary.html#term-circuit-breaker">차단기</a> <a href="docs--onboarding--09-glossary.html#term-problem">Problem Details</a></p>
+</div>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>모델로 가는 길목에서 어느 모델로 보낼지 정하고, 모델이 아플 때 대신 버팁니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
+<details>
+<summary>Q1. 앱이 503과 Model upstream failed를 받았고 Retry-After가 없습니다. 이 값만으로 어떤 조치를 정할 수 있나요?</summary>
+<p>잠시 뒤 한 번만 다시 보내는 것까지입니다. 연결 실패인지 이 등급으로 갈 모델이 없는 것인지는 이 응답으로 가릴 수 없으므로, 또 같으면 호출 번호로 운영자에게 확인합니다.</p>
+</details>
+<details>
+<summary>Q2. 민준의 코드에 재시도가 없는데 모델이 한 번 실패한 요청이 성공했습니다. 누가 무엇을 했나요?</summary>
+<p>Agent Gateway의 모델 경로가 남은 시간 안에서 다시 시도했습니다. 서연의 앱은 200 하나만 받습니다.</p>
+</details>
+<details>
+<summary>Q3. 기밀 청구서를 다루는 요청인데 회사 안 모델이 내려가 있고 외부 모델은 살아 있습니다. 어떻게 되나요?</summary>
+<p>요청이 실패합니다. 기밀 데이터는 외부 모델로 보낼 수 없고, 관문은 다른 길로 돌아가지 않습니다.</p>
+</details>
+</div>
+<div class="refs">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg> 근거와 참고 자료</strong></p>
+<ul>
+<li>관문 구조: <a href="docs--onboarding--10-references.html#ref-gateway">Gateway 패턴</a></li>
+</ul>
+</div>
+<p>다음 장면은 ⑦입니다. 서연이 요약을 부탁한 청구서 비고란에 누군가 지시문을 숨겨 놓았습니다.</p>
+<nav class="pager"><a href="docs--onboarding--16-agent-identity.html"><small>이전</small><b>Agent Identity</b></a><a class="next" href="docs--onboarding--04-trust.html"><small>다음</small><b>신뢰 경계와 Guardrails</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/17-agent-gateway.md">docs/onboarding/17-agent-gateway.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
