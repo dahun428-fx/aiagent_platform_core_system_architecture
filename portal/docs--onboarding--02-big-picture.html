@@ -10,7 +10,7 @@
 <blockquote>
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--core-systems.html">Core Systems</a>와 <a href="docs--architecture.html">아키텍처</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
-<p>플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에, 요청 하나가 그 열 개를 지나가는 모습을 먼저 봅니다. 이 가이드 전체가 같은 이야기 하나를 따라갑니다.</p>
+<p>플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에 요청 하나가 그 열 개를 지나가는 모습부터 봅니다. 이 가이드는 처음부터 끝까지 같은 이야기 하나를 따라갑니다.</p>
 <h2 id="등장인물과-agent">등장인물과 Agent</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -43,7 +43,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>Agent는 둘입니다. <code>invoice-summary</code>는 ERP에서 청구서를 읽어 요약합니다. <code>invoice-mailer</code>는 그 요약을 거래처 담당자에게 메일로 보냅니다. 읽기만 하는 일과 바깥을 바꾸는 일을 다른 Agent로 나눴습니다.</p>
+<p>Agent는 둘입니다. <code>invoice-summary</code>는 ERP에서 청구서를 읽어 요약하고, <code>invoice-mailer</code>는 그 요약을 거래처 담당자에게 메일로 보냅니다. 읽기만 하는 일과 바깥을 바꾸는 일을 서로 다른 Agent에 맡겼습니다.</p>
 <h2 id="청구서-agent의-하루">청구서 Agent의 하루</h2>
 <p>장면은 열한 개이고 장면마다 Core System 하나가 주인공입니다. 각 장면을 누르면 그 장으로 갑니다. 전부 읽는 데 80분쯤 걸립니다.</p>
 <ol class="flow timeline">
@@ -62,7 +62,7 @@
 
 <p>이야기를 꿰는 고장은 하나입니다. 번호로만 시험한 Agent가 거래처 이름으로 묻는 질문에서 틀렸고(⑧), 시험지를 고쳐 그 사실을 숫자로 확인했고(⑨), 원인을 고쳐 새 버전으로 올렸습니다(⑩).</p>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 값의 표지</strong> 이 가이드의 코드와 표에는 표지가 붙어 있습니다. <strong>실행 결과</strong>는 저장소의 코드를 실제로 돌려 얻은 값이고, <strong>예시</strong>는 이야기를 위한 값입니다. 실행 결과에는 어디서 본 값인지도 적습니다. 앱이 받은 응답과 운영자가 안쪽에서 본 값은 다를 수 있기 때문입니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 값의 표지</strong> 이 가이드의 코드와 표에는 표지가 붙어 있습니다. <strong>실행 결과</strong>는 저장소의 코드를 실제로 돌려 얻은 값이고, <strong>예시</strong>는 이야기를 위한 값입니다. 앱이 받은 응답과 운영자가 안쪽에서 본 값은 다를 수 있어서, 실행 결과에는 어디서 본 값인지도 적습니다.</p>
 </div>
 <h2 id="10개-core-system">10개 Core System</h2>
 <p>같은 열한 장면을 블록 그림 위에 놓으면 이렇습니다. 블록의 번호가 장면 번호입니다.</p>
@@ -86,20 +86,20 @@
 
 <h2 id="core-system별-책임">Core System별 책임</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>AI Platform Applications</b><p>개발자·운영자가 사용하는 응용 계층입니다. DevTools는 CLI·SDK·템플릿·mock, Space는 Agent 카탈로그·추적·평가·승인 조회를 위한 공유 작업 공간입니다. Space 사용은 강제하지 않습니다.</p><span class="sub">Agent Platform APIs만 호출</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Platform APIs</b><p>플랫폼 기능을 노출하는 단일 API 계층이자 진입 경계입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 처리합니다.</p><span class="sub">계약: agent-gateway.openapi.json 외</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Agent Factory</b><p>Agent 생성, Manifest 선언, 로컬 검증, CI 게이트, Registry 등록으로 이어지는 개발 흐름을 담당합니다.</p><span class="sub">agentctl validate · Manifest 스키마</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>Agent Runtime</b><p>framework adapter로 Agent를 실행합니다. 하위 구성요소로 Durable 실행·상태와 Memory를 포함하며, 실행 제어 Guardrail의 집행 지점입니다.</p><span class="sub">Runtime 계약 · execution.schema</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>Agent Tools</b><p>Tool Registry, 도구 descriptor, REST/OpenAPI/MCP adapter, 도구 정책과 감사를 소유합니다. 도구 호출의 집행은 Agent Gateway 도구 경로가 수행합니다.</p><span class="sub">tool-descriptor.schema</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg><b>Agent Identity</b><p>사용자 Identity, Agent(workload) Identity, 위임, 자격증명 중개를 담당합니다. Credential Broker를 포함합니다.</p><span class="sub">credential-broker.openapi</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>AI Platform Applications</b><p>개발자와 운영자가 쓰는 응용 계층입니다. DevTools는 CLI·SDK·템플릿·mock이고, Space는 Agent 카탈로그·추적·평가·승인을 함께 보는 공유 작업 공간입니다. Space를 꼭 써야 하는 것은 아닙니다.</p><span class="sub">Agent Platform APIs만 호출</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Platform APIs</b><p>플랫폼 기능을 밖에 내놓는 하나뿐인 API 계층이자 진입 경계입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 처리합니다.</p><span class="sub">계약: agent-gateway.openapi.json 외</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Agent Factory</b><p>Agent를 만들고, Manifest를 선언하고, 로컬과 CI에서 검증해 Registry에 등록하기까지의 개발 흐름을 맡습니다.</p><span class="sub">agentctl validate · Manifest 스키마</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>Agent Runtime</b><p>framework adapter로 Agent를 실행합니다. Durable 실행·상태와 Memory가 이 안에 있고, 실행 제어 Guardrail을 여기서 집행합니다.</p><span class="sub">Runtime 계약 · execution.schema</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>Agent Tools</b><p>Tool Registry, 도구 descriptor, REST/OpenAPI/MCP adapter, 도구 정책과 감사를 소유합니다. 실제 도구 호출은 Agent Gateway의 도구 경로가 집행합니다.</p><span class="sub">tool-descriptor.schema</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.6-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h3"/></svg><b>Agent Identity</b><p>사용자 Identity, Agent(workload) Identity, 위임, 자격증명 중개를 맡습니다. Credential Broker가 여기에 속합니다.</p><span class="sub">credential-broker.openapi</span></div>
 <div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>Agent Observability</b><p>실행 추적·지표·로그를 수집합니다. span은 OpenTelemetry GenAI semantic conventions를 따릅니다.</p><span class="sub">W3C Trace Context · OTel GenAI</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 측정하고 승격 판단 근거를 제공합니다.</p><span class="sub">evaluation.schema</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류 기반 라우팅, 도구 경로는 승인된 endpoint와 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 15c-1.5 1.2-2 3.5-2 6 2.5 0 4.8-.5 6-2"/><path d="M9 18l-3-3c1.5-5 5.5-10 13-12-2 7.5-7 11.5-12 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg><b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 재고, 승격을 판단할 근거를 냅니다.</p><span class="sub">evaluation.schema</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류를 보고 보낼 모델을 고르고, 도구 경로는 승인된 endpoint를 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 15c-1.5 1.2-2 3.5-2 6 2.5 0 4.8-.5 6-2"/><path d="M9 18l-3-3c1.5-5 5.5-10 13-12-2 7.5-7 11.5-12 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg><b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트, 도구 구성, 모델 선택, 미세조정을 고칩니다. 고친 결과는 새 불변 버전이 되어 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
 </div>
 
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 계약 파일 대응</strong> 계약 파일명은 호환성을 위해 유지합니다. <code>agent-gateway.openapi.json</code>은 Agent Platform APIs의 Agent 호출 API이고, <code>model-gateway.openapi.json</code>과 <code>tool-gateway.openapi.json</code>은 Agent Gateway의 모델 경로와 도구 경로입니다. 코드와 감사 기록의 component 이름(<code>agent-gateway</code>, <code>model-gateway</code>)도 그대로 사용합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 계약 파일 대응</strong> 계약 파일명은 호환성 때문에 그대로 둡니다. <code>agent-gateway.openapi.json</code>은 Agent Platform APIs의 Agent 호출 API이고, <code>model-gateway.openapi.json</code>과 <code>tool-gateway.openapi.json</code>은 Agent Gateway의 모델 경로와 도구 경로입니다. 코드와 감사 기록의 component 이름(<code>agent-gateway</code>, <code>model-gateway</code>)도 그대로 씁니다.</p>
 </div>
 <h2 id="진입-경계와-반출-경계">진입 경계와 반출 경계</h2>
 <div class="lanes">
@@ -108,7 +108,7 @@
 <div class="lane" data-say="Agent가 사내·외부 도구를 부르는 길입니다. Agent Gateway의 도구 경로가 승인된 도구인지 확인하고, 자격증명이 Agent에 노출되지 않게 대신 연결합니다."><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg> Agent Runtime</div><i>&#8594;</i><div class="gate"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg> 사내 · 외부 도구</div></div>
 </div>
 
-<p>진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 호출 통제와 모델 공급사 추상화는 서로 다른 책임이기 때문입니다. 논리적 분리이므로 물리적으로 통합 배포할 수 있으나, Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).</p>
+<p>호출 통제와 모델 공급사 추상화는 서로 다른 책임이므로 진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 논리적 분리이니 물리적으로는 한데 배포해도 되지만, 그때도 Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).</p>
 <details class="more">
 <summary>더 보기: 어디에 놓이나 (공통 제어 평면과 분산 실행 평면)</summary>
 <div class="planes">
@@ -117,9 +117,9 @@
 <div class="plane"><b class="title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg> Distributed Execution Plane</b><p>Agent가 실행되는 환경</p><ul><li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg> 개발자 PC</li><li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg> Mac mini · 워크스테이션</li><li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg> 사내 서버</li><li><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg> 클라우드</li></ul></div>
 </div>
 <p><img alt="C4 Container 도식" src="../diagrams/c4-container.svg" /></p>
-<p>Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면의 <strong>Registry</strong>는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장하는 구성요소이며, 이후 장에서 계속 사용됩니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.</p>
+<p>Core System은 기능으로 나눈 것이고, 두 평면은 어디에 배치하느냐로 나눈 것입니다. 공통 제어 평면의 <strong>Registry</strong>는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장합니다. 뒤의 장에서도 계속 나오는 구성요소입니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가, 정책, 기록을 맡습니다. Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 놓입니다.</p>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 등록과 승인의 구분</strong> 실행 환경의 <strong>등록(registered)</strong>은 <strong>프로덕션 승인(production-approved)</strong>과 다릅니다. 업무 트래픽을 처리하려면 별도의 승인 요건을 충족해야 합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 등록과 승인의 구분</strong> 실행 환경의 <strong>등록(registered)</strong>은 <strong>프로덕션 승인(production-approved)</strong>과 다릅니다. 업무 트래픽을 받으려면 승인 요건을 따로 충족해야 합니다.</p>
 </div>
 </details>
 <h2 id="플랫폼-설계-원칙">플랫폼 설계 원칙</h2>
@@ -205,24 +205,24 @@
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>
-<summary>Q1. 업무 앱이 Agent를 호출할 때 처음 만나는 Core System은 무엇입니까?</summary>
-<p>Agent Platform APIs입니다. 인증, Agent 해석, 테넌트 인가, 멱등성 처리가 이 계층에서 수행됩니다.</p>
+<summary>Q1. 업무 앱이 Agent를 호출할 때 처음 만나는 Core System은 무엇인가요?</summary>
+<p>Agent Platform APIs입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 이 계층에서 처리합니다.</p>
 </details>
 <details>
-<summary>Q2. Agent가 외부 모델이나 도구를 호출할 때 거치는 Core System은 무엇입니까?</summary>
-<p>Agent Gateway입니다. 모델은 모델 경로, 도구는 도구 경로를 거치며, 두 경로 모두 Guardrail 집행 지점입니다.</p>
+<summary>Q2. Agent가 외부 모델이나 도구를 호출할 때 거치는 Core System은 무엇인가요?</summary>
+<p>Agent Gateway입니다. 모델은 모델 경로를, 도구는 도구 경로를 거치고 두 경로 모두 Guardrail 집행 지점입니다.</p>
 </details>
 <details>
-<summary>Q3. Tool Registry와 도구 정책은 어느 Core System이 소유합니까?</summary>
+<summary>Q3. Tool Registry와 도구 정책은 어느 Core System이 소유하나요?</summary>
 <p>Agent Tools입니다. Agent Gateway의 도구 경로는 Agent Tools의 정의에 따라 호출을 집행합니다.</p>
 </details>
 </div>
 <div class="summary">
 <p><strong>요약</strong></p>
 <ul>
-<li>플랫폼은 Applications, Platform APIs, Factory, Runtime, Tools, Identity, Observability, Evaluation, Gateway, Tuning의 10개 Core System으로 구성됩니다.</li>
+<li>플랫폼은 Applications, Platform APIs, Factory, Runtime, Tools, Identity, Observability, Evaluation, Gateway, Tuning의 10개 Core System으로 이루어집니다.</li>
 <li>진입은 Agent Platform APIs, 외부 모델·도구 접근은 Agent Gateway로 일원화합니다.</li>
-<li>Core System은 기능 관점, 공통 제어 평면·분산 실행 평면은 배치 관점의 구분입니다.</li>
+<li>Core System은 기능으로, 공통 제어 평면과 분산 실행 평면은 배치로 나눈 것입니다.</li>
 </ul>
 </div>
 <div class="refs">

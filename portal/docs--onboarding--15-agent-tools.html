@@ -16,7 +16,7 @@
 <p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. 정문이 서연을 확인했고, 민준이 등록한 <code>invoice-summary</code>의 코드가 실행되기 시작했습니다.</p>
 </div>
 <h2 id="장면">장면</h2>
-<p>민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 <code>tool-erp-read</code>라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 <code>invoice-mailer</code>가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 읽기는 바로 되고 보내기는 멈추는 이유가 이 장의 내용입니다.</p>
+<p>민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 <code>tool-erp-read</code>라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 <code>invoice-mailer</code>가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 이 장에서는 읽기는 바로 되는데 보내기는 왜 멈추는지를 봅니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Tools가 없다면</strong> Agent마다 ERP 비밀번호를 들고 다니고, 메일은 누구의 확인도 없이 나갑니다.</p>
 </div>
@@ -36,9 +36,9 @@
 <pre><code class="language-python">found = ctx.call_tool(&quot;tool-erp-read&quot;, &quot;1.0.0&quot;, {&quot;query&quot;: &quot;INV-2048&quot;})
 </code></pre>
 <ul>
-<li><code>"tool-erp-read"</code>: 주소가 아니라 이름입니다. 주소와 자격증명은 플랫폼이 압니다.</li>
-<li><code>"1.0.0"</code>: 도구도 버전이 있습니다. 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다.</li>
-<li><code>{"query": ...}</code>: 도구가 받겠다고 선언한 인자만 보낼 수 있습니다. 주소를 넣을 자리가 없습니다.</li>
+<li><code>"tool-erp-read"</code>: 주소가 아니라 이름입니다. 주소와 자격증명은 플랫폼만 압니다.</li>
+<li><code>"1.0.0"</code>: 도구에도 버전이 있어서, 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다.</li>
+<li><code>{"query": ...}</code>: 도구가 받겠다고 선언한 인자만 보낼 수 있으므로 주소를 넣을 자리가 없습니다.</li>
 </ul>
 <p>플랫폼이 이 이름으로 찾아보는 도구 등록 정보(descriptor)입니다. 저장소의 <code>examples/fixtures/tool-descriptor.json</code>과 같은 필드입니다.</p>
 <p class="kind example" data-kind="example">예시</p>
@@ -72,7 +72,7 @@
   &quot;idempotencyKey&quot;: &quot;fixture-tool&quot;
 }
 </code></pre>
-<p><code>identity</code>, <code>policy</code>, <code>idempotencyKey</code>는 Agent 코드가 적은 것이 아닙니다. Runtime이 붙입니다. 결과(<code>tool-result.json</code>)에는 <code>status</code>와 <code>output</code>만 있고 자격증명은 없습니다.</p>
+<p><code>identity</code>, <code>policy</code>, <code>idempotencyKey</code>는 Agent 코드가 적은 것이 아니라 Runtime이 붙인 것입니다. 결과(<code>tool-result.json</code>)에는 <code>status</code>와 <code>output</code>만 있고 자격증명은 없습니다.</p>
 <pre><code class="language-json">{&quot;invocationId&quot;: &quot;inv-demo&quot;, &quot;toolId&quot;: &quot;tool-search&quot;, &quot;status&quot;: &quot;succeeded&quot;, &quot;output&quot;: {&quot;content&quot;: &quot;tool:hello&quot;}}
 </code></pre>
 </details>
@@ -85,8 +85,8 @@
 </ol>
 
 <h2 id="잘못되면">잘못되면</h2>
-<p><strong>민준의 코드가 Manifest에 적지 않은 도구를 부르면</strong> 서연의 요청은 실행 중에 403을 받습니다. 로컬 mock의 응답 본문에는 <code>Tool is not declared in the Agent Manifest</code>라고 적혀 있습니다. Manifest는 유효했고 등록도 됐고 코드도 실행된 뒤에 나는 실패입니다. 고치려면 <code>capabilities.tools</code>에 도구 이름을 추가하고 새 버전으로 등록합니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다(<a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a>).</p>
-<p><strong>승인이 붙지 않은 채 메일 도구를 부르면</strong> 앱은 403 <code>Policy denied</code>를 받습니다. 평소에는 플랫폼이 승인까지 실행을 멈춰 주지만, 어떤 이유로든 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 운영자가 도구 경로를 직접 보면 이유가 <code>Write tool requires approval</code>로 적혀 있습니다. 코드로 고칠 일이 아니라 승인자가 승인해야 풀립니다.</p>
+<p><strong>민준의 코드가 Manifest에 적지 않은 도구를 부르면</strong> 서연의 요청은 실행 중에 403을 받습니다. 로컬 mock의 응답 본문에는 <code>Tool is not declared in the Agent Manifest</code>라고 적혀 있습니다. Manifest가 유효했고 등록도 됐고 코드까지 실행된 뒤에 나는 실패입니다. <code>capabilities.tools</code>에 도구 이름을 추가하고 새 버전으로 등록하면 고쳐집니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다(<a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a>).</p>
+<p><strong>승인이 붙지 않은 채 메일 도구를 부르면</strong> 앱은 403 <code>Policy denied</code>를 받습니다. 평소에는 플랫폼이 승인까지 실행을 멈춰 주지만, 어떤 이유로든 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 운영자가 도구 경로를 직접 보면 이유가 <code>Write tool requires approval</code>로 적혀 있습니다. 코드를 고쳐서 풀 일이 아니고, 승인자가 승인해야 풀립니다.</p>
 <details class="more">
 <summary>더 보기: 앱에서는 같아 보이는 거절 셋, 그리고 응답이 끊겼을 때</summary>
 <div class="table-wrap"><table>
@@ -131,9 +131,9 @@
 </tr>
 </tbody>
 </table></div>
-<p>앞의 셋은 앱에서 모두 같은 <code>Policy denied</code>입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이기 때문입니다. 어느 것인지는 호출 번호(<code>invocationId</code>)로 운영자에게 묻습니다.</p>
+<p>앞의 셋은 앱에서 모두 같은 <code>Policy denied</code>로 보입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이라 일부러 구분하지 않습니다. 어느 경우인지는 호출 번호(<code>invocationId</code>)로 운영자에게 묻습니다.</p>
 <p><code>unknown_outcome</code>은 메일이 나갔는지 알 수 없는 상태입니다. 자동으로 다시 보내면 두 번 나갈 수 있으므로 다시 보내지 않고 메일 서버의 기록과 대조합니다. 도구 호출의 멱등성 키는 Agent 코드가 아니라 Runtime이 붙입니다.</p>
-<p>Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 주소를 넘길 수 있다면 문서에 숨은 지시문이 Agent에게 <code>http://10.0.0.5/admin</code> 같은 사내망 주소를 찔러 보게 할 수 있습니다.</p>
+<p>Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 그런 길이 있다면 문서에 숨은 지시문이 Agent를 시켜 <code>http://10.0.0.5/admin</code> 같은 사내망 주소를 찔러 볼 수 있기 때문입니다.</p>
 </details>
 <h2 id="내가-할-일">내가 할 일</h2>
 <ol>
@@ -229,11 +229,11 @@
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>
 <summary>Q1. 민준의 코드가 Manifest에 적지 않은 tool-mail-send를 부릅니다. 등록은 통과했습니다. 서연이 요청을 보내면 어떻게 되나요?</summary>
-<p>코드는 실행되지만 그 도구를 부르는 순간 403으로 거절됩니다. 등록 실패가 아니라 실행 중 거절입니다. Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.</p>
+<p>코드는 실행되지만 그 도구를 부르는 순간 403으로 거절됩니다. 등록에 실패한 것이 아니라 실행 중에 거절된 것이므로, Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.</p>
 </details>
 <details>
 <summary>Q2. 서연의 앱이 403 Policy denied를 받았습니다. 승인이 없어서인지 승인이 만료돼서인지 앱이 구별할 수 있나요?</summary>
-<p>구별할 수 없습니다. 앱이 받는 응답은 같습니다. 호출 번호를 운영자에게 전달하면 도구 경로의 기록에서 이유를 확인할 수 있습니다.</p>
+<p>앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 번호를 운영자에게 전달하면 도구 경로의 기록에서 이유를 확인해 줍니다.</p>
 </details>
 <details>
 <summary>Q3. 메일 도구를 부른 뒤 응답이 끊겼습니다. Agent가 한 번 더 보내면 안 되는 이유는 무엇인가요?</summary>
