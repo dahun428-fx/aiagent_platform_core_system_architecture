@@ -4,6 +4,8 @@
 
 플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에, 요청 하나가 그 열 개를 지나가는 모습을 먼저 봅니다. 이 가이드 전체가 같은 이야기 하나를 따라갑니다.
 
+<p class="part">설명</p>
+
 ## 등장인물과 Agent
 
 | 누구 | 역할 | 하는 일 |
@@ -144,6 +146,85 @@ Agent Gateway입니다. 모델은 모델 경로, 도구는 도구 경로를 거�
 Agent Tools입니다. Agent Gateway의 도구 경로는 Agent Tools의 정의에 따라 호출을 집행합니다.
 </details>
 </div>
+
+<p class="part">코드로 보기</p>
+
+## 코드로 보기: 플랫폼이 없을 때의 Agent
+
+위에서 본 열 개의 Core System이 왜 필요한지는 플랫폼 없이 짠 코드를 보면 가장 빨리 알 수 있습니다. 이 가이드의 "코드로 보기"는 모든 장에서 같은 Agent 하나를 다룹니다. 여기서 본 코드에 장마다 Core System을 하나씩 붙이고, 붙일 때마다 Agent 코드가 어떻게 달라지는지를 봅니다. 코드는 저장소의 `examples/build/`에 있습니다.
+
+{{blocks:0}}
+
+### 출발점
+
+민준이 플랫폼 없이 가장 빠른 길로 짠 `invoice-summary`입니다.
+
+<!-- kind: example -->
+```python
+# examples/build/step0/agent.py
+import re
+
+import world
+
+ERP_PASSWORD = "erp-s3cret"
+
+
+def invoke(request):
+    invoice_id = re.search(r"INV-\d+", request["content"]).group()
+    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+    summary = world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
+    return {"status": 200, "output": summary}
+```
+
+한 줄씩 읽으면 이렇습니다.
+
+| 줄 | 하는 일 | 여기서 생기는 문제 |
+|---|---|---|
+| `import world` | 플랫폼 바깥의 ERP와 모델을 흉내 낸 파일을 가져옵니다. 모든 장이 같은 `world`를 씁니다 | 없음 |
+| `ERP_PASSWORD = "erp-s3cret"` | ERP 비밀번호를 코드에 적어 둡니다 | 비밀번호가 저장소에 함께 올라갑니다 |
+| `def invoke(request)` | 요청을 Agent가 직접 받습니다 | 누가 보냈는지, 같은 요청이 또 왔는지 확인하는 곳이 없습니다 |
+| `world.erp_read(ERP_PASSWORD, ...)` | 비밀번호로 ERP를 직접 부릅니다 | 이 코드가 ERP에서 무엇을 부를 수 있는지 정해 둔 곳이 없습니다 |
+| `world.model(...)` | 모델을 직접 부릅니다 | 모델을 바꾸거나 모델이 느려지면 Agent마다 코드를 고쳐야 합니다 |
+
+서연이 "청구서 INV-2048 요약해 줘"를 보내면 `{'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}`이 돌아옵니다. 동작에는 문제가 없습니다.
+
+### 같은 검사 여섯 개
+
+동작하는 것과 회사에서 운영할 수 있는 것의 차이를 검사 여섯 개로 적어 두었습니다(`examples/build/check.py`). 검사는 모든 장에서 같고, Core System이 하나 붙을 때마다 통과하는 줄이 늘어납니다. 검사 하나는 함수 하나입니다. 예를 들어 "같은 요청이 두 번 와도 한 번만 실행한다"는 이렇게 생겼습니다.
+
+<!-- kind: example -->
+```python
+def runs_once():
+    before = world.model_calls
+    send({**ask, "token": "token-seoyeon"})
+    send({**ask, "token": "token-seoyeon"})   # 같은 번호, 같은 내용으로 한 번 더
+    return world.model_calls - before == 1     # 모델은 한 번만 불렸어야 합니다
+```
+
+`world.model`은 불릴 때마다 `model_calls`를 1씩 올립니다. 그래서 같은 요청을 두 번 보낸 뒤 이 숫자가 1만 늘었는지를 보면, Agent가 실제로 한 번만 실행됐는지 알 수 있습니다.
+
+출발점 코드에 여섯 개를 모두 돌린 결과입니다(`python examples/build/check.py step0`).
+
+<!-- kind: run boundary: local -->
+```text
+응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+FAIL 1 토큰 없는 요청은 거절한다
+FAIL 2 같은 요청이 두 번 와도 한 번만 실행한다
+FAIL 3 Agent 코드에 ERP 비밀번호가 없다
+FAIL 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+0/6
+```
+
+| 검사 | 통과시키는 Core System | 코드로 보는 장 |
+|---|---|---|
+| 1, 2 | Agent Platform APIs | [요청 하나 따라가기](03-one-request.md) |
+| 3, 4 | Agent Tools | [Agent Tools](15-agent-tools.md) |
+| 5 | Agent Identity | 준비 중 |
+| 6 | Agent Gateway | 준비 중 |
+
+Agent가 하나라면 민준이 여섯 가지를 직접 고칠 수도 있습니다. 하지만 팀마다 Agent를 만들면 모든 팀이 같은 여섯 가지를 각자 다시 짜야 하고, 한 팀이라도 빠뜨리면 그 Agent가 회사의 구멍이 됩니다. 그래서 이 여섯 가지를 Agent 코드 밖으로 꺼내 한 번만 만들고, 그렇게 꺼낸 부분을 플랫폼이라고 부릅니다.
 
 <div class="summary" markdown="1">
 **요약**

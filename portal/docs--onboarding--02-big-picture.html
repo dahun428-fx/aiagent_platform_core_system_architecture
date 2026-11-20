@@ -11,6 +11,8 @@
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--core-systems.html">Core Systems</a>와 <a href="docs--architecture.html">아키텍처</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
 <p>플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에, 요청 하나가 그 열 개를 지나가는 모습을 먼저 봅니다. 이 가이드 전체가 같은 이야기 하나를 따라갑니다.</p>
+<p class="part">설명</p>
+
 <h2 id="등장인물과-agent">등장인물과 Agent</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -217,6 +219,124 @@
 <p>Agent Tools입니다. Agent Gateway의 도구 경로는 Agent Tools의 정의에 따라 호출을 집행합니다.</p>
 </details>
 </div>
+<p class="part">코드로 보기</p>
+
+<h2 id="코드로-보기-플랫폼이-없을-때의-agent">코드로 보기: 플랫폼이 없을 때의 Agent</h2>
+<p>위에서 본 열 개의 Core System이 왜 필요한지는 플랫폼 없이 짠 코드를 보면 가장 빨리 알 수 있습니다. 이 가이드의 "코드로 보기"는 모든 장에서 같은 Agent 하나를 다룹니다. 여기서 본 코드에 장마다 Core System을 하나씩 붙이고, 붙일 때마다 Agent 코드가 어떻게 달라지는지를 봅니다. 코드는 저장소의 <code>examples/build/</code>에 있습니다.</p>
+<div class="stack build" role="img" aria-label="Core System 조각 10개 중 0개를 붙였습니다"><div class="s-api"><b>Agent Platform APIs</b><small>정문</small></div><div class="s-tools"><b>Agent Tools</b><small>도구 경로</small></div><div class="s-identity"><b>Agent Identity</b><small>누구 권한으로</small></div><div class="s-gateway"><b>Agent Gateway</b><small>모델로 가는 길목</small></div><div class="s-runtime"><b>Agent Runtime</b><small>실행과 기억</small></div><div class="s-factory"><b>Agent Factory</b><small>등록과 검사</small></div><div class="s-obs"><b>Agent Observability</b><small>기록</small></div><div class="s-eval"><b>Agent Evaluation</b><small>채점</small></div><div class="s-tuning"><b>Agent Tuning</b><small>고쳐서 다시</small></div><div class="s-app"><b>AI Platform Applications</b><small>쓰는 화면</small></div></div>
+<p class="caption">조각 0 / 10. 색이 채워진 조각이 지금까지 붙인 것이고, 점선은 아직 붙이지 않은 조각입니다.</p>
+
+<h3 id="출발점">출발점</h3>
+<p>민준이 플랫폼 없이 가장 빠른 길로 짠 <code>invoice-summary</code>입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python"># examples/build/step0/agent.py
+import re
+
+import world
+
+ERP_PASSWORD = &quot;erp-s3cret&quot;
+
+
+def invoke(request):
+    invoice_id = re.search(r&quot;INV-\d+&quot;, request[&quot;content&quot;]).group()
+    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+    summary = world.model(f&quot;{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}&quot;)
+    return {&quot;status&quot;: 200, &quot;output&quot;: summary}
+</code></pre>
+<p>한 줄씩 읽으면 이렇습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>줄</th>
+<th>하는 일</th>
+<th>여기서 생기는 문제</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>import world</code></td>
+<td>플랫폼 바깥의 ERP와 모델을 흉내 낸 파일을 가져옵니다. 모든 장이 같은 <code>world</code>를 씁니다</td>
+<td>없음</td>
+</tr>
+<tr>
+<td><code>ERP_PASSWORD = "erp-s3cret"</code></td>
+<td>ERP 비밀번호를 코드에 적어 둡니다</td>
+<td>비밀번호가 저장소에 함께 올라갑니다</td>
+</tr>
+<tr>
+<td><code>def invoke(request)</code></td>
+<td>요청을 Agent가 직접 받습니다</td>
+<td>누가 보냈는지, 같은 요청이 또 왔는지 확인하는 곳이 없습니다</td>
+</tr>
+<tr>
+<td><code>world.erp_read(ERP_PASSWORD, ...)</code></td>
+<td>비밀번호로 ERP를 직접 부릅니다</td>
+<td>이 코드가 ERP에서 무엇을 부를 수 있는지 정해 둔 곳이 없습니다</td>
+</tr>
+<tr>
+<td><code>world.model(...)</code></td>
+<td>모델을 직접 부릅니다</td>
+<td>모델을 바꾸거나 모델이 느려지면 Agent마다 코드를 고쳐야 합니다</td>
+</tr>
+</tbody>
+</table></div>
+<p>서연이 "청구서 INV-2048 요약해 줘"를 보내면 <code>{'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}</code>이 돌아옵니다. 동작에는 문제가 없습니다.</p>
+<h3 id="같은-검사-여섯-개">같은 검사 여섯 개</h3>
+<p>동작하는 것과 회사에서 운영할 수 있는 것의 차이를 검사 여섯 개로 적어 두었습니다(<code>examples/build/check.py</code>). 검사는 모든 장에서 같고, Core System이 하나 붙을 때마다 통과하는 줄이 늘어납니다. 검사 하나는 함수 하나입니다. 예를 들어 "같은 요청이 두 번 와도 한 번만 실행한다"는 이렇게 생겼습니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python">def runs_once():
+    before = world.model_calls
+    send({**ask, &quot;token&quot;: &quot;token-seoyeon&quot;})
+    send({**ask, &quot;token&quot;: &quot;token-seoyeon&quot;})   # 같은 번호, 같은 내용으로 한 번 더
+    return world.model_calls - before == 1     # 모델은 한 번만 불렸어야 합니다
+</code></pre>
+<p><code>world.model</code>은 불릴 때마다 <code>model_calls</code>를 1씩 올립니다. 그래서 같은 요청을 두 번 보낸 뒤 이 숫자가 1만 늘었는지를 보면, Agent가 실제로 한 번만 실행됐는지 알 수 있습니다.</p>
+<p>출발점 코드에 여섯 개를 모두 돌린 결과입니다(<code>python examples/build/check.py step0</code>).</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-text">응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+FAIL 1 토큰 없는 요청은 거절한다
+FAIL 2 같은 요청이 두 번 와도 한 번만 실행한다
+FAIL 3 Agent 코드에 ERP 비밀번호가 없다
+FAIL 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+0/6
+</code></pre>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>검사</th>
+<th>통과시키는 Core System</th>
+<th>코드로 보는 장</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1, 2</td>
+<td>Agent Platform APIs</td>
+<td><a href="docs--onboarding--03-one-request.html">요청 하나 따라가기</a></td>
+</tr>
+<tr>
+<td>3, 4</td>
+<td>Agent Tools</td>
+<td><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Agent Identity</td>
+<td>준비 중</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Agent Gateway</td>
+<td>준비 중</td>
+</tr>
+</tbody>
+</table></div>
+<p>Agent가 하나라면 민준이 여섯 가지를 직접 고칠 수도 있습니다. 하지만 팀마다 Agent를 만들면 모든 팀이 같은 여섯 가지를 각자 다시 짜야 하고, 한 팀이라도 빠뜨리면 그 Agent가 회사의 구멍이 됩니다. 그래서 이 여섯 가지를 Agent 코드 밖으로 꺼내 한 번만 만들고, 그렇게 꺼낸 부분을 플랫폼이라고 부릅니다.</p>
 <div class="summary">
 <p><strong>요약</strong></p>
 <ul>
@@ -232,4 +352,4 @@
 <li>모델 관문(AI Gateway) 패턴: <a href="docs--onboarding--10-references.html#ref-gateway">AI Gateway</a></li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--01-why.html"><small>이전</small><b>플랫폼 도입 배경과 설계 원칙</b></a><a class="next" href="docs--onboarding--03-one-request.html"><small>다음</small><b>Agent Platform APIs: 요청 하나 따라가기</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/02-big-picture.md">docs/onboarding/02-big-picture.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#등장인물과-agent">등장인물과 Agent</a><a href="#청구서-agent의-하루">청구서 Agent의 하루</a><a href="#10개-core-system">10개 Core System</a><a href="#core-system별-책임">Core System별 책임</a><a href="#진입-경계와-반출-경계">진입 경계와 반출 경계</a><a href="#플랫폼-설계-원칙">플랫폼 설계 원칙</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--01-why.html"><small>이전</small><b>플랫폼 도입 배경과 설계 원칙</b></a><a class="next" href="docs--onboarding--03-one-request.html"><small>다음</small><b>Agent Platform APIs: 요청 하나 따라가기</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/02-big-picture.md">docs/onboarding/02-big-picture.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#등장인물과-agent">등장인물과 Agent</a><a href="#청구서-agent의-하루">청구서 Agent의 하루</a><a href="#10개-core-system">10개 Core System</a><a href="#core-system별-책임">Core System별 책임</a><a href="#진입-경계와-반출-경계">진입 경계와 반출 경계</a><a href="#플랫폼-설계-원칙">플랫폼 설계 원칙</a><a href="#코드로-보기-플랫폼이-없을-때의-agent">코드로 보기: 플랫폼이 없을 때의 Agent</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

@@ -8,6 +8,8 @@
 **지금까지** [청구서 Agent의 하루](02-big-picture.md)에서 장면 열한 개를 한 번 훑었습니다. 이제 첫 장면부터 하나씩 들여다봅니다. 등장인물은 재무팀 담당자 서연, Agent를 만든 개발자 민준입니다.
 </div>
 
+<p class="part">설명</p>
+
 ## 장면
 
 서연이 재무팀 업무 앱에 "청구서 INV-2048 요약해 줘"라고 입력합니다(요청 A). 앱은 이 문장을 플랫폼의 정문인 Agent Platform APIs로 보냅니다. 응답이 조금 늦자 앱이 같은 요청을 한 번 더 보냅니다. 그런데 Agent는 한 번만 실행됩니다. 정문이 "이 요청은 이미 받았다"는 것을 알아봤기 때문입니다. 정문은 그 전에 서연이 누구인지부터 확인했습니다.
@@ -187,6 +189,143 @@ Idempotency-Key: <재전송 요청을 식별하는 키>
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [Agent Platform APIs](09-glossary.md#term-platform-apis) [멱등성 키](09-glossary.md#term-idempotency) [identity context](09-glossary.md#term-identity-context) [routeDecisionId](09-glossary.md#term-route-decision) [traceparent](09-glossary.md#term-trace) [Problem Details](09-glossary.md#term-problem) [테넌트](09-glossary.md#term-tenant)
 </div>
+
+<p class="part">코드로 보기</p>
+
+## 코드로 보기: 정문을 붙인다
+
+앞에서 설명한 정문을 열 줄 남짓한 코드로 직접 짜 봅니다. [Core Systems 지도](02-big-picture.md)의 출발점 코드에 첫 조각을 붙이는 단계입니다.
+
+{{blocks:1}}
+
+### 정문이 없을 때
+
+출발점의 Agent는 `invoke(request)`로 요청을 직접 받기 때문에, 다음 호출이 모두 그대로 실행됩니다.
+
+```python
+agent.invoke({"content": "청구서 INV-2048 요약해 줘"})              # 보낸 사람이 없어도 요약이 나갑니다
+agent.invoke({"content": "청구서 INV-2048 요약해 줘", "key": "k1"})
+agent.invoke({"content": "청구서 INV-2048 요약해 줘", "key": "k1"})  # 같은 요청인데 모델을 또 부릅니다
+```
+
+### 정문이 하는 일
+
+정문이 하는 일을 먼저 말로 적으면 네 갈래입니다.
+
+```text
+정문(요청):
+    토큰이 없거나 모르는 토큰이면
+        401로 돌려보낸다                      # Agent 코드는 한 줄도 실행되지 않는다
+    처음 보는 요청 번호이면
+        Agent를 실행하고, 결과를 번호와 함께 적어 둔다
+    본 적 있는 번호이고 내용도 같으면
+        적어 둔 결과를 그대로 돌려준다        # 다시 실행하지 않는다
+    본 적 있는 번호인데 내용이 다르면
+        409로 돌려보낸다
+```
+
+이것을 그대로 코드로 옮기면 이렇게 됩니다.
+
+<!-- kind: example -->
+```python
+# examples/build/step1/mini_platform.py
+USERS = {"token-seoyeon": "서연", "token-hajun": "하준"}  # 회사 IdP의 대역
+done = {}  # 요청 번호 -> (내용, 결과)
+
+
+def enter(request, agent):
+    # ① 모르는 사람은 돌려보낸다
+    if request.get("token") not in USERS:
+        return {"status": 401}
+    # ② 장부에 있는 번호인가
+    if request["key"] in done:
+        content, result = done[request["key"]]
+        # ③ 내용이 같으면 적어 둔 결과, 다르면 409
+        return result if content == request["content"] else {"status": 409}
+    # ④ 처음 보는 요청만 Agent를 실행한다
+    result = {"status": 200, "output": agent.handle(request["content"])}
+    # ⑤ 장부에 적는다
+    done[request["key"]] = (request["content"], result)
+    return result
+```
+
+- **①** 토큰이 `USERS`에 없으면 바로 돌려보냅니다. 이 `return`이 `agent.handle`보다 위에 있다는 점이 중요합니다. 인증에 실패한 요청은 Agent 코드에 닿지 못합니다.
+- **②** `done`은 정문의 장부입니다. 요청 번호가 장부에 있으면 이미 처리한 요청입니다.
+- **③** 장부에 적어 둔 내용과 지금 온 내용을 비교해, 같으면 적어 둔 결과를 돌려주고 다르면 409를 돌려줍니다. 어느 쪽이든 Agent는 다시 실행되지 않습니다.
+- **④** 여기까지 온 요청만 Agent를 실행합니다. Agent에는 요청 전체가 아니라 `content`만 넘어갑니다. 토큰과 요청 번호는 정문이 쓰고 끝냅니다.
+- **⑤** 결과를 돌려주기 전에 장부에 적습니다. 다음에 같은 번호가 오면 ②에서 걸립니다.
+
+### 요청 네 개가 지나가는 모습
+
+같은 정문에 요청 네 개를 차례로 넣었을 때 각 요청이 어느 줄에서 끝나는지 따라가 봅니다. 맨 오른쪽 열은 그 시점까지 모델이 불린 횟수입니다.
+
+| 순서 | 요청 | 끝나는 곳 | 돌아오는 값 | 장부 `done` | 모델 호출 |
+|---|---|---|---|---|---|
+| 1 | 번호 `k1`, 토큰 없음 | ① | `{'status': 401}` | 비어 있음 | 0 |
+| 2 | 번호 `k1`, 서연의 토큰 | ④ ⑤ | `{'status': 200, 'output': '요약: 한빛상사 …'}` | `k1` | 1 |
+| 3 | 2번과 똑같은 요청 | ② ③ | 2번과 같은 값 | `k1` | 1 |
+| 4 | 번호 `k1`, 내용만 `INV-9999` | ② ③ | `{'status': 409}` | `k1` | 1 |
+
+3번에서 모델 호출이 1에 머무는 것이 "한 번만 실행한다"의 실제 모습입니다. 4번은 번호는 같은데 내용이 다르므로, 실수이거나 누군가 번호를 가져다 쓴 것으로 보고 거절합니다. 1번이 `done`에 아무것도 남기지 않는다는 점도 눈여겨볼 만합니다. 거절된 요청이 번호를 차지하지 않으므로, 서연이 같은 번호 `k1`로 다시 보낸 2번이 정상 처리됩니다.
+
+### Agent 코드에서 바뀌는 것
+
+<!-- kind: example -->
+```diff
+ # examples/build/step0/agent.py  →  examples/build/step1/agent.py
+-def invoke(request):
+-    invoice_id = re.search(r"INV-\d+", request["content"]).group()
++def handle(content):
++    invoice_id = re.search(r"INV-\d+", content).group()
+     invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+-    summary = world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
+-    return {"status": 200, "output": summary}
++    return world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
+```
+
+Agent 코드는 오히려 줄었습니다. 요청을 열어 보고 응답 형식을 맞추는 일이 정문으로 넘어가서, Agent에는 내용을 받아 요약을 돌려주는 일만 남았습니다. 토큰 확인과 재전송 처리는 Agent 코드에 한 줄도 들어가지 않았습니다. 다른 팀이 새 Agent를 만들어도 같은 정문 뒤에 두기만 하면 두 가지를 그대로 얻습니다.
+
+### 검사 결과
+
+같은 검사 여섯 개를 다시 돌린 결과입니다(`python examples/build/check.py step1`).
+
+<!-- kind: run boundary: local -->
+```text
+응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+PASS 1 토큰 없는 요청은 거절한다
+PASS 2 같은 요청이 두 번 와도 한 번만 실행한다
+FAIL 3 Agent 코드에 ERP 비밀번호가 없다
+FAIL 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+2/6
+```
+
+서연이 받는 응답은 출발점과 글자 하나 다르지 않고, 검사 1과 2만 통과로 바뀌었습니다. 두 검사가 실제로 확인하는 것은 위 표의 1번 행과 3번 행입니다.
+
+<!-- kind: example -->
+```python
+def rejects_missing_token():
+    return send({**ask, "key": "k0"})["status"] == 401     # 표의 1번 행
+
+
+def runs_once():
+    before = world.model_calls
+    send({**ask, "token": "token-seoyeon"})
+    send({**ask, "token": "token-seoyeon"})
+    return world.model_calls - before == 1                  # 표의 3번 행
+```
+
+### 실제 플랫폼과의 대응
+
+| 이 코드 | 실제 플랫폼 |
+|---|---|
+| `request["token"]` | `Authorization` 헤더의 사용자 토큰. 회사 IdP가 발급합니다 |
+| `request["key"]` | `Idempotency-Key` 헤더. 없으면 422로 거절합니다 |
+| `done` 딕셔너리 | 재시작해도 남는 저장소 |
+| `enter()` | `POST /v1/agents/{agentId}/invocations` |
+
+Agent 코드에는 아직 `ERP_PASSWORD = "erp-s3cret"`이 남아 있습니다. 이 줄은 [Agent Tools](15-agent-tools.md)의 코드로 보기에서 지웁니다.
 
 ## 한 문장으로
 

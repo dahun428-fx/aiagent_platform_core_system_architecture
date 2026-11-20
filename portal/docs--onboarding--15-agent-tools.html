@@ -15,6 +15,8 @@
 <div class="sofar">
 <p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. 정문이 서연을 확인했고, 민준이 등록한 <code>invoice-summary</code>의 코드가 실행되기 시작했습니다.</p>
 </div>
+<p class="part">설명</p>
+
 <h2 id="장면">장면</h2>
 <p>민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 <code>tool-erp-read</code>라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 <code>invoice-mailer</code>가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 읽기는 바로 되고 보내기는 멈추는 이유가 이 장의 내용입니다.</p>
 <div class="point">
@@ -223,6 +225,170 @@
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent-tools">Agent Tools</a> <a href="docs--onboarding--09-glossary.html#term-tool-gateway">도구 경로</a> <a href="docs--onboarding--09-glossary.html#term-credential-broker">Credential Broker</a> <a href="docs--onboarding--09-glossary.html#term-lease">Lease</a> <a href="docs--onboarding--09-glossary.html#term-scope">scope</a> <a href="docs--onboarding--09-glossary.html#term-hitl">HITL</a> <a href="docs--onboarding--09-glossary.html#term-unknown">unknown_outcome</a> <a href="docs--onboarding--09-glossary.html#term-mcp">MCP</a></p>
 </div>
+<p class="part">코드로 보기</p>
+
+<h2 id="코드로-보기-도구-경로를-붙인다">코드로 보기: 도구 경로를 붙인다</h2>
+<p><a href="docs--onboarding--03-one-request.html">정문을 붙인</a> 코드에 두 번째 조각을 붙입니다. 이번에 지울 것은 Agent 코드에 남아 있는 비밀번호 한 줄입니다.</p>
+<div class="stack build" role="img" aria-label="Core System 조각 10개 중 2개를 붙였습니다"><div class="s-api lit"><b>Agent Platform APIs</b><small>정문</small></div><div class="s-tools new"><b>Agent Tools</b><small>방금 붙임 · 도구 경로</small></div><div class="s-identity"><b>Agent Identity</b><small>누구 권한으로</small></div><div class="s-gateway"><b>Agent Gateway</b><small>모델로 가는 길목</small></div><div class="s-runtime"><b>Agent Runtime</b><small>실행과 기억</small></div><div class="s-factory"><b>Agent Factory</b><small>등록과 검사</small></div><div class="s-obs"><b>Agent Observability</b><small>기록</small></div><div class="s-eval"><b>Agent Evaluation</b><small>채점</small></div><div class="s-tuning"><b>Agent Tuning</b><small>고쳐서 다시</small></div><div class="s-app"><b>AI Platform Applications</b><small>쓰는 화면</small></div></div>
+<p class="caption">조각 2 / 10. 색이 채워진 조각이 지금까지 붙인 것이고, 점선은 아직 붙이지 않은 조각입니다.</p>
+
+<h3 id="도구-경로가-없을-때">도구 경로가 없을 때</h3>
+<p>정문까지 붙인 Agent의 코드입니다.</p>
+<pre><code class="language-python">ERP_PASSWORD = &quot;erp-s3cret&quot;
+
+
+def handle(content):
+    invoice_id = re.search(r&quot;INV-\d+&quot;, content).group()
+    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+    return world.model(f&quot;{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}&quot;)
+</code></pre>
+<p>첫 줄 때문에 세 가지 일이 생깁니다. 비밀번호가 코드와 함께 저장소에 올라가므로 저장소를 볼 수 있는 사람은 누구나 ERP에 들어갈 수 있습니다. ERP 비밀번호를 바꾸는 날에는 이 값을 적어 둔 Agent를 전부 찾아 고쳐서 다시 배포해야 합니다. 그리고 비밀번호를 가진 코드는 ERP에서 무엇이든 할 수 있어서, 청구서 읽기만 하겠다던 Agent가 내일 송금 API를 불러도 막을 곳이 없습니다.</p>
+<h3 id="도구-경로가-하는-일">도구 경로가 하는 일</h3>
+<p>비밀번호를 Agent에서 플랫폼으로 옮기고, Agent는 도구의 이름만 넘기게 합니다. Agent가 부를 수 있는 이름은 Manifest에 미리 적어 둡니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{&quot;id&quot;: &quot;invoice-summary&quot;, &quot;tools&quot;: [&quot;tool-erp-read&quot;]}
+</code></pre>
+<pre><code class="language-text">도구_호출(도구 이름, 인자):
+    이 Agent의 Manifest에 없는 이름이면
+        거절한다                              # 신청하지 않은 도구는 부를 수 없다
+    보관소에서 그 도구의 비밀번호를 꺼낸다    # Agent는 이 값을 보지 못한다
+    플랫폼이 도구를 대신 부른다
+    결과만 Agent에게 돌려준다
+</code></pre>
+<p>코드로 옮기면 정문 코드에 다음이 더해집니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python"># examples/build/step2/mini_platform.py 에 새로 생긴 부분
+# ① 비밀번호는 플랫폼이 가진다
+VAULT = {&quot;erp&quot;: world.ERP_PASSWORD}
+# ② 이름과 실제로 할 일의 짝
+TOOLS = {&quot;tool-erp-read&quot;: lambda args: world.erp_read(VAULT[&quot;erp&quot;], args[&quot;invoice_id&quot;])}
+MANIFEST = json.loads((Path(__file__).parent / &quot;manifest.json&quot;).read_text(encoding=&quot;utf-8&quot;))
+
+
+class Context:
+    &quot;&quot;&quot;Agent가 플랫폼에 부탁할 수 있는 일의 전부입니다.&quot;&quot;&quot;
+
+    def call_tool(self, tool_id, args):
+        # ③ Manifest에 없는 이름은 거절한다
+        if tool_id not in MANIFEST[&quot;tools&quot;]:
+            raise PermissionError(tool_id + &quot;는 Manifest에 없는 도구입니다&quot;)
+        # ④ 플랫폼이 대신 부른다
+        call = TOOLS[tool_id]
+        return call(args)
+</code></pre>
+<ul>
+<li><strong>①</strong> 비밀번호가 사는 곳이 Agent 파일에서 플랫폼의 <code>VAULT</code>로 옮겨졌습니다. 이제 비밀번호를 바꿀 때 고칠 곳은 여기 한 곳입니다.</li>
+<li><strong>②</strong> 도구 하나는 "이름과, 그 이름으로 실제로 할 일"의 짝입니다. 비밀번호를 꺼내 ERP를 부르는 코드가 이 안에 있으므로, 이름만 아는 쪽은 비밀번호를 만질 일이 없습니다.</li>
+<li><strong>③</strong> 실제 호출보다 먼저 Manifest를 봅니다. 이름이 없으면 ④까지 가지 못하므로 ERP에는 아무 요청도 나가지 않습니다.</li>
+<li><strong>④</strong> Manifest에 있는 이름만 여기까지 옵니다. 돌려주는 것은 ERP의 응답뿐이고 <code>VAULT</code>의 값은 <code>Context</code> 밖으로 나가지 않습니다.</li>
+</ul>
+<p>정문은 한 줄만 바뀝니다. Agent를 부를 때 <code>Context</code>를 함께 건넵니다.</p>
+<pre><code class="language-diff">-    result = {&quot;status&quot;: 200, &quot;output&quot;: agent.handle(request[&quot;content&quot;])}
++    result = {&quot;status&quot;: 200, &quot;output&quot;: agent.handle(Context(), request[&quot;content&quot;])}
+</code></pre>
+<h3 id="호출-두-개가-지나가는-모습">호출 두 개가 지나가는 모습</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>호출</th>
+<th>끝나는 곳</th>
+<th>결과</th>
+<th>ERP에 나간 요청</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ctx.call_tool("tool-erp-read", {"invoice_id": "INV-2048"})</code></td>
+<td>④</td>
+<td><code>{'vendor': '한빛상사', 'amount': 12400000, 'due': '2026-11-30'}</code></td>
+<td>1건</td>
+</tr>
+<tr>
+<td><code>ctx.call_tool("tool-mail-send", {})</code></td>
+<td>③</td>
+<td><code>PermissionError: tool-mail-send는 Manifest에 없는 도구입니다</code></td>
+<td>없음</td>
+</tr>
+</tbody>
+</table></div>
+<p>두 번째 행에서 <code>tool-mail-send</code>라는 도구가 플랫폼에 있는지 없는지는 따지지도 않았습니다. Manifest에 없다는 이유만으로 먼저 거절됩니다.</p>
+<h3 id="agent-코드에서-바뀌는-것">Agent 코드에서 바뀌는 것</h3>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-diff"> # examples/build/step1/agent.py  →  examples/build/step2/agent.py
+-ERP_PASSWORD = &quot;erp-s3cret&quot;
+-
+-
+-def handle(content):
++def handle(ctx, content):
+     invoice_id = re.search(r&quot;INV-\d+&quot;, content).group()
+-    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
++    invoice = ctx.call_tool(&quot;tool-erp-read&quot;, {&quot;invoice_id&quot;: invoice_id})
+     return world.model(f&quot;{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}&quot;)
+</code></pre>
+<p>비밀번호 줄이 사라졌고, ERP를 직접 부르던 줄이 <code>ctx.call_tool</code>로 바뀌었습니다. <code>ctx</code>는 플랫폼이 건네주는 손잡이입니다. Agent가 바깥으로 나가는 길이 이 손잡이 하나로 좁아지면, 플랫폼은 그 한 곳에서만 검사하고 기록하면 됩니다. 마지막 줄의 <code>world.model</code>은 아직 직접 호출로 남아 있습니다.</p>
+<h3 id="검사-결과">검사 결과</h3>
+<p>같은 검사 여섯 개를 다시 돌린 결과입니다(<code>python examples/build/check.py step2</code>).</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-text">응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+PASS 1 토큰 없는 요청은 거절한다
+PASS 2 같은 요청이 두 번 와도 한 번만 실행한다
+PASS 3 Agent 코드에 ERP 비밀번호가 없다
+PASS 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+4/6
+</code></pre>
+<p>이번에도 서연이 받는 응답은 그대로입니다. 새로 통과한 두 검사는 이렇게 생겼습니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python">def no_password_in_agent():
+    return world.ERP_PASSWORD not in source                 # source는 agent.py 파일의 글자 전체
+
+
+def undeclared_tool_denied():
+    try:
+        platform.Context().call_tool(&quot;tool-mail-send&quot;, {})  # 위 표의 두 번째 행
+    except PermissionError:
+        return True
+    return False
+</code></pre>
+<p>검사 3은 실행 결과가 아니라 <code>agent.py</code> 파일의 글자를 봅니다. 비밀번호가 Agent 코드에 없다는 것은 동작으로는 드러나지 않기 때문입니다.</p>
+<h3 id="실제-플랫폼과의-대응">실제 플랫폼과의 대응</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>이 코드</th>
+<th>실제 플랫폼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TOOLS</code></td>
+<td>Tool Registry. 도구의 이름, 버전, 읽기·쓰기 구분을 등록합니다</td>
+</tr>
+<tr>
+<td><code>VAULT</code></td>
+<td>Credential Broker. 비밀번호 대신 이 호출 한 번에만 쓰는 출입증(lease)을 발급합니다</td>
+</tr>
+<tr>
+<td><code>Context.call_tool</code></td>
+<td>Agent Gateway의 도구 경로. 호출마다 정책을 확인하고 기록합니다</td>
+</tr>
+<tr>
+<td><code>manifest.json</code></td>
+<td>Agent Manifest의 <code>capabilities.tools</code></td>
+</tr>
+<tr>
+<td><code>PermissionError</code></td>
+<td>403</td>
+</tr>
+</tbody>
+</table></div>
+<p>남은 FAIL 두 줄이 다음에 붙일 조각입니다. 검사 5는 같은 Agent를 불러도 사람에 따라 결과가 달라야 한다는 것이고(Agent Identity), 검사 6은 모델도 도구처럼 플랫폼을 거쳐 불러야 한다는 것입니다(Agent Gateway).</p>
 <h2 id="한-문장으로">한 문장으로</h2>
 <p>Agent는 도구의 이름만 알고, 주소와 비밀번호는 플랫폼이 쥐고 대신 불러 줍니다.</p>
 <div class="check">
@@ -241,4 +407,4 @@
 </details>
 </div>
 <p>다음 장면은 ⑤입니다. 같은 Agent인데 왜 서연이 부르면 되고 인턴 하준이 부르면 안 되는지를 봅니다.</p>
-<nav class="pager"><a href="docs--onboarding--11-runtime-memory.html"><small>이전</small><b>Agent Runtime과 Memory</b></a><a class="next" href="docs--onboarding--16-agent-identity.html"><small>다음</small><b>Agent Identity</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/15-agent-tools.md">docs/onboarding/15-agent-tools.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--11-runtime-memory.html"><small>이전</small><b>Agent Runtime과 Memory</b></a><a class="next" href="docs--onboarding--16-agent-identity.html"><small>다음</small><b>Agent Identity</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/15-agent-tools.md">docs/onboarding/15-agent-tools.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#코드로-보기-도구-경로를-붙인다">코드로 보기: 도구 경로를 붙인다</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
