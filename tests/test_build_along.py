@@ -1,4 +1,4 @@
-"""The build-along chapters quote check.py's output per step; keep the code and the guide in step."""
+"""The guide's code sections quote check.py's output per step; keep the code and the guide in step."""
 import subprocess
 import sys
 import unittest

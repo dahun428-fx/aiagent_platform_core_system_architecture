@@ -8,6 +8,8 @@
 **지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. 정문이 서연을 확인했고, 민준이 등록한 `invoice-summary`의 코드가 실행되기 시작했습니다.
 </div>
 
+<p class="part">설명</p>
+
 ## 장면
 
 민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 `tool-erp-read`라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 `invoice-mailer`가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 읽기는 바로 되고 보내기는 멈추는 이유가 이 장의 내용입니다.
@@ -175,6 +177,157 @@ curl -s -X POST http://127.0.0.1:8765/v1/agents/invoice-summary/invocations \
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [Agent Tools](09-glossary.md#term-agent-tools) [도구 경로](09-glossary.md#term-tool-gateway) [Credential Broker](09-glossary.md#term-credential-broker) [Lease](09-glossary.md#term-lease) [scope](09-glossary.md#term-scope) [HITL](09-glossary.md#term-hitl) [unknown_outcome](09-glossary.md#term-unknown) [MCP](09-glossary.md#term-mcp)
 </div>
+
+<p class="part">코드로 보기</p>
+
+## 코드로 보기: 도구 경로를 붙인다
+
+[정문을 붙인](03-one-request.md) 코드에 두 번째 조각을 붙입니다. 이번에 지울 것은 Agent 코드에 남아 있는 비밀번호 한 줄입니다.
+
+{{blocks:2}}
+
+### 도구 경로가 없을 때
+
+정문까지 붙인 Agent의 코드입니다.
+
+```python
+ERP_PASSWORD = "erp-s3cret"
+
+
+def handle(content):
+    invoice_id = re.search(r"INV-\d+", content).group()
+    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+    return world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
+```
+
+첫 줄 때문에 세 가지 일이 생깁니다. 비밀번호가 코드와 함께 저장소에 올라가므로 저장소를 볼 수 있는 사람은 누구나 ERP에 들어갈 수 있습니다. ERP 비밀번호를 바꾸는 날에는 이 값을 적어 둔 Agent를 전부 찾아 고쳐서 다시 배포해야 합니다. 그리고 비밀번호를 가진 코드는 ERP에서 무엇이든 할 수 있어서, 청구서 읽기만 하겠다던 Agent가 내일 송금 API를 불러도 막을 곳이 없습니다.
+
+### 도구 경로가 하는 일
+
+비밀번호를 Agent에서 플랫폼으로 옮기고, Agent는 도구의 이름만 넘기게 합니다. Agent가 부를 수 있는 이름은 Manifest에 미리 적어 둡니다.
+
+<!-- kind: example -->
+```json
+{"id": "invoice-summary", "tools": ["tool-erp-read"]}
+```
+
+```text
+도구_호출(도구 이름, 인자):
+    이 Agent의 Manifest에 없는 이름이면
+        거절한다                              # 신청하지 않은 도구는 부를 수 없다
+    보관소에서 그 도구의 비밀번호를 꺼낸다    # Agent는 이 값을 보지 못한다
+    플랫폼이 도구를 대신 부른다
+    결과만 Agent에게 돌려준다
+```
+
+코드로 옮기면 정문 코드에 다음이 더해집니다.
+
+<!-- kind: example -->
+```python
+# examples/build/step2/mini_platform.py 에 새로 생긴 부분
+# ① 비밀번호는 플랫폼이 가진다
+VAULT = {"erp": world.ERP_PASSWORD}
+# ② 이름과 실제로 할 일의 짝
+TOOLS = {"tool-erp-read": lambda args: world.erp_read(VAULT["erp"], args["invoice_id"])}
+MANIFEST = json.loads((Path(__file__).parent / "manifest.json").read_text(encoding="utf-8"))
+
+
+class Context:
+    """Agent가 플랫폼에 부탁할 수 있는 일의 전부입니다."""
+
+    def call_tool(self, tool_id, args):
+        # ③ Manifest에 없는 이름은 거절한다
+        if tool_id not in MANIFEST["tools"]:
+            raise PermissionError(tool_id + "는 Manifest에 없는 도구입니다")
+        # ④ 플랫폼이 대신 부른다
+        call = TOOLS[tool_id]
+        return call(args)
+```
+
+- **①** 비밀번호가 사는 곳이 Agent 파일에서 플랫폼의 `VAULT`로 옮겨졌습니다. 이제 비밀번호를 바꿀 때 고칠 곳은 여기 한 곳입니다.
+- **②** 도구 하나는 "이름과, 그 이름으로 실제로 할 일"의 짝입니다. 비밀번호를 꺼내 ERP를 부르는 코드가 이 안에 있으므로, 이름만 아는 쪽은 비밀번호를 만질 일이 없습니다.
+- **③** 실제 호출보다 먼저 Manifest를 봅니다. 이름이 없으면 ④까지 가지 못하므로 ERP에는 아무 요청도 나가지 않습니다.
+- **④** Manifest에 있는 이름만 여기까지 옵니다. 돌려주는 것은 ERP의 응답뿐이고 `VAULT`의 값은 `Context` 밖으로 나가지 않습니다.
+
+정문은 한 줄만 바뀝니다. Agent를 부를 때 `Context`를 함께 건넵니다.
+
+```diff
+-    result = {"status": 200, "output": agent.handle(request["content"])}
++    result = {"status": 200, "output": agent.handle(Context(), request["content"])}
+```
+
+### 호출 두 개가 지나가는 모습
+
+| 호출 | 끝나는 곳 | 결과 | ERP에 나간 요청 |
+|---|---|---|---|
+| `ctx.call_tool("tool-erp-read", {"invoice_id": "INV-2048"})` | ④ | `{'vendor': '한빛상사', 'amount': 12400000, 'due': '2026-11-30'}` | 1건 |
+| `ctx.call_tool("tool-mail-send", {})` | ③ | `PermissionError: tool-mail-send는 Manifest에 없는 도구입니다` | 없음 |
+
+두 번째 행에서 `tool-mail-send`라는 도구가 플랫폼에 있는지 없는지는 따지지도 않았습니다. Manifest에 없다는 이유만으로 먼저 거절됩니다.
+
+### Agent 코드에서 바뀌는 것
+
+<!-- kind: example -->
+```diff
+ # examples/build/step1/agent.py  →  examples/build/step2/agent.py
+-ERP_PASSWORD = "erp-s3cret"
+-
+-
+-def handle(content):
++def handle(ctx, content):
+     invoice_id = re.search(r"INV-\d+", content).group()
+-    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
++    invoice = ctx.call_tool("tool-erp-read", {"invoice_id": invoice_id})
+     return world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
+```
+
+비밀번호 줄이 사라졌고, ERP를 직접 부르던 줄이 `ctx.call_tool`로 바뀌었습니다. `ctx`는 플랫폼이 건네주는 손잡이입니다. Agent가 바깥으로 나가는 길이 이 손잡이 하나로 좁아지면, 플랫폼은 그 한 곳에서만 검사하고 기록하면 됩니다. 마지막 줄의 `world.model`은 아직 직접 호출로 남아 있습니다.
+
+### 검사 결과
+
+같은 검사 여섯 개를 다시 돌린 결과입니다(`python examples/build/check.py step2`).
+
+<!-- kind: run boundary: local -->
+```text
+응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+PASS 1 토큰 없는 요청은 거절한다
+PASS 2 같은 요청이 두 번 와도 한 번만 실행한다
+PASS 3 Agent 코드에 ERP 비밀번호가 없다
+PASS 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+4/6
+```
+
+이번에도 서연이 받는 응답은 그대로입니다. 새로 통과한 두 검사는 이렇게 생겼습니다.
+
+<!-- kind: example -->
+```python
+def no_password_in_agent():
+    return world.ERP_PASSWORD not in source                 # source는 agent.py 파일의 글자 전체
+
+
+def undeclared_tool_denied():
+    try:
+        platform.Context().call_tool("tool-mail-send", {})  # 위 표의 두 번째 행
+    except PermissionError:
+        return True
+    return False
+```
+
+검사 3은 실행 결과가 아니라 `agent.py` 파일의 글자를 봅니다. 비밀번호가 Agent 코드에 없다는 것은 동작으로는 드러나지 않기 때문입니다.
+
+### 실제 플랫폼과의 대응
+
+| 이 코드 | 실제 플랫폼 |
+|---|---|
+| `TOOLS` | Tool Registry. 도구의 이름, 버전, 읽기·쓰기 구분을 등록합니다 |
+| `VAULT` | Credential Broker. 비밀번호 대신 이 호출 한 번에만 쓰는 출입증(lease)을 발급합니다 |
+| `Context.call_tool` | Agent Gateway의 도구 경로. 호출마다 정책을 확인하고 기록합니다 |
+| `manifest.json` | Agent Manifest의 `capabilities.tools` |
+| `PermissionError` | 403 |
+
+남은 FAIL 두 줄이 다음에 붙일 조각입니다. 검사 5는 같은 Agent를 불러도 사람에 따라 결과가 달라야 한다는 것이고(Agent Identity), 검사 6은 모델도 도구처럼 플랫폼을 거쳐 불러야 한다는 것입니다(Agent Gateway).
 
 ## 한 문장으로
 

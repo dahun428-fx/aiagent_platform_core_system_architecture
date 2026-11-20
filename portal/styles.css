@@ -572,10 +572,12 @@ footer { padding: 24px clamp(20px, 4vw, 56px); background: var(--surface); font-
 .ix-field select { width: 100%; min-width: 0; text-overflow: ellipsis; }
 @media (max-width: 640px) { .ix-controls.grid { grid-template-columns: minmax(0, 1fr); } }
 
-/* Build-along: the same stack, filled one brick per chapter */
+/* Code sections: the same stack, filled one brick per chapter */
 .stack.build { grid-auto-rows: minmax(44px, auto); margin: 20px 0 8px; }
 .stack.build > div { background: none; border: 1px dashed var(--line); color: var(--ink-2); padding: 6px 12px; }
 .stack.build > div > b { font-size: 13px; font-weight: 600; }
 .stack.build > .lit { background: var(--accent-wash); border: 1px solid transparent; color: var(--ink); }
 .stack.build > .new { background: var(--accent); border: 1px solid transparent; color: var(--ground); }
 .stack.build > .new > small { color: inherit; font-weight: 700; }
+.content p.part { margin: 56px 0 -16px; padding: 6px 14px; border-radius: var(--radius); background: var(--ink); color: var(--ground); font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+.content .sofar + p.part, .content .journey + p.part { margin-top: 24px; }

@@ -48,12 +48,6 @@ SCENES = [("부른다", "03-one-request.md"), ("어떻게 여기 있나", "05-ag
           ("ERP를 읽고 메일을 보내려 한다", "15-agent-tools.md"), ("누구 권한으로", "16-agent-identity.md"), ("모델에 묻는다", "17-agent-gateway.md"),
           ("함정을 만난다", "04-trust.md"), ("답이 틀렸다", "12-observability-evaluation.md"), ("점수를 매긴다", "18-agent-evaluation.md"),
           ("고쳐서 다시 올린다", "19-agent-tuning.md"), ("어디서 이 일을 하나", "20-applications.md")]
-# The build-along track: one naive agent grows, one brick per chapter.
-build_along = [
-    ("docs/build-along/00-naive-agent.md", "0. 플랫폼 없이 짠 Agent"),
-    ("docs/build-along/01-entry.md", "1. 정문을 붙인다"),
-    ("docs/build-along/02-tools.md", "2. 도구 경로를 붙인다"),
-]
 # Order in which the bricks attach. `{{blocks:2}}` lights the first two and marks the second as new.
 BRICKS = [("s-api", "Agent Platform APIs", "정문"), ("s-tools", "Agent Tools", "도구 경로"), ("s-identity", "Agent Identity", "누구 권한으로"),
           ("s-gateway", "Agent Gateway", "모델로 가는 길목"), ("s-runtime", "Agent Runtime", "실행과 기억"), ("s-factory", "Agent Factory", "등록과 검사"),
@@ -72,7 +66,7 @@ def journey(m):
 
 
 def blocks(m):
-    """`{{blocks:N}}` is the picture every build-along chapter repeats: N bricks attached so far, the Nth just now."""
+    """`{{blocks:N}}` is the picture every code section repeats: N bricks attached so far, the Nth just now."""
     now = int(m.group(1))
     items = "".join(f'<div class="{cls}{" new" if n == now else " lit" if n < now else ""}"><b>{name}</b><small>{"방금 붙임 · " if n == now else ""}{word}</small></div>'
                     for n, (cls, name, word) in enumerate(BRICKS, 1))
@@ -86,16 +80,15 @@ def kind_label(m):
     return f'<p class="kind {kind}" data-kind="{kind}"' + (f' data-boundary="{boundary}"' if boundary else "") + f">{text}</p>"
 
 
-def pager(relative, chapters=onboarding):
-    paths = [p for p, *_ in chapters]
+def pager(relative):
+    paths = [p for p, *_ in onboarding]
     i = paths.index(relative)
-    cell = lambda j, cls, word: f'<a{cls} href="{Path(paths[j]).name}"><small>{word}</small><b>{chapters[j][1]}</b></a>'
+    cell = lambda j, cls, word: f'<a{cls} href="{Path(paths[j]).name}"><small>{word}</small><b>{onboarding[j][1]}</b></a>'
     return '\n\n<nav class="pager">' + (cell(i - 1, "", "이전") if i else "") + (cell(i + 1, ' class="next"', "다음") if i + 1 < len(paths) else "") + "</nav>\n"
 
 
 navigation = [
     ("개발자 가이드", [("index.html", "가이드 개요")] + [(p, t) for p, t, _, _, _ in onboarding]),
-    ("만들면서 배우기 (시범)", build_along),
     ("설계 정의", [("docs/core-systems.md", "Core Systems"), ("docs/architecture.md", "아키텍처"), ("docs/agent-tools.md", "Agent Tools"), ("docs/identity-and-credentials.md", "Agent Identity"), ("docs/security.md", "보안 경계"), ("docs/guardrails.md", "Guardrails"), ("docs/memory.md", "Memory"), ("docs/agent-card.md", "Agent Card"), ("docs/execution.md", "Durable / HITL")]),
     ("운영 정의", [("docs/operating-model.md", "운영·평가"), ("docs/observability.md", "Observability"), ("docs/evaluation.md", "Evaluation"), ("docs/agent-tuning.md", "Agent Tuning"), ("docs/deployment.md", "배포 프로파일"), ("docs/versioning.md", "계약 변경"), ("docs/ci-integration.md", "CI 통합"), ("docs/glossary.md", "용어와 규범")]),
     ("레퍼런스", [("catalog.html", "계약 · 예제"), ("diagrams.html", "아키텍처 도식 9종"), ("docs/tbd-register.md", "TBD 등록부"), ("docs/release-scope.md", "제공 범위와 한계")]),
@@ -152,9 +145,7 @@ for source in sources:
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
     else:
         if relative in [p for p, *_ in onboarding]:
-            text = re.sub(r"\{\{journey:(\d+)\}\}", journey, text) + pager(relative)
-        if relative in [p for p, _ in build_along]:
-            text = re.sub(r"\{\{blocks:(\d+)\}\}", blocks, text) + pager(relative, build_along)
+            text = re.sub(r"\{\{blocks:(\d+)\}\}", blocks, re.sub(r"\{\{journey:(\d+)\}\}", journey, text)) + pager(relative)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", TocExtension(slugify=slugify_unicode, toc_depth="2")])
         body = rewrite_links(body, source)
         body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
