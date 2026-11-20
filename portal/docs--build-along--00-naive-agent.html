@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>0. 플랫폼 없이 짠 Agent · Agent Platform</title><link rel="stylesheet" href="styles.css">
+<script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>만들면서 배우기 (시범)</h2><a href="docs--build-along--00-naive-agent.html" aria-current="page">0. 플랫폼 없이 짠 Agent</a><a href="docs--build-along--01-entry.html">1. 정문을 붙인다</a><a href="docs--build-along--02-tools.html">2. 도구 경로를 붙인다</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
+<div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
+<main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="0-플랫폼-없이-짠-agent">0. 플랫폼 없이 짠 Agent</h1>
+<blockquote>
+<p>만들면서 배우는 경로입니다. 열 줄 남짓한 Agent 하나에 Core System을 한 장에 한 조각씩 붙여 갑니다. 코드는 모두 <code>examples/build/</code>에 있고, 내 PC에서 그대로 실행됩니다.</p>
+</blockquote>
+<div class="stack build" role="img" aria-label="Core System 조각 10개 중 0개를 붙였습니다"><div class="s-api"><b>Agent Platform APIs</b><small>정문</small></div><div class="s-tools"><b>Agent Tools</b><small>도구 경로</small></div><div class="s-identity"><b>Agent Identity</b><small>누구 권한으로</small></div><div class="s-gateway"><b>Agent Gateway</b><small>모델로 가는 길목</small></div><div class="s-runtime"><b>Agent Runtime</b><small>실행과 기억</small></div><div class="s-factory"><b>Agent Factory</b><small>등록과 검사</small></div><div class="s-obs"><b>Agent Observability</b><small>기록</small></div><div class="s-eval"><b>Agent Evaluation</b><small>채점</small></div><div class="s-tuning"><b>Agent Tuning</b><small>고쳐서 다시</small></div><div class="s-app"><b>AI Platform Applications</b><small>쓰는 화면</small></div></div>
+<p class="caption">조각 0 / 10. 색이 채워진 조각이 지금까지 붙인 것이고, 점선은 아직 붙이지 않은 조각입니다.</p>
+
+<h2 id="이-경로를-읽는-법">이 경로를 읽는 법</h2>
+<p>모든 장이 같은 순서로 진행됩니다.</p>
+<ol>
+<li><strong>지금 코드의 아픈 곳</strong> 하나를 직접 실행해서 봅니다.</li>
+<li>위 그림에 <strong>조각 하나</strong>를 붙입니다.</li>
+<li>그 조각이 안에서 하는 일을 <strong>의사코드</strong> 열 줄 안팎으로 봅니다.</li>
+<li>내 Agent 코드가 어떻게 바뀌는지 <strong>앞 장과의 차이</strong>로 봅니다.</li>
+<li>같은 <strong>검사 여섯 개</strong>를 다시 돌려, 실패하던 줄이 통과로 바뀌는 것을 확인합니다.</li>
+</ol>
+<p>검사 여섯 개는 처음부터 끝까지 바뀌지 않습니다. 0장에서는 여섯 개가 모두 실패하고, 조각이 붙을 때마다 통과하는 줄이 늘어납니다.</p>
+<h2 id="출발점-열-줄-남짓한-agent">출발점: 열 줄 남짓한 Agent</h2>
+<p>재무팀 서연이 "청구서 INV-2048 요약해 줘"라고 보내면 ERP에서 청구서를 읽어 모델에게 요약을 시키는 Agent입니다. 개발자 민준이 플랫폼 없이 가장 빠른 길로 짰습니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python"># examples/build/step0/agent.py
+import re
+
+import world
+
+ERP_PASSWORD = &quot;erp-s3cret&quot;
+
+
+def invoke(request):
+    invoice_id = re.search(r&quot;INV-\d+&quot;, request[&quot;content&quot;]).group()
+    invoice = world.erp_read(ERP_PASSWORD, invoice_id)
+    summary = world.model(f&quot;{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}&quot;)
+    return {&quot;status&quot;: 200, &quot;output&quot;: summary}
+</code></pre>
+<p><code>world</code>는 플랫폼 바깥에 있는 ERP와 모델을 흉내 낸 파일(<code>examples/build/world.py</code>)입니다. 모든 장이 같은 <code>world</code>를 쓰므로, 장마다 달라지는 것은 Agent 코드와 플랫폼 조각뿐입니다.</p>
+<h2 id="실행해-본다">실행해 본다</h2>
+<pre><code class="language-bash">python examples/build/check.py step0
+</code></pre>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-text">응답 {'status': 200, 'output': '요약: 한빛상사 12,400,000원, 납기 2026-11-30'}
+FAIL 1 토큰 없는 요청은 거절한다
+FAIL 2 같은 요청이 두 번 와도 한 번만 실행한다
+FAIL 3 Agent 코드에 ERP 비밀번호가 없다
+FAIL 4 Manifest에 없는 도구는 부를 수 없다
+FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
+0/6
+</code></pre>
+<p>첫 줄을 보면 Agent는 잘 동작합니다. 서연은 원하는 요약을 받았습니다. 그런데 그 아래 여섯 줄이 모두 실패합니다. 동작하는 것과 회사에서 운영할 수 있는 것 사이의 거리가 이 여섯 줄입니다.</p>
+<h2 id="여섯-줄이-뜻하는-것">여섯 줄이 뜻하는 것</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>검사</th>
+<th>지금 코드에서 벌어지는 일</th>
+<th>붙일 조각</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. 토큰 없는 요청은 거절한다</td>
+<td>누가 보냈는지 묻지 않고 누구에게나 청구서를 요약해 줍니다</td>
+<td><a href="docs--build-along--01-entry.html">1장 정문</a></td>
+</tr>
+<tr>
+<td>2. 같은 요청이 두 번 와도 한 번만 실행한다</td>
+<td>앱이 응답을 못 받아 다시 보내면 모델을 두 번 부릅니다</td>
+<td><a href="docs--build-along--01-entry.html">1장 정문</a></td>
+</tr>
+<tr>
+<td>3. Agent 코드에 ERP 비밀번호가 없다</td>
+<td>비밀번호가 코드에 적혀 저장소에 함께 올라갑니다</td>
+<td><a href="docs--build-along--02-tools.html">2장 도구 경로</a></td>
+</tr>
+<tr>
+<td>4. Manifest에 없는 도구는 부를 수 없다</td>
+<td>Agent가 무엇을 부를 수 있는지 정해 둔 곳이 없습니다</td>
+<td><a href="docs--build-along--02-tools.html">2장 도구 경로</a></td>
+</tr>
+<tr>
+<td>5. 권한이 모자란 하준은 거절한다</td>
+<td>인턴 하준이 불러도 서연과 같은 답이 나갑니다</td>
+<td>Agent Identity</td>
+</tr>
+<tr>
+<td>6. Agent 코드가 모델을 직접 부르지 않는다</td>
+<td>모델을 바꾸거나 모델이 느려질 때 Agent마다 코드를 고쳐야 합니다</td>
+<td>Agent Gateway</td>
+</tr>
+</tbody>
+</table></div>
+<p>Agent가 하나일 때는 민준이 여섯 가지를 직접 고칠 수도 있습니다. 하지만 팀마다 Agent를 만들기 시작하면 모든 팀이 같은 여섯 가지를 각자 다시 짜게 되고, 한 팀이라도 빠뜨리면 그 Agent가 회사의 구멍이 됩니다. 그래서 이 여섯 가지를 Agent 코드 밖으로 꺼내 한 번만 만듭니다. 그 꺼낸 부분이 플랫폼이고, 꺼내는 단위가 맨 위 그림의 조각입니다.</p>
+<h2 id="지금까지-만든-것">지금까지 만든 것</h2>
+<ul>
+<li>Agent 코드 하나. 동작하지만 검사는 0/6입니다.</li>
+<li>플랫폼 조각은 아직 없습니다.</li>
+</ul>
+<p>다음 장에서 첫 조각인 정문을 붙이면 검사 1과 2가 통과로 바뀝니다.</p>
+<nav class="pager"><a class="next" href="docs--build-along--01-entry.html"><small>다음</small><b>1. 정문을 붙인다</b></a></nav><p class="file-link">원본 파일: <a href="../docs/build-along/00-naive-agent.md">docs/build-along/00-naive-agent.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#이-경로를-읽는-법">이 경로를 읽는 법</a><a href="#출발점-열-줄-남짓한-agent">출발점: 열 줄 남짓한 Agent</a><a href="#실행해-본다">실행해 본다</a><a href="#여섯-줄이-뜻하는-것">여섯 줄이 뜻하는 것</a><a href="#지금까지-만든-것">지금까지 만든 것</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

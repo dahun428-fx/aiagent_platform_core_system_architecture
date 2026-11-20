@@ -97,7 +97,7 @@
     ["평가·개선", ["s-obs", "s-eval", "s-tuning", "s-factory"],
       "실행 기록(Observability)과 평가 결과(Evaluation)를 근거로 Agent Tuning이 개선안을 만들고, 새 버전은 Agent Factory를 거쳐 다시 평가받습니다."],
   ];
-  document.querySelectorAll(".content .stack").forEach(stack => {
+  document.querySelectorAll(".content .stack:not(.build)").forEach(stack => {
     const caption = h("div", { class: "ix-caption", "aria-live": "polite", hidden: true });
     const buttons = [];
     function pick(i) {
