@@ -10,7 +10,7 @@
 
 ## 장면
 
-같은 날 인턴 하준이 서연과 똑같은 문장으로 `invoice-summary`를 부릅니다. 서연은 요약을 받았는데 하준은 403을 받습니다. Agent도 같고 질문도 같습니다. 다른 것은 부른 사람입니다. 하준에게는 Agent를 부를 권한만 있고, 모델과 ERP 읽기 권한이 없습니다. Agent는 자기 권한으로 일하는 것이 아니라 부른 사람의 권한 안에서 일합니다.
+같은 날 인턴 하준이 서연과 똑같은 문장으로 `invoice-summary`를 부릅니다. 서연은 요약을 받았는데 하준은 403을 받습니다. Agent도 질문도 같고 부른 사람만 다릅니다. 하준에게는 Agent를 부를 권한만 있고 모델과 ERP 읽기 권한이 없습니다. Agent는 자기 권한이 아니라 부른 사람의 권한 안에서 일하기 때문에 이런 차이가 납니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} Agent Identity가 없다면** Agent를 부를 수 있는 사람은 누구나 Agent가 닿는 모든 데이터를 볼 수 있게 됩니다.
@@ -21,7 +21,7 @@
 <ol class="flow">
 <li data-say="정문이 토큰에서 서연이 누구이고 어떤 권한을 가졌는지 확인합니다.">{{icon:user}}<b>1. 부른 사람의 권한을 확인한다</b><span>토큰 → 테넌트 · scope</span></li>
 <li data-say="Agent의 Manifest가 요구하는 권한을 서연이 모두 갖고 있는지 맞춰 봅니다. 하나라도 없으면 코드를 실행하지 않습니다." class="hi">{{icon:manifest}}<b>2. Agent가 요구하는 권한과 맞춰 본다</b><span>requiredScopes</span></li>
-<li data-say="실행 중에 도구를 부를 때 한 번 더 봅니다. 그 도구가 Manifest에 있는지, 그 도구가 요구하는 권한이 있는지입니다.">{{icon:tools}}<b>3. 도구를 부를 때 한 번 더 본다</b><span>도구 목록 · 실행 중 권한</span></li>
+<li data-say="실행 중에 도구를 부를 때 그 도구가 Manifest에 있는지, 도구가 요구하는 권한이 있는지를 한 번 더 봅니다.">{{icon:tools}}<b>3. 도구를 부를 때 한 번 더 본다</b><span>도구 목록 · 실행 중 권한</span></li>
 <li data-say="마지막으로 이 호출 한 번에만 쓸 수 있고 곧 사라지는 출입증(lease)으로 ERP에 들어갑니다. Agent는 이 출입증을 꺼내 갈 수 없습니다.">{{icon:key}}<b>4. 잠깐 쓰는 출입증으로 들어간다</b><span>lease</span></li>
 </ol>
 
@@ -38,9 +38,9 @@
 | 도구 목록 | 부르려는 도구가 Manifest `capabilities.tools`에 있는가 | `tool-erp-read` 통과 | 여기까지 오지 않음 |
 | 실행 중 권한 | 겹치는 범위에 도구가 요구하는 scope가 있는가 | `tools.read` 통과 | 여기까지 오지 않음 |
 
-- 서연의 권한은 `agents.invoke`, `models.invoke`, `tools.read`, `tools.write`입니다. 하준은 `agents.invoke` 하나입니다.
-- "겹치는 범위"는 호출자가 가진 권한과 회사 정책이 허용한 권한에 모두 들어 있는 것입니다. 서연이 권한을 가졌어도 정책이 막으면 없는 것과 같습니다.
-- 403이 나면 위에서부터 봅니다. 앞 관문에서 막히면 뒤 관문은 보지 않기 때문입니다.
+- 서연의 권한은 `agents.invoke`, `models.invoke`, `tools.read`, `tools.write`이고, 하준의 권한은 `agents.invoke` 하나입니다.
+- "겹치는 범위"는 호출자가 가진 권한이면서 회사 정책도 허용한 권한을 말합니다. 서연이 권한을 가졌어도 정책이 막으면 없는 것과 같습니다.
+- 앞 관문에서 막히면 뒤 관문은 보지 않으므로, 403이 나면 위에서부터 확인합니다.
 
 마지막 관문에서 쓰는 출입증(lease)입니다. 저장소 fixture `examples/fixtures/credential-lease.json`입니다.
 
@@ -56,9 +56,9 @@
 }
 ```
 
-- `credentialRef`: 비밀번호가 아니라 번호표입니다. 이 값을 알아도 ERP에 직접 들어갈 수 없습니다.
-- `audience`와 `scopes`: 어느 도구에 어떤 권한으로만 쓸 수 있는지입니다. 다른 도구에는 쓸 수 없습니다.
-- `expiresAt`: 언제까지인지입니다. fixture는 형식 검증용이라 먼 날짜가 적혀 있고, 로컬 mock이 실제로 발급하는 lease는 60초 뒤 만료되며 한 번 쓰면 다시 쓸 수 없습니다.
+- `credentialRef`: 비밀번호가 아니라 번호표여서, 이 값을 알아도 ERP에 직접 들어갈 수 없습니다.
+- `audience`와 `scopes`: 이 출입증을 쓸 수 있는 도구와 권한입니다. 다른 도구에는 쓸 수 없습니다.
+- `expiresAt`: 만료 시각입니다. fixture는 형식 검증용이라 먼 날짜가 적혀 있지만, 로컬 mock이 실제로 발급하는 lease는 60초 뒤 만료되고 한 번 쓰면 다시 쓸 수 없습니다.
 - `nonExportable`: Agent 코드와 모델에게 넘어가지 않는다는 표시입니다. 실제 자격증명으로 바꾸는 일은 신뢰 경계 안쪽에서만 일어납니다.
 
 <details class="more" markdown="1"><summary>더 보기: 요청 C의 관문, 그리고 "만약에" 다섯 가지</summary>
@@ -93,9 +93,9 @@
 
 ## 잘못되면
 
-**하준이 `invoice-summary`를 부르면** 403을 받습니다. 로컬 mock의 응답 본문에는 `Caller lacks a scope required by the Agent Manifest`라고 적혀 있습니다. Agent 코드는 한 줄도 실행되지 않았습니다. 고치는 방법은 코드가 아니라 권한입니다. 하준에게 필요한 권한을 주거나, 하준이 부르지 않도록 합니다.
+**하준이 `invoice-summary`를 부르면** 403을 받습니다. 로컬 mock의 응답 본문에는 `Caller lacks a scope required by the Agent Manifest`라고 적혀 있습니다. Agent 코드는 한 줄도 실행되지 않았습니다. 이 실패는 코드가 아니라 권한을 고쳐야 풀립니다. 하준에게 필요한 권한을 주거나, 하준이 이 Agent를 부르지 않게 합니다.
 
-**민준이 테스트하면서 요청 본문에 다른 팀의 테넌트를 적으면** 403 `Tenant assertion does not match authenticated identity`를 받습니다. 테넌트는 토큰에서만 정해지고 본문의 값은 비교에만 쓰입니다. 본문을 바꿔 다른 팀의 데이터에 닿는 길은 없습니다.
+**민준이 테스트하면서 요청 본문에 다른 팀의 테넌트를 적으면** 403 `Tenant assertion does not match authenticated identity`를 받습니다. 테넌트는 토큰에서만 정해지고 본문의 값은 비교에만 쓰이므로, 본문을 바꿔 다른 팀의 데이터에 닿는 길은 없습니다.
 
 <details class="more" markdown="1"><summary>더 보기: 만료된 lease, 그리고 내부 구간의 거절</summary>
 
@@ -111,14 +111,14 @@
 | 서명한 뒤 내용이 바뀜 | 403 `Internal signature missing or invalid` | S1 `tampered` |
 | 필요한 scope가 없음 | 403 `Policy denied` | S1 `missing-scope` |
 
-정문을 지났다고 안쪽 구간이 서로를 그냥 믿지 않습니다. 구간마다 신원과 서명을 다시 확인합니다.
+정문을 지났다고 해서 안쪽 구간이 서로를 그냥 믿지는 않고, 구간마다 신원과 서명을 다시 확인합니다.
 </details>
 
 ## 내가 할 일
 
 1. 신원 모드를 고릅니다. 사용자를 대신해 일하면 `delegated`, 예약 작업처럼 사용자가 없으면 `independent`입니다.
 2. Manifest `identity.requiredScopes`에 Agent가 쓰는 모델과 도구의 scope를 모두 적습니다.
-3. 코드에 자격증명을 넣지 않습니다. 넣을 자리도 없습니다.
+3. 코드에 자격증명을 넣지 않습니다. 애초에 넣을 자리도 없습니다.
 4. 403이 나면 관문을 위에서부터 확인합니다. 테넌트, 진입, 도구 목록, 실행 중 권한 순서입니다.
 
 **내 PC에서 해 보기** 적합성 검사의 C4(테넌트 위조), C10(Manifest requiredScopes), C11(identity.mode)이 이 장의 관문을 실제로 확인합니다. 출력 11줄 가운데 세 줄입니다.
@@ -153,7 +153,7 @@ PASS  C11  platform-enforcement  Manifest identity.mode  delegated runs as the c
 - 신원과 테넌트는 검증된 토큰에서만 정합니다. 요청 본문의 값으로 권한을 주지 않습니다(MUST NOT). 장면 ⑤
 - 실행 중 권한은 사용자 권한 ∩ Agent 권한 ∩ 도구 허용 범위 ∩ 정책을 넘을 수 없습니다(MUST). 장면 ⑤
 - 사람의 신원, Agent workload의 신원, 바깥 시스템에 위임받은 자격증명은 서로 다른 것으로 다룹니다.
-- 자격증명 원문은 Runtime과 모델에 넘기지 않습니다. 단기, 호출 결합형, 내보낼 수 없는 lease만 씁니다(MUST).
+- 자격증명 원문은 Runtime과 모델에 넘기지 않습니다. 금방 만료되고, 그 호출에만 묶여 있고, 밖으로 내보낼 수 없는 lease만 씁니다(MUST).
 - 토큰을 받은 그대로 다음 시스템에 넘기지 않습니다(token passthrough 금지). 대상(audience)이 정해진 토큰만 씁니다.
 
 <div class="terms" markdown="1">
@@ -172,7 +172,7 @@ Agent의 Manifest가 요구하는 권한 세 개를 서연은 모두 갖고 있�
 </details>
 
 <details markdown="1"><summary>Q2. 403을 받았습니다. 어느 관문부터 확인하나요?</summary>
-위에서부터입니다. 테넌트, 진입(requiredScopes), 도구 목록, 실행 중 권한 순서로 봅니다. 앞에서 막히면 뒤는 검사하지 않습니다.
+위에서부터 테넌트, 진입(requiredScopes), 도구 목록, 실행 중 권한 순서로 확인합니다. 앞에서 막히면 뒤는 검사하지 않기 때문입니다.
 </details>
 
 <details markdown="1"><summary>Q3. 민준이 requiredScopes에 tools.read를 적지 않았습니다. tools.read가 없는 사용자가 부르면 어떻게 되나요?</summary>

@@ -16,12 +16,12 @@
 <p><strong>지금까지</strong> 민준이 지시문 두 문장을 고친 <code>invoice-summary 1.3.0</code>이 시험지 <code>3.0.0</code>에서 37/40 = 0.925를 받아 승격 후보가 됐습니다. 운영 중인 것은 아직 <code>1.2.0</code>입니다.</p>
 </div>
 <h2 id="장면">장면</h2>
-<p><code>1.3.0</code>은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 <code>1.2.0</code>이 받습니다. 업무 요청을 받으려면 프로덕션 승인이 필요하기 때문입니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모읍니다. 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 <code>1.3.0</code>이 업무 요청을 받습니다.</p>
+<p><code>1.3.0</code>은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 <code>1.2.0</code>이 받습니다. 업무 요청을 받으려면 프로덕션 승인까지 받아야 합니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모으면서, 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 <code>1.3.0</code>이 업무 요청을 받습니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 승인 단계가 없다면</strong> 등록만 하면 곧바로 업무 데이터를 만지게 되고, 무엇을 근거로 올렸는지 나중에 아무도 답하지 못합니다.</p>
 </div>
 <h2 id="실물-보기">실물 보기</h2>
-<p>지훈이 본 <code>1.3.0</code>의 승인 기록입니다. 승인 요건 여섯 가지가 한 줄씩입니다.</p>
+<p>지훈이 본 <code>1.3.0</code>의 승인 기록입니다. 승인 요건 여섯 가지를 한 줄씩 적고 알려진 한계를 덧붙였습니다.</p>
 <p class="kind example" data-kind="example">예시</p>
 
 <div class="table-wrap"><table>
@@ -67,7 +67,7 @@
 <li>"알려진 한계"는 요건이 아니지만 승인자가 무엇을 받아들이는지 알고 승인하게 합니다.</li>
 </ul>
 <h2 id="잘못되면">잘못되면</h2>
-<p><strong>"지시문만 고쳤으니 평가는 건너뛰자"고 하면</strong> 수단 나 같은 수정이 그대로 올라갑니다. 월 누락을 고치려다 번호 질문 6행을 망가뜨린 그 수정입니다(<a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.</p>
+<p><strong>"지시문만 고쳤으니 평가는 건너뛰자"고 하면</strong> 월 누락을 고치려다 번호 질문 6행을 망가뜨린 수단 나 같은 수정이 그대로 올라갑니다(<a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.</p>
 <p><strong>롤백을 검증하지 않고 올리면</strong> 문제가 생긴 날 되돌리는 방법을 그때 처음 시험하게 됩니다. <code>1.2.0</code>으로 실제로 되돌려 보고 요청 A가 통과하는지 확인한 뒤에 올립니다.</p>
 <h2 id="개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</h2>
 <div class="compare">
@@ -86,7 +86,7 @@
 </ul>
 </div>
 </div>
-<p>실험 단계의 중앙 등록은 선택 사항입니다. <strong>공동 시험이나 프로덕션 승격</strong>이 필요한 시점에 등록합니다.</p>
+<p>실험하는 동안에는 중앙에 등록하지 않아도 됩니다. <strong>공동 시험이나 프로덕션 승격</strong>이 필요해질 때 등록합니다.</p>
 <h2 id="수명주기-단계">수명주기 단계</h2>
 <ol class="flow">
 <li data-say="내 PC에서 자유롭게 만들고 시험하는 단계입니다. 아직 플랫폼에 등록되지 않았습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>local experiment</b><span>로컬 개발 및 시험</span></li>
@@ -100,33 +100,33 @@
 
 <div class="sim" data-sim="lifecycle"></div>
 
-<p>Registry는 이와 별도로 문제가 확인된 버전을 차단하는 <strong>격리(quarantined)</strong> 상태를 관리합니다.</p>
+<p>이 단계들과 별도로, Registry는 문제가 확인된 버전을 <strong>격리(quarantined)</strong> 상태로 두어 차단합니다.</p>
 <h2 id="프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>불변 버전과 digest</b><p>승격 대상 산출물을 변경 불가능한 참조로 고정합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>불변 버전과 digest</b><p>승격할 산출물을 바뀌지 않는 참조로 고정합니다.</p></div>
 <div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>계약 적합성 검증</b><p>Manifest의 JSON Schema 검증과 API 계약 검증을 통과합니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>보안 검토 기록</b><p>Identity, 위임, 데이터 이동에 대한 보안 검토를 완료합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>보안 검토 기록</b><p>Identity, 위임, 데이터 이동의 보안 검토를 마칩니다.</p></div>
 <div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><b>평가 결과</b><p>데이터셋·Agent·Manifest·정책 버전, 지표, 통과 기준, traceId가 결합된 평가 결과입니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>롤백 검증 결과</b><p>문제 발생 시 이전 버전으로 복구할 수 있음을 검증합니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>위험도별 사람의 승인</b><p>위험도가 높을수록 사람의 승인 단계가 추가됩니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>롤백 검증 결과</b><p>문제가 생기면 이전 버전으로 되돌릴 수 있는지 실제로 확인합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>위험도별 사람의 승인</b><p>위험도가 높을수록 사람의 승인 단계가 늘어납니다.</p></div>
 </div>
 
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 핵심 포인트</strong> 셀프서비스가 기본입니다. 자동 검사를 통과하면 팀이 직접 진행하며, 위험도가 높은 경우에만 사람의 승인이 추가됩니다. 코드 외에도 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 변경되면 재평가합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> 핵심 포인트</strong> 셀프서비스가 기본입니다. 자동 검사를 통과하면 팀이 직접 다음 단계로 넘기고, 위험도가 높을 때만 사람의 승인이 더해집니다. 코드가 아니라 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 바뀌어도 다시 평가합니다.</p>
 </div>
 <h2 id="배포-프로파일">배포 프로파일</h2>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>local</b><p>개발자 장비에서 계약 검증과 합성 데이터 실험을 수행합니다.</p><span class="sub">프로덕션 승인 대상 아님</span></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg><b>shared-experiment</b><p>등록된 사내·클라우드 자원에서 통합 시험과 평가를 수행합니다.</p><span class="sub">테넌트 격리 · 사용량 한도 · 감사</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>local</b><p>개발자 장비에서 계약을 검증하고 합성 데이터로 실험합니다.</p><span class="sub">프로덕션 승인 대상 아님</span></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/></svg><b>shared-experiment</b><p>등록된 사내·클라우드 자원에서 통합 시험과 평가를 합니다.</p><span class="sub">테넌트 격리 · 사용량 한도 · 감사</span></div>
 <div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z"/></svg><b>production</b><p>승인된 hybrid 실행 환경에서 업무 트래픽을 처리합니다.</p><span class="sub">보안 · 평가 · 복구 · 위험도별 SLO 근거</span></div>
 </div>
 
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 주의</strong> 등록된 실행 환경은 프로덕션 승인 환경이 아닙니다. 개발자 PC나 Mac mini가 의도치 않게 프로덕션 환경으로 사용되는 것은 이 설계가 방지하려는 위험입니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 주의</strong> 실행 환경을 등록했다고 프로덕션 승인을 받은 것은 아닙니다. 이 설계는 개발자 PC나 Mac mini가 어느새 프로덕션 환경으로 쓰이는 일을 막으려고 둘을 구분합니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.</p>
 </div>
 <p>멈췄다 이어 하는 실행(Durable, HITL)은 <a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a>와 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>에서, 평가 결과로 Agent를 고치는 흐름은 <a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>에서 다룹니다.</p>
 <h2 id="초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</h2>
-<p>플랫폼은 전체 모듈을 동시에 구현하지 않습니다. 다음 종단 간 실행 경로를 먼저 완성한 뒤, 도구·RAG·Durable 실행·Multi-Agent·분산 실행 환경을 단계적으로 추가합니다.</p>
+<p>플랫폼은 모든 모듈을 한꺼번에 구현하지 않습니다. 아래의 종단 간 실행 경로를 먼저 완성하고, 그 위에 도구, RAG, Durable 실행, Multi-Agent, 분산 실행 환경을 차례로 더합니다.</p>
 <ol class="flow">
 <li data-say="내 PC의 Agent와 Manifest를 검증합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>로컬 Agent</b><span>Manifest 검증</span></li>
 <li data-say="Agent Platform APIs로 호출해 인증·신원·정책 검사를 거칩니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Platform APIs</b><span>인증 · Identity · 정책</span></li>
@@ -138,7 +138,7 @@
 
 <p><img alt="Local-First MVP 흐름" src="../diagrams/mvp.svg" /></p>
 <h2 id="ci-품질-게이트">CI 품질 게이트</h2>
-<p>계약 검증은 문서가 아닌 코드로 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 <code>scripts/release.py</code>로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.</p>
+<p>계약은 문서로 당부하지 않고 코드로 검증해 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 <code>scripts/release.py</code>로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.</p>
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-local-first">Local-First</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-approved">등록 / 승인 / 배포</a> <a href="docs--onboarding--09-glossary.html#term-profile">배포 프로파일</a> <a href="docs--onboarding--09-glossary.html#term-contract-as-code">Contract-as-Code</a> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a> <a href="docs--onboarding--09-glossary.html#term-production">프로덕션</a> <a href="docs--onboarding--09-glossary.html#term-evidence">승인 검증 근거</a></p>
 </div>
@@ -147,12 +147,12 @@
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>
-<summary>Q1. registered 상태의 Agent는 업무 트래픽을 처리할 수 있습니까?</summary>
-<p>처리할 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.</p>
+<summary>Q1. registered 상태의 Agent가 업무 트래픽을 받을 수 있나요?</summary>
+<p>받을 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.</p>
 </details>
 <details>
-<summary>Q2. 코드 변경 없이 모델 라우팅 정책만 변경되어도 재평가가 필요합니까?</summary>
-<p>필요합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책의 변경도 재평가 대상입니다.</p>
+<summary>Q2. 코드는 그대로이고 모델 라우팅 정책만 바뀌어도 다시 평가해야 하나요?</summary>
+<p>해야 합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 바뀌어도 다시 평가합니다.</p>
 </details>
 <details>
 <summary>Q3. 민준이 승인 기록에 "3회 채점에서 흔들리는 2행"을 적었습니다. 적지 않았다면 무엇이 달라지나요?</summary>
@@ -162,9 +162,9 @@
 <div class="summary">
 <p><strong>요약</strong></p>
 <ul>
-<li>개발과 실험은 팀이 자율적으로 수행하고, 프로덕션 승격은 6가지 검증 근거로 판단합니다.</li>
-<li>배포 프로파일은 local, shared-experiment, production 3가지이며, 등록과 승인은 구분됩니다.</li>
-<li>종단 간 실행 경로를 먼저 완성하고, 기능은 단계적으로 추가합니다.</li>
+<li>개발과 실험은 팀이 알아서 하고, 프로덕션 승격은 검증 근거 6가지로 판단합니다.</li>
+<li>배포 프로파일은 local, shared-experiment, production 세 가지이고, 등록과 승인은 서로 다른 단계입니다.</li>
+<li>종단 간 실행 경로를 먼저 완성하고 기능은 차례로 더합니다.</li>
 </ul>
 </div>
 <div class="refs">
