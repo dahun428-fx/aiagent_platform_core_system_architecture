@@ -1,6 +1,6 @@
 # 근거와 참고 자료
 
-> 개발자 가이드와 기술 표준이 근거로 삼은 외부 자료입니다. 각 항목은 해당 자료에서 확인한 내용과, 이 플랫폼에서 반영한 위치를 함께 적습니다. 외부 명세는 개정될 수 있으므로 구현 전에 최신 버전을 다시 확인하십시오.
+> 개발자 가이드와 기술 표준이 근거로 삼은 외부 자료입니다. 각 항목은 해당 자료에서 확인한 내용과, 이 플랫폼에서 반영한 위치를 함께 적습니다. 외부 명세는 개정될 수 있으므로 구현하기 전에 최신 버전을 다시 확인해야 합니다.
 
 <div class="goals" markdown="1">
 **{{icon:book}} 이 문서를 읽는 법**
@@ -29,7 +29,7 @@
 | 자료 | 확인한 내용 | 플랫폼 반영 |
 |---|---|---|
 | [Kong AI Gateway](https://developer.konghq.com/ai-gateway/) | 모델 요청·응답에 프롬프트 가드, PII 제거, 응답 검사, 토큰 기반 사용량 제한, 클라우드 guardrail 연동을 적용. AI Prompt Guard는 `user` 역할 메시지만 검사([AI Prompt Guard](https://developer.konghq.com/ai-gateway/policies/ai-prompt-guard/)) | Agent Gateway 모델 경로의 입출력 검사·사용량 기록, 도구 결과·검색 문서를 별도 지점에서 검사 |
-| AI Gateway 비교 자료(2차 자료: [Kong](https://konghq.com/performance-comparison/ai-gateway-alternatives), [Maxim](https://www.getmaxim.ai/articles/top-5-envoy-ai-gateway-alternatives-for-llm-routing.md)) | 애플리케이션과 모델 공급사 사이에서 인증, 라우팅, 캐시, 비용 추적, 사용량 제한을 수행하는 관문 패턴 | 모델 경로의 책임 범위 |
+| AI Gateway 비교 자료(2차 자료: [Kong](https://konghq.com/performance-comparison/ai-gateway-alternatives), [Maxim](https://www.getmaxim.ai/articles/top-5-envoy-ai-gateway-alternatives-for-llm-routing.md)) | 애플리케이션과 모델 공급사 사이에서 인증, 라우팅, 캐시, 비용 추적, 사용량 제한을 수행하는 게이트웨이 패턴 | 모델 경로의 책임 범위 |
 
 </div>
 

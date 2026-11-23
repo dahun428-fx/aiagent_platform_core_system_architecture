@@ -48,6 +48,11 @@ SCENES = [("부른다", "03-one-request.md"), ("어떻게 여기 있나", "05-ag
           ("ERP를 읽고 메일을 보내려 한다", "15-agent-tools.md"), ("누구 권한으로", "16-agent-identity.md"), ("모델에 묻는다", "17-agent-gateway.md"),
           ("함정을 만난다", "04-trust.md"), ("답이 틀렸다", "12-observability-evaluation.md"), ("점수를 매긴다", "18-agent-evaluation.md"),
           ("고쳐서 다시 올린다", "19-agent-tuning.md"), ("어디서 이 일을 하나", "20-applications.md")]
+# Order in which the bricks attach. `{{blocks:2}}` lights the first two and marks the second as new.
+BRICKS = [("s-api", "Agent Platform APIs", "정문"), ("s-tools", "Agent Tools", "도구 경로"), ("s-identity", "Agent Identity", "누구 권한으로"),
+          ("s-gateway", "Agent Gateway", "모델로 가는 길목"), ("s-runtime", "Agent Runtime", "실행과 기억"), ("s-factory", "Agent Factory", "등록과 검사"),
+          ("s-obs", "Agent Observability", "기록"), ("s-eval", "Agent Evaluation", "채점"), ("s-tuning", "Agent Tuning", "고쳐서 다시"),
+          ("s-app", "AI Platform Applications", "쓰는 화면")]
 KINDS = {"run": "실행 결과", "example": "예시"}
 BOUNDARIES = {"app": "앱이 받은 응답", "route": "내부 진단 · 내부 경로를 직접 호출한 값", "dev": "개발 환경에서 다시 실행", "local": "내 PC의 로컬 mock"}
 
@@ -58,6 +63,14 @@ def journey(m):
     items = "".join(f'<li class="{"on" if n == now else "done" if n < now else ""}"><a href="{f}"><i>{chr(0x2460 + n - 1)}</i>{html.escape(t)}</a></li>'
                     for n, (t, f) in enumerate(SCENES, 1))
     return f'<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 {now}번째"><ol>{items}</ol></nav>'
+
+
+def blocks(m):
+    """`{{blocks:N}}` is the picture every code section repeats: N bricks attached so far, the Nth just now."""
+    now = int(m.group(1))
+    items = "".join(f'<div class="{cls}{" new" if n == now else " lit" if n < now else ""}"><b>{name}</b><small>{"방금 붙임 · " if n == now else ""}{word}</small></div>'
+                    for n, (cls, name, word) in enumerate(BRICKS, 1))
+    return f'<div class="stack build" role="img" aria-label="Core System 조각 {len(BRICKS)}개 중 {now}개를 붙였습니다">{items}</div>\n<p class="caption">조각 {now} / {len(BRICKS)}. 색이 채워진 조각이 지금까지 붙인 것이고, 점선은 아직 붙이지 않은 조각입니다.</p>'
 
 
 def kind_label(m):
@@ -132,7 +145,7 @@ for source in sources:
         body = "<h1>" + html.escape(title) + "</h1><pre><code>" + html.escape(text) + "</code></pre>"
     else:
         if relative in [p for p, *_ in onboarding]:
-            text = re.sub(r"\{\{journey:(\d+)\}\}", journey, text) + pager(relative)
+            text = re.sub(r"\{\{blocks:(\d+)\}\}", blocks, re.sub(r"\{\{journey:(\d+)\}\}", journey, text)) + pager(relative)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", TocExtension(slugify=slugify_unicode, toc_depth="2")])
         body = rewrite_links(body, source)
         body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")

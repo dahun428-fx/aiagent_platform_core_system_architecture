@@ -13,10 +13,10 @@
 <nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 11번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="done"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class="done"><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class="done"><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class="done"><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class="done"><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class="on"><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
 
 <div class="sofar">
-<p><strong>지금까지</strong> <code>invoice-summary</code>는 등록되고, 실행되고, 한 번 틀리고, 고쳐져 <code>1.3.0</code>으로 승인됐습니다. 장면 열 개에서 플랫폼 안쪽을 봤습니다. 마지막 장면은 사람들이 그 플랫폼을 어디서 만지는지입니다.</p>
+<p><strong>지금까지</strong> <code>invoice-summary</code>는 등록되고, 실행되고, 한 번 틀리고, 고쳐져 <code>1.3.0</code>으로 승인됐습니다. 앞의 장면 열 개에서는 플랫폼 안쪽을 봤고, 마지막 장면에서는 사람들이 그 플랫폼을 어디서 만지는지를 봅니다.</p>
 </div>
 <h2 id="장면">장면</h2>
-<p>같은 하루를 사람 기준으로 다시 봅니다. 민준은 터미널에서 Manifest를 검증하고 Agent를 띄웠습니다. 서연은 재무팀 업무 앱에서 질문을 보냈습니다. 지훈은 승인함에서 메일 발송과 <code>1.3.0</code>의 승격을 승인했습니다. 도구는 셋이 달랐지만, Agent를 부르고 상태를 보고 승인하는 일은 모두 같은 정문의 같은 API로 갑니다. 다만 이 가운데 지금 실제로 해 볼 수 있는 것과 아직 약속만 있는 것이 섞여 있습니다.</p>
+<p>같은 하루를 사람 기준으로 다시 봅니다. 민준은 터미널에서 Manifest를 검증하고 Agent를 띄웠고, 서연은 재무팀 업무 앱에서 질문을 보냈고, 지훈은 승인함에서 메일 발송과 <code>1.3.0</code>의 승격을 승인했습니다. 세 사람이 쓴 도구는 달랐지만 Agent를 부르고 상태를 보고 승인하는 일은 모두 Agent Platform APIs의 같은 API로 갑니다. 다만 이 가운데 지금 실제로 해 볼 수 있는 것과 아직 약속만 있는 것이 섞여 있습니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> AI Platform Applications가 없다면</strong> 팀마다 검증 스크립트와 승인 화면을 따로 만들고, 화면마다 다른 뒷문이 생깁니다.</p>
 </div>
@@ -103,8 +103,8 @@ Idempotency-Key: &lt;요청 번호&gt;
  &quot;execution&quot;: {&quot;mode&quot;: &quot;sync&quot;, &quot;timeoutMs&quot;: 30000}}
 </code></pre>
 <ul>
-<li>달라지는 것은 <code>Authorization</code>의 토큰, 곧 누가 불렀는지뿐입니다. 하준이 어느 화면에서 누르든 403인 이유입니다.</li>
-<li>화면이 Agent를 직접 실행하거나 ERP에 직접 닿는 길은 없습니다.</li>
+<li>달라지는 것은 <code>Authorization</code>의 토큰, 즉 누가 호출했는지뿐입니다. 그래서 하준은 어느 화면에서 누르든 403을 받습니다.</li>
+<li>화면이 Agent를 직접 실행하거나 ERP에 직접 접근하는 경로는 없습니다.</li>
 </ul>
 <h2 id="직접-해-보기">직접 해 보기</h2>
 <div class="sim" data-sim="roles"></div>
@@ -120,7 +120,7 @@ Idempotency-Key: &lt;요청 번호&gt;
 
 <pre><code class="language-json">{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;NOT_IMPLEMENTED&quot;, &quot;status&quot;: 501, &quot;detail&quot;: &quot;This target API is contract-only&quot;, &quot;code&quot;: &quot;NOT_IMPLEMENTED&quot;, &quot;traceId&quot;: &quot;…&quot;}
 </code></pre>
-<p>고장이 아니라 "계약만 있다"는 뜻입니다. 위 표에서 그 일이 "실행"인지 "계약만"인지 먼저 확인합니다. 계약만인 API는 응답 모양에 맞춰 앱을 준비해 둘 수는 있지만 지금 동작을 시험할 수는 없습니다.</p>
+<p>이 501은 고장이 아니라 "계약만 있다"는 뜻입니다. 위 표에서 그 일이 "실행"인지 "계약만"인지부터 확인합니다. 계약만인 API는 응답 모양에 맞춰 앱을 준비해 둘 수는 있지만 지금 동작을 시험할 수는 없습니다.</p>
 <p><strong>화면에서 손으로만 확인하고 CI에 넣지 않으면</strong> 다음 버전에서 같은 검증을 빠뜨립니다. 민준이 <code>1.3.0</code>을 만들 때 <code>validate</code>와 <code>conformance</code>를 깜빡하면 형식이 깨진 Manifest가 등록 단계까지 갑니다. 터미널 명령으로 할 수 있는 일은 CI에 넣어 매번 자동으로 돌립니다.</p>
 <details class="more">
 <summary>더 보기: 없는 API를 가정할 때, Space의 세 화면</summary>
@@ -159,7 +159,7 @@ Idempotency-Key: &lt;요청 번호&gt;
 </details>
 <h2 id="내가-할-일">내가 할 일</h2>
 <ol>
-<li>DevTools의 첫 명령 세 개를 익힙니다. <code>validate</code>, <code>conformance</code>, <code>run</code>입니다.</li>
+<li>DevTools의 첫 명령 세 개 <code>validate</code>, <code>conformance</code>, <code>run</code>을 익힙니다.</li>
 <li><code>validate</code>와 <code>conformance</code>를 CI에 넣습니다.</li>
 <li>앱에 기능을 붙이기 전에 대응표에서 그 API의 등급을 확인합니다.</li>
 </ol>
@@ -214,20 +214,20 @@ curl -i -H &quot;Authorization: Bearer mock-user&quot; http://127.0.0.1:8765/v1/
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-applications">AI Platform Applications</a> <a href="docs--onboarding--09-glossary.html#term-devtools">DevTools</a> <a href="docs--onboarding--09-glossary.html#term-space">Space</a> <a href="docs--onboarding--09-glossary.html#term-platform-apis">Agent Platform APIs</a> <a href="docs--onboarding--09-glossary.html#term-mock">로컬 mock</a> <a href="docs--onboarding--09-glossary.html#term-conformance">적합성 검증</a></p>
 </div>
 <h2 id="한-문장으로">한 문장으로</h2>
-<p>터미널에서 하든 화면에서 하든 결국 같은 정문을 두드립니다.</p>
+<p>터미널에서 하든 화면에서 하든 결국 같은 Agent Platform APIs를 호출합니다.</p>
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>
 <summary>Q1. 실행 상태 조회나 승인을 지금 어디서 해 볼 수 있나요?</summary>
-<p>아직 해 볼 수 없습니다. 두 API는 계약만 있고 로컬 mock은 501을 돌려줍니다. Space의 화면도 정의 단계입니다. 승인 검증 자체는 참조 구현의 도구 경로(S6a)에서만 실행됩니다.</p>
+<p>아직 해 볼 수 없습니다. 두 API는 계약만 있어서 로컬 mock은 501을 돌려주고, Space의 화면도 정의 단계입니다. 승인 검증 자체는 참조 구현의 도구 경로(S6a)에서만 실행됩니다.</p>
 </details>
 <details>
 <summary>Q2. 서연이 Space 카탈로그에서 Agent를 실행하는 것과 민준이 curl로 부르는 것은 플랫폼 입장에서 무엇이 다른가요?</summary>
-<p>토큰이 가리키는 사람만 다릅니다. 같은 API에 같은 모양의 요청이 도착하고 같은 관문을 지납니다.</p>
+<p>토큰이 가리키는 사람만 다릅니다. 같은 API에 같은 모양의 요청이 도착하고 같은 검사 단계를 거칩니다.</p>
 </details>
 <details>
 <summary>Q3. 민준의 팀이 추적 화면을 직접 만들려고 합니다. 먼저 무엇을 확인해야 하나요?</summary>
-<p>대응표에서 추적 보기의 등급입니다. v0.1 계약에는 그 일을 위한 API가 없으므로 붙일 곳이 없습니다.</p>
+<p>대응표에서 추적 보기의 등급을 확인해야 합니다. v0.1 계약에는 그 일을 위한 API가 없어서 화면을 만들어도 붙일 곳이 없습니다.</p>
 </details>
 </div>
 <p>여기까지가 청구서 Agent의 하루입니다. 이어지는 장은 Agent끼리 서로를 찾고 부르는 방법(<a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a>)과, 내 PC에서 직접 따라 하는 실습입니다.</p>

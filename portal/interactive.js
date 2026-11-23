@@ -89,7 +89,7 @@
     ["Agent 호출", ["s-ext-app", "s-api", "s-identity", "s-runtime", "s-obs", "s-infra"],
       "업무 앱의 요청이 Agent Platform APIs로 들어옵니다. Agent Identity로 호출자를 확인한 뒤 Agent Runtime이 실행 인프라에서 Agent를 실행하고, 전 과정이 Agent Observability에 기록됩니다."],
     ["모델 호출", ["s-runtime", "s-gateway", "s-ext-tool", "s-obs"],
-      "실행 중인 Agent가 모델을 부르면 Agent Gateway의 모델 경로가 데이터 분류에 맞는 모델로만 보냅니다. 외부 모델도 이 관문을 통해서만 연결됩니다."],
+      "실행 중인 Agent가 모델을 부르면 Agent Gateway의 모델 경로가 데이터 분류에 맞는 모델로만 보냅니다. 외부 모델도 이 경로를 거쳐서만 호출됩니다."],
     ["도구 호출", ["s-runtime", "s-gateway", "s-tools", "s-identity", "s-ext-tool", "s-obs"],
       "Agent가 도구를 부르면 Agent Gateway의 도구 경로가 Agent Tools에 등록·승인된 도구인지 확인하고, Agent Identity의 Credential Broker가 그 호출 한 번용 사용권을 발급합니다."],
     ["개발·등록", ["s-app", "s-api", "s-factory", "s-eval"],
@@ -97,7 +97,7 @@
     ["평가·개선", ["s-obs", "s-eval", "s-tuning", "s-factory"],
       "실행 기록(Observability)과 평가 결과(Evaluation)를 근거로 Agent Tuning이 개선안을 만들고, 새 버전은 Agent Factory를 거쳐 다시 평가받습니다."],
   ];
-  document.querySelectorAll(".content .stack").forEach(stack => {
+  document.querySelectorAll(".content .stack:not(.build)").forEach(stack => {
     const caption = h("div", { class: "ix-caption", "aria-live": "polite", hidden: true });
     const buttons = [];
     function pick(i) {
@@ -143,7 +143,7 @@
     request(el) {
       const body = frame(el, "요청 하나 보내 보기", "아래 조건을 켜고 '요청 보내기'를 누르면, 요청이 어느 단계에서 왜 멈추는지 볼 수 있습니다. 조건을 모두 끄면 정상 처리됩니다.");
       const RULES = [
-        ["noToken", "토큰 없이 호출", 0, "401 Unauthorized", "호출자가 누구인지 확인할 수 없어 정문(Agent Platform APIs)에서 돌려보냅니다."],
+        ["noToken", "토큰 없이 호출", 0, "401 Unauthorized", "호출자가 누구인지 확인할 수 없어 Agent Platform APIs에서 돌려보냅니다."],
         ["spoof", "요청 본문에 다른 테넌트 ID 넣기", 0, "403 Forbidden", "테넌트는 검증된 토큰에서만 정합니다. 본문으로 다른 테넌트를 지정할 수 없습니다."],
         ["scope", "하준처럼 Agent가 요구하는 권한이 없는 사용자", 0, "403 Forbidden", "Manifest의 requiredScopes를 호출자가 모두 갖고 있지 않아 Agent를 실행하지 않습니다."],
         ["conflict", "같은 멱등성 키로 다른 내용 보내기", 0, "409 Conflict", "같은 요청 번호로 내용이 다른 요청이 와서 거부합니다. 실수나 재전송 공격을 막습니다."],
@@ -339,7 +339,7 @@
         const hit = c.points.find(p => on(enabled[p]) && !(p === 0 && !c.userMessage && !c.output && scope.value === "user"));
         rows.forEach((r, n) => { r.className = n === hit ? "hit" : c.points.includes(n) ? "hit2" : ""; });
         if (hit === undefined) return verdict(out, false, "빠져나감", `이 글을 볼 수 있는 집행 지점이 없습니다. ${c.points.map(p => POINTS[p]).join(", ")} 가운데 켜진 곳이 없거나 검사 범위 밖입니다. 한 지점이 다른 지점을 대신하지 못합니다.`);
-        if (on(outage)) return verdict(out, null, `${POINTS[hit]} · 검사할 수 없어 차단`, "검사 서비스에 닿지 못했습니다. 검사 없이 통과시키지 않고 막습니다(fail closed).");
+        if (on(outage)) return verdict(out, null, `${POINTS[hit]} · 검사할 수 없어 차단`, "검사 서비스에 접근할 수 없습니다. 검사 없이 통과시키지 않고 막습니다(fail closed).");
         if (mode.value === "observe") return verdict(out, false, `${POINTS[hit]} · 기록만 하고 통과`, "판정은 기록됐지만 아무것도 막지 않았습니다. 검사만 모드는 정책을 시험할 때 쓰는 것이고 프로덕션의 방어가 아닙니다.");
         if (hit !== c.points[0]) return verdict(out, true, `${POINTS[hit]} · ${c.action}`, `${POINTS[c.points[0]]} 지점이 꺼져 있어 거기서는 걸리지 않았습니다. 이 글이 모델로 들어갈 때 ${POINTS[hit]} 검사가 같은 문장을 찾아 막았습니다.`);
         verdict(out, true, `${POINTS[hit]} · ${c.action}`, c.say);
@@ -377,7 +377,7 @@
 
     // Chapter 16: the gates a call passes, in order.
     authz(el) {
-      const body = frame(el, "관문 통과해 보기", "누가 어떤 요청을 보내는지, Manifest에 무엇을 적었는지 바꿔 보세요. 요청은 위에서부터 관문을 차례로 지나고, 막히면 그 뒤 관문은 보지 않습니다.");
+      const body = frame(el, "검사 단계 통과해 보기", "누가 어떤 요청을 보내는지, Manifest에 무엇을 적었는지 바꿔 보세요. 요청은 위에서부터 검사 단계를 차례로 거치고, 막히면 그 뒤 단계는 검사하지 않습니다.");
       const SCOPES = ["agents.invoke", "models.invoke", "tools.read", "tools.write"];
       const group = (title, name) => h("fieldset", { class: "ix-set" }, h("legend", { text: title }), SCOPES.map(s => { const c = check(s, name + ":" + s); c.querySelector("input").checked = true; return c; }));
       const picked = set => SCOPES.filter(s => set.querySelector(`input[name$=":${s}"]`).checked);
@@ -389,7 +389,7 @@
       const mode = select("mode", [["delegated", "delegated · 호출자를 대신해 실행"], ["independent", "independent · Agent 자신의 신원으로 실행"]]);
       const spoof = check("요청 본문에 다른 테넌트 적기", "spoof");
       const reuse = check("만료된 lease를 다시 쓰기", "reuse");
-      const st = stages(["테넌트", "진입", "도구 목록", "실행 중 권한", "출입증(lease)"]);
+      const st = stages(["테넌트", "진입", "도구 목록", "실행 중 권한", "lease"]);
       const out = result();
       function update() {
         const agent = S.agents[request.value];
@@ -399,17 +399,17 @@
         const need = S.toolScopes[tool.value];
         const missing = required.filter(s => !effective.includes(s));
         const gates = [
-          [on(spoof), "403 · 테넌트 관문", "본문에 적은 테넌트가 토큰의 테넌트와 다릅니다. 테넌트는 검증된 토큰에서만 정합니다."],
-          [missing.length, "403 · 진입 관문", `Manifest가 요구한 ${missing.join(", ")}가 호출자 권한과 정책이 겹치는 범위에 없습니다. Agent 코드는 한 줄도 실행되지 않았습니다.`],
-          [!agent.tools.includes(tool.value), "403 · 도구 목록 관문", `${tool.value}는 ${request.value}의 Manifest capabilities.tools에 없습니다. 호출자의 권한이 아무리 많아도 Agent가 선언하지 않은 도구는 쓸 수 없습니다.`],
-          [!grant.includes(need), "403 · 실행 중 권한 관문", `Agent 코드는 실행됐지만 도구를 부르는 순간 ${need}가 없어 막혔습니다. ${manifest.value === "short" ? "Manifest의 requiredScopes에 이 scope를 적어 두었다면 진입 관문에서 일찍 막혔을 것입니다." : ""}`],
-          [on(reuse), "거부 · 출입증 관문", "lease는 이 호출 한 번에 묶여 있고 곧 만료됩니다. 만료된 lease로는 ERP에 들어갈 수 없습니다."],
+          [on(spoof), "403 · 테넌트 검사", "본문에 적은 테넌트가 토큰의 테넌트와 다릅니다. 테넌트는 검증된 토큰에서만 정합니다."],
+          [missing.length, "403 · 진입 검사", `Manifest가 요구한 ${missing.join(", ")}가 호출자 권한과 정책이 겹치는 범위에 없습니다. Agent 코드는 한 줄도 실행되지 않았습니다.`],
+          [!agent.tools.includes(tool.value), "403 · 도구 목록 검사", `${tool.value}는 ${request.value}의 Manifest capabilities.tools에 없습니다. 호출자의 권한이 아무리 많아도 Agent가 선언하지 않은 도구는 쓸 수 없습니다.`],
+          [!grant.includes(need), "403 · 실행 중 권한 검사", `Agent 코드는 실행됐지만 도구를 부르는 순간 ${need}가 없어 막혔습니다. ${manifest.value === "short" ? "Manifest의 requiredScopes에 이 scope를 적어 두었다면 진입 검사에서 일찍 막혔을 것입니다." : ""}`],
+          [on(reuse), "거부 · lease 검사", "lease는 이 호출 한 번에 묶여 있고 짧은 시간 뒤 만료됩니다. 만료된 lease로는 ERP를 호출할 수 없습니다."],
         ];
         const stop = gates.findIndex(g => g[0]);
         st.items.forEach((li, n) => { li.className = stop < 0 || n < stop ? "ok" : n === stop ? "bad" : ""; });
         if (stop >= 0) return verdict(out, false, gates[stop][1], gates[stop][2]);
         const basis = mode.value === "delegated" ? "호출자 권한과 정책이 겹치는 범위" : "Manifest 선언과 정책이 겹치는 범위";
-        verdict(out, true, "200 · 모든 관문 통과", `실행 중 권한은 ${basis}입니다: ${grant.join(", ")}.` + (tool.value === "tool-mail-send" ? " 쓰기 도구는 여기에 더해 승인 관문을 지나야 합니다. 승인은 Agent Tools 장의 '도구 불러 보기'에서 다룹니다." : ""));
+        verdict(out, true, "200 · 모든 검사 통과", `실행 중 권한은 ${basis}입니다: ${grant.join(", ")}.` + (tool.value === "tool-mail-send" ? " 쓰기 도구는 여기에 더해 쓰기 승인 검사를 거쳐야 합니다. 승인은 Agent Tools 장의 '도구 불러 보기'에서 다룹니다." : ""));
       }
       body.addEventListener("change", update);
       body.append(h("div", { class: "ix-cases" }, preset("서연"), preset("하준")), h("div", { class: "ix-controls sets" }, callerSet, policySet),
@@ -419,23 +419,23 @@
 
     // Chapter 17: what the gateway does when the model is unwell. Rows mirror impl/scenarios.
     "model-health"(el) {
-      const body = frame(el, "모델이 아플 때 관문이 하는 일", "상황을 고르면 관문이 모델을 몇 번 두드리는지와 앱이 받는 응답을 보여 줍니다. 상황은 참조 구현의 시나리오와 하나씩 대응합니다.");
+      const body = frame(el, "모델 장애 때 Agent Gateway가 하는 일", "상황을 고르면 Agent Gateway가 모델을 몇 번 호출하는지와 앱이 받는 응답을 보여 줍니다. 상황은 참조 구현의 시나리오와 하나씩 대응합니다.");
       const ROWS = S.modelHealth;
       const own = check("Agent 코드에 재시도 3회를 직접 넣음", "own");
       const track = h("ol", { class: "ix-log path" });
       const out = result();
       const WORD = { ok: "성공", fail: "실패", slow: "시간 초과", blocked: "모델을 부르지 않고 바로 거절" };
-      const TODO = { 200: "할 일이 없습니다.", 429: "Retry-After만큼 기다렸다 다시 보냅니다.", 502: "사용자에게 알립니다. 관문이 이미 3회 시도했습니다.", 504: "사용자에게 알리고, 남은 시간(timeoutMs)을 늘릴지 검토합니다." };
+      const TODO = { 200: "할 일이 없습니다.", 429: "Retry-After만큼 기다렸다 다시 보냅니다.", 502: "사용자에게 알립니다. Agent Gateway가 이미 3회 시도했습니다.", 504: "사용자에게 알리고, 남은 시간(timeoutMs)을 늘릴지 검토합니다." };
       let current = 0;
       function show(i) {
         current = i;
         pressed(bs, i);
         const r = ROWS[i], times = on(own) && r.attempts.includes("fail") && r.status !== 200 ? 3 : 1;
         track.replaceChildren();
-        for (let t = 0; t < times; t++) r.attempts.forEach((a, n) => track.append(h("li", { class: a === "ok" ? "ok" : "bad", text: `${times > 1 ? `Agent 재시도 ${t + 1} · ` : ""}관문 시도 ${n + 1}: ${WORD[a]}` })));
+        for (let t = 0; t < times; t++) r.attempts.forEach((a, n) => track.append(h("li", { class: a === "ok" ? "ok" : "bad", text: `${times > 1 ? `Agent 재시도 ${t + 1} · ` : ""}Agent Gateway 시도 ${n + 1}: ${WORD[a]}` })));
         const todo = r.status === 503 ? (r.retryAfter ? "Retry-After만큼 기다렸다 다시 보냅니다." : "잠시 뒤 한 번만 다시 보냅니다. 또 같으면 호출 번호로 운영자에게 확인합니다. 이 응답만으로는 연결 실패인지, 이 데이터 등급으로 갈 모델이 없는지 가릴 수 없습니다.") : TODO[r.status];
         const head = `앱이 받은 응답: ${r.status}${r.code ? " " + r.code : ""}${r.retryAfter ? " · Retry-After: " + r.retryAfter : ""}`;
-        verdict(out, r.status === 200, head, [r.say, "앱이 할 일: " + todo].concat(times > 1 ? [`Agent 코드의 재시도가 관문의 재시도와 곱해져 모델을 ${track.children.length}번 두드렸습니다. 아픈 모델을 더 아프게 하고 응답은 더 늦어집니다. (예시)`] : []));
+        verdict(out, r.status === 200, head, [r.say, "앱이 할 일: " + todo].concat(times > 1 ? [`Agent 코드의 재시도가 Agent Gateway의 재시도와 곱해져 모델을 ${track.children.length}번 호출했습니다. 장애가 난 모델에 부하가 더 몰리고 응답은 더 늦어집니다. (예시)`] : []));
       }
       const bs = ROWS.map((r, i) => btn(r.name, () => show(i), "case"));
       own.addEventListener("change", () => show(current));
@@ -445,7 +445,7 @@
 
     // Chapter 18: the evaluation gate over the example score table.
     "eval-gate"(el) {
-      const body = frame(el, "시험지와 채점 바꿔 보기", "시험지, Agent 버전, 채점 대상, 기준을 바꿔 보세요. 아래 여섯 행은 전체 시험지에서 뽑은 표본이고 점수는 전체 행으로 계산한 값입니다. (예시)");
+      const body = frame(el, "평가 데이터셋과 채점 바꿔 보기", "평가 데이터셋, Agent 버전, 채점 대상, 기준을 바꿔 보세요. 아래 여섯 행은 전체 데이터셋에서 뽑은 표본이고 점수는 전체 행으로 계산한 값입니다. (예시)");
       const E = S.evaluation;
       const dataset = select("dataset", [["3.0.0", "3.0.0 · 40행 (거래처명 질문 12행 포함)"], ["2.0.0", "2.0.0 · 28행 (번호 질문만)"]]);
       const version = select("version", [["1.2.0", "invoice-summary 1.2.0"], ["1.3.0", "invoice-summary 1.3.0"]]);
@@ -465,11 +465,11 @@
           const lucky = why && row.amountLucky && target.value === "amount";
           if (lucky) missed++;
           return h("li", { class: absent ? "skip" : why && !lucky ? "bad" : lucky ? "" : "ok" }, h("code", { text: row.id }), h("span", { text: row.input }),
-            h("small", { text: absent ? row.kind : why ? `${row.kind} · ${why}` : row.kind }), h("em", { text: absent ? "시험지에 없음" : lucky ? "정답으로 셈" : why ? "오답" : "정답" }));
+            h("small", { text: absent ? row.kind : why ? `${row.kind} · ${why}` : row.kind }), h("em", { text: absent ? "데이터셋에 없음" : lucky ? "정답으로 셈" : why ? "오답" : "정답" }));
         }));
         const pass = r.retrieved / d.rows >= th && r.amount / d.rows >= th;
         const shown = target.value === "amount" ? r.amount : r.retrieved;
-        const lines = [`번호 질문 ${r.number}/${d.number}` + (d.name ? ` · 거래처명 질문 ${r.name}/${d.name}` : " · 거래처명 질문은 시험지에 없습니다"),
+        const lines = [`번호 질문 ${r.number}/${d.number}` + (d.name ? ` · 거래처명 질문 ${r.name}/${d.name}` : " · 거래처명 질문은 데이터셋에 없습니다"),
           `승격 판정은 두 지표를 모두 봅니다. 가져온 청구서 ${pct(r.retrieved, d.rows)}, 금액 ${pct(r.amount, d.rows)}, 기준 ${th.toFixed(2)}.`];
         if (missed) lines.push("금액만 채점해서 row-36을 정답으로 셌습니다. 엉뚱한 청구서를 가져왔는데 금액이 우연히 같았던 행입니다.");
         if (pass && d.name === 0) lines.push("이 점수는 거래처명으로 묻는 질문에 대해 아무것도 말해 주지 않습니다.");
@@ -477,7 +477,7 @@
         verdict(out, pass, `${target.value === "amount" ? "금액" : "가져온 청구서"} ${pct(shown, d.rows)} · 승격 ${pass ? "후보" : "차단"}`, lines);
       }
       body.addEventListener("change", update);
-      body.append(h("div", { class: "ix-controls grid" }, field("시험지(데이터셋)", dataset), field("Agent 버전", version), field("채점 대상", target), field("기준", threshold), field("실행 횟수", runs)), table, out);
+      body.append(h("div", { class: "ix-controls grid" }, field("평가 데이터셋", dataset), field("Agent 버전", version), field("채점 대상", target), field("기준", threshold), field("실행 횟수", runs)), table, out);
       update();
     },
 
@@ -495,12 +495,12 @@
         const chosen = picks.map(p => p.querySelector("select").value);
         const grouped = chosen.every((v, i) => v === String(CARDS[i][2]));
         bars.replaceChildren(...(grouped ? [[9, 0], [2, 1], [1, 2]].map(([n, b]) => h("li", { text: `${BUCKETS[b]} ${"■".repeat(n)} ${n}행` })) : []));
-        if (chosen.includes("")) return verdict(out, null, "1단계 · 네 행의 원인을 골라 주세요", "조회어에서 무엇이 빠졌거나 잘못됐는지를 봅니다.");
-        if (!grouped) return verdict(out, false, "1단계 · 다시 보세요", "질문에 있던 정보 가운데 조회어에서 사라진 것이 무엇인지 비교해 보세요. 월이 빠졌나요, 거래처 이름이 줄었나요, 날짜가 숫자가 아니었나요.");
+        if (chosen.includes("")) return verdict(out, null, "1단계 · 네 행의 원인을 골라 주세요", "검색어(query)에서 무엇이 빠졌거나 잘못됐는지를 봅니다.");
+        if (!grouped) return verdict(out, false, "1단계 · 다시 보세요", "질문에 있던 정보 가운데 검색어에서 사라진 것이 무엇인지 비교해 보세요. 월이 빠졌나요, 거래처 이름이 줄었나요, 날짜가 숫자가 아니었나요.");
         const r = E.remedies.find(x => x.id === remedy.value);
         if (r.correct === null) return verdict(out, null, "수단 라 · 지금은 해 볼 수 없음", ["나머지 8행도 같은 기준으로 묶여 9 : 2 : 1이 됐습니다. 가장 큰 묶음은 월 누락입니다.", r.note]);
         const score = `${r.correct}/40 = ${r.correct / 40}`, pass = r.correct / 40 >= E.threshold;
-        if (!pass) return verdict(out, false, `${score} · 게이트에서 차단`, [r.note, "같은 시험지로 다시 채점했기 때문에 배포 전에 드러났습니다."]);
+        if (!pass) return verdict(out, false, `${score} · 게이트에서 차단`, [r.note, "같은 평가 데이터셋으로 다시 채점했기 때문에 배포 전에 드러났습니다."]);
         if (register.value === "overwrite") return verdict(out, false, `${score} · 덮어쓰기 거부`, "게시된 버전은 바꿀 수 없습니다. 덮어쓰면 어제 실행된 것이 무엇이었는지 알 수 없고 되돌릴 곳도 없어집니다. 새 버전으로 등록합니다.");
         verdict(out, true, `${score} · 1.3.0이 승격 후보로 등록됨`, [r.note, "1.2.0은 그대로 남아 있어 문제가 생기면 되돌릴 수 있습니다. 남은 3행(row-29, row-30, row-40)은 다음 개선 대상입니다. 프로덕션 승인은 사람이 따로 합니다."]);
       }
@@ -521,7 +521,7 @@
         if (sync) at.value = "after-read";
         [...at.options].forEach(o => { o.disabled = sync && o.value !== "after-read"; });
         change.disabled = sync || at.value !== "waiting";
-        if (sync) return verdict(out, null, "처음부터 다시 실행", "sync 실행은 중간 상태를 남기지 않습니다. 읽기만 하는 Agent라 다시 해도 안전하고, 같은 멱등성 키면 정문이 한 번으로 셉니다.");
+        if (sync) return verdict(out, null, "처음부터 다시 실행", "sync 실행은 중간 상태를 남기지 않습니다. 읽기만 하는 Agent라 다시 해도 안전하고, 같은 멱등성 키면 Agent Platform APIs가 한 번으로 셉니다.");
         if (at.value === "after-read") return verdict(out, true, "checkpoint부터 재개", "ERP 조회 결과는 checkpoint에 남아 있어 다시 조회하지 않고 다음 단계부터 이어 갑니다.");
         if (at.value === "after-send") return verdict(out, false, "unknown_outcome · 다시 보내지 않음", "메일이 나갔는지 알 수 없습니다. 자동으로 다시 보내면 두 번 나갈 수 있어, 메일 서버의 발송 기록과 대조해 결과를 확정합니다.");
         if (change.value === "manifest") return verdict(out, false, "재개 거부", "checkpoint는 Manifest digest와 정책 버전에 묶여 있습니다. 지훈이 승인한 것은 바뀌기 전의 Agent이므로 이어서 실행하지 않습니다.");
@@ -577,9 +577,9 @@
         const [name, kind, call, grade] = JOBS[job.value];
         if (kind === "none") return verdict(out, null, `${name} · 계약에 API 없음`, "v0.1 계약에는 이 일을 위한 API가 없습니다. Space 화면도 정의 단계입니다. 이 API가 있다고 가정하고 화면을 설계하면 붙일 곳이 없습니다.");
         if (kind === "cli") return verdict(out, way.value === "cli", way.value === "cli" ? `${name} · 지금 실행됨` : `${name} · 이 길은 없음`, way.value === "cli" ? ["실행되는 명령: " + call, "HTTP 요청이 나가지 않는 로컬 검사입니다. CI에도 같은 명령을 넣습니다."] : "Manifest 검증은 DevTools 명령으로만 합니다. 계약에 검증 API는 없습니다.");
-        const lines = ["나가는 요청: " + call, way.value === "space" ? "Space 화면은 정의 단계입니다. 만들어지면 이 화면이 보내는 요청도 위와 같습니다." : way.value === "cli" ? "클라이언트 예제나 curl이 보내는 요청입니다." : "어느 길로 가도 같은 정문에 같은 요청이 도착합니다."];
+        const lines = ["나가는 요청: " + call, way.value === "space" ? "Space 화면은 정의 단계입니다. 만들어지면 이 화면이 보내는 요청도 위와 같습니다." : way.value === "cli" ? "클라이언트 예제나 curl이 보내는 요청입니다." : "어느 화면이나 도구로 보내도 Agent Platform APIs에 같은 요청이 도착합니다."];
         if (grade === "계약만") return verdict(out, null, `${name} · 501 계약만 있음`, lines.concat("로컬 mock은 501 NOT_IMPLEMENTED(This target API is contract-only)를 돌려줍니다. 장애가 아니라 아직 구현되지 않았다는 뜻입니다."));
-        if (who.value === "하준") return verdict(out, false, `${name} · 403`, lines.concat("요청은 같지만 하준에게는 models.invoke와 tools.read가 없어 진입 관문에서 막힙니다. 길이 아니라 사람이 다릅니다."));
+        if (who.value === "하준") return verdict(out, false, `${name} · 403`, lines.concat("요청은 같지만 하준에게는 models.invoke와 tools.read가 없어 진입 검사에서 막힙니다. 보내는 경로가 아니라 호출한 사람이 다릅니다."));
         verdict(out, true, `${name} · 200`, lines);
       }
       body.addEventListener("change", update);
@@ -592,7 +592,7 @@
       const body = frame(el, "추적 기록으로 범위 좁히기", "요청 B의 기록입니다. 구간을 눌러 남아 있는 속성을 보고, 다음에 할 일을 골라 보세요. (예시)");
       const SPANS = [
         ["invoke_agent invoice-summary", 0, 100, "1,840ms · 성공", "agent.id invoice-summary, agent.version 1.2.0, 호출 번호, 테넌트. 질문 원문은 없습니다."],
-        ["chat · 조회어 만들기", 2, 17, "320ms · 성공", "모델 이름, 경로 결정 route-self-hosted, 입력·출력 토큰 수. 모델이 만든 조회어 원문은 없습니다."],
+        ["chat · 검색어 만들기", 2, 17, "320ms · 성공", "모델 이름, 경로 결정 route-self-hosted, 입력·출력 토큰 수. 모델이 만든 검색어 원문은 없습니다."],
         ["execute_tool tool-erp-read", 20, 11, "210ms · 성공", "도구 ID와 버전, 정책 결정 allow, 결과 1건. 어느 청구서였는지와 조회 인자는 없습니다."],
         ["chat · 요약 만들기", 32, 63, "1,160ms · 성공", "모델 이름, 토큰 수. 요약 원문은 없습니다."],
       ];
@@ -617,8 +617,8 @@
       }
       const acts = [
         ["더 큰 모델로 바꾼다", false, "아직 이릅니다", "모델이 틀렸다는 증거가 없습니다. 기록이 지워 준 것은 네트워크, 정책, 도구 오류까지입니다. 남은 가설은 '조회가 엉뚱한 청구서를 가져왔다'와 '요약이 금액을 틀렸다' 둘입니다."],
-        ["도구 호출을 다시 시도한다", false, "도구는 고장 나지 않았습니다", "도구 호출은 성공했고 1건을 돌려줬습니다. 같은 조회어로 다시 불러도 같은 청구서가 옵니다."],
-        ["개발 환경에서 같은 질문을 다시 실행한다", true, "원인을 찾았습니다 · 개발 환경에서 다시 실행", "기대한 청구서는 INV-2048인데 INV-2101이 조회됐습니다. 조회어가 \"한빛상사\"였고 월이 빠져 있었습니다. 추적 기록은 범위를 좁혔고, 원인은 다시 실행해서 확정했습니다."],
+        ["도구 호출을 다시 시도한다", false, "도구는 고장 나지 않았습니다", "도구 호출은 성공했고 1건을 돌려줬습니다. 같은 검색어로 다시 호출해도 같은 청구서가 옵니다."],
+        ["개발 환경에서 같은 질문을 다시 실행한다", true, "원인을 찾았습니다 · 개발 환경에서 다시 실행", "기대한 청구서는 INV-2048인데 INV-2101이 조회됐습니다. 검색어가 \"한빛상사\"였고 월이 빠져 있었습니다. 추적 기록은 범위를 좁혔고, 원인은 다시 실행해서 확정했습니다."],
       ].map(([t, ok, head, text]) => btn(t, () => verdict(out, ok, head, text), "case"));
       broken.addEventListener("change", draw);
       body.append(rows, h("div", { class: "ix-cases" }, acts), h("div", { class: "ix-controls" }, broken), out);

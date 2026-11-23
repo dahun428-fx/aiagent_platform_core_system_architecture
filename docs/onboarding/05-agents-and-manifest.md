@@ -5,12 +5,12 @@
 {{journey:2}}
 
 <div class="sofar" markdown="1">
-**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, 정문이 서연을 확인한 뒤 `invoice-summary`라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.
+**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, Agent Platform APIs가 서연을 확인한 뒤 `invoice-summary`라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.
 </div>
 
 ## 장면
 
-3주 전 민준은 템플릿 폴더를 복사해 `invoice-summary`를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서 한 장, 곧 Manifest를 채웠습니다. 첫 검증은 실패했습니다. 소스의 `revision`에 `main`이라고 적었기 때문입니다. 민준은 그 자리를 커밋 번호로 바꿨고, 검증을 통과한 버전이 목록(Registry)에 올랐습니다.
+3주 전 민준은 템플릿 폴더를 복사해 `invoice-summary`를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 선언하는 파일인 Manifest를 채웠습니다. 플랫폼은 Manifest에 선언한 만큼만 허용합니다. 첫 검증은 소스의 `revision`에 `main`이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} Agent Factory가 없다면** 플랫폼은 Agent가 어떤 도구를 쓰고 어떤 데이터를 다루는지 알 길이 없어, 통제하려면 팀마다 다른 코드를 일일이 읽어야 합니다.
@@ -20,7 +20,7 @@
 
 <ol class="flow">
 <li data-say="빈 화면에서 시작하지 않습니다. 동작하는 템플릿 폴더를 복사해 고칩니다.">{{icon:code}}<b>1. 틀을 복사한다</b><span>templates/agents/</span></li>
-<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다.">{{icon:manifest}}<b>2. 신청서(Manifest)를 채운다</b><span>agent-manifest.json</span></li>
+<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다.">{{icon:manifest}}<b>2. Manifest를 채운다</b><span>agent-manifest.json</span></li>
 <li data-say="내 PC에서 agentctl validate가 형식을 검사합니다. 틀린 곳은 올리기 전에 잡힙니다." class="hi">{{icon:test}}<b>3. 검사가 틀린 곳을 잡는다</b><span>agentctl validate · conformance</span></li>
 <li data-say="통과한 버전이 Registry에 오릅니다. 한번 오른 버전은 내용이 바뀌지 않습니다.">{{icon:control}}<b>4. 통과한 버전이 목록에 오른다</b><span>Registry · 불변 버전</span></li>
 </ol>
@@ -81,12 +81,12 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 ]
 ```
 
-- CLI는 실패 이유를 말해 주지 않습니다. 이유는 이렇습니다. `main`은 브랜치 이름이라 내일이면 다른 코드를 가리킵니다. `revision`은 40자 커밋 번호여야 등록한 코드와 실행되는 코드가 같다고 말할 수 있습니다.
+- CLI는 실패 이유를 말해 주지 않습니다. `main`은 브랜치 이름이라 내일이면 다른 코드를 가리킬 수 있어서 실패한 것입니다. `revision`이 40자 커밋 번호여야 등록한 코드와 실행되는 코드가 같다고 말할 수 있습니다.
 - `valid: true`는 형식이 맞다는 뜻입니다. 업무에 써도 된다는 승인은 아닙니다.
 
 <details class="more" markdown="1"><summary>더 보기: Manifest 전문과 블록별 의미</summary>
 
-로컬 예제 `examples/agents/invoice-summary/agent-manifest.json` 전문입니다. 로컬에서는 도구 이름이 대역 `tool-search`입니다.
+로컬 예제 `examples/agents/invoice-summary/agent-manifest.json` 전문입니다. 로컬에서는 도구 이름이 mock 도구 `tool-search`입니다.
 
 <!-- kind: run boundary: local -->
 
@@ -152,13 +152,13 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 
 ## 잘못되면
 
-**민준이 `revision`에 브랜치 이름을 적으면** 검증에서 실패합니다. 플랫폼은 "등록한 그 코드"가 실행된다는 것을 보장해야 하는데, `main`은 내일이면 다른 커밋을 가리킵니다. 커밋 SHA 40자와 산출물 digest를 적습니다.
+**민준이 `revision`에 브랜치 이름을 적으면** 검증에서 실패합니다. 플랫폼은 "등록한 그 코드"가 실행된다는 것을 보장해야 하는데, `main`은 내일이면 다른 커밋을 가리킬 수 있습니다. 그 자리에는 커밋 SHA 40자와 산출물 digest를 적습니다.
 
-**민준이 편하게 하려고 Manifest에 ERP의 API 키를 적으면** 검증에서 실패합니다. Manifest 스키마는 정의되지 않은 필드를 받지 않고, 자격증명을 적을 자리가 없습니다. 접근 자격증명은 호출할 때마다 Credential Broker가 발급합니다([Agent Identity](16-agent-identity.md)).
+**민준이 편하게 하려고 Manifest에 ERP의 API 키를 적으면** 검증에서 실패합니다. Manifest 스키마는 정의되지 않은 필드를 받지 않아서 자격증명을 적을 자리가 아예 없습니다. 접근 자격증명은 호출할 때마다 Credential Broker가 발급합니다([Agent Identity](16-agent-identity.md)).
 
 <details class="more" markdown="1"><summary>더 보기: 도구 목록을 비울 때, 그리고 나머지 다섯 가지</summary>
 
-**유일한 도구를 지워 `capabilities.tools`가 비면** `tool` 유형은 도구가 하나 이상 있어야 하므로 검증에서 실패합니다(`empty-tools`). 이것은 **등록 전** 실패입니다. Manifest는 유효한데 코드가 적지 않은 도구를 부르는 **실행 중** 403과는 다른 실패입니다([Agent Tools](15-agent-tools.md)).
+**유일한 도구를 지워 `capabilities.tools`가 비면** `tool` 유형은 도구가 하나 이상 있어야 하므로 검증에서 실패합니다(`empty-tools`). 이것은 **등록 전**에 나는 실패입니다. Manifest는 유효한데 거기 적지 않은 도구를 코드가 불러서 **실행 중**에 받는 403과는 다릅니다([Agent Tools](15-agent-tools.md)).
 
 `examples/negative/`에는 검증 실패를 확인하는 Manifest 8종이 있습니다.
 
@@ -206,7 +206,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 - Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보만 선언합니다. 인증 수단이 아니며 자격증명을 담지 않습니다(MUST NOT). 장면 ②
 - 소스는 불변 revision과 artifact digest로 참조합니다(MUST). 등록된 버전은 바뀌지 않습니다.
 - 등록은 "존재를 알렸다"는 뜻이고 프로덕션 승인이 아닙니다([수명주기와 프로덕션 승인](06-lifecycle.md)).
-- Factory의 도구는 AI Platform Applications의 DevTools로 제공됩니다([AI Platform Applications](20-applications.md)).
+- Factory의 도구는 AI Platform Applications의 DevTools에 들어 있습니다([AI Platform Applications](20-applications.md)).
 
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [Agent Factory](09-glossary.md#term-factory) [Manifest](09-glossary.md#term-manifest) [Registry](09-glossary.md#term-registry) [불변 버전](09-glossary.md#term-immutable) [위임 모드](09-glossary.md#term-delegated) [데이터 분류](09-glossary.md#term-classification) [적합성 검증](09-glossary.md#term-conformance) [RAG](09-glossary.md#term-rag)
@@ -214,7 +214,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 
 ## 한 문장으로
 
-Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서를 먼저 검사합니다.
+Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 선언한 Manifest를 먼저 검사합니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해 점검**
@@ -224,7 +224,7 @@ Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있�
 </details>
 
 <details markdown="1"><summary>Q2. Manifest에 API 키를 적으면 어떻게 되나요?</summary>
-검증에 실패합니다. 스키마가 정의되지 않은 필드를 받지 않습니다. 자격증명은 Credential Broker가 호출 시점에 발급합니다.
+스키마가 정의되지 않은 필드를 받지 않으므로 검증에 실패합니다. 자격증명은 호출할 때 Credential Broker가 발급합니다.
 </details>
 
 <details markdown="1"><summary>Q3. agentctl validate가 valid: true를 돌려줬습니다. 이제 업무에 써도 되나요?</summary>
