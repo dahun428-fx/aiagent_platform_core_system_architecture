@@ -106,3 +106,12 @@
 
 </div>
 
+<div class="ref-group" id="ref-harness" markdown="1">
+
+## Harness engineering
+
+| 자료 | 확인한 내용 | 플랫폼 반영 |
+|---|---|---|
+| [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html) (Birgitta Böckeler, 2026-04-02) | harness를 Agent에서 모델을 뺀 나머지 전부로 보는 넓은 정의를 소개하고, 통제를 feedforward(guide)·feedback(sensor)과 computational·inferential 두 축으로 분류. 반복되는 문제가 생기면 두 종류의 통제를 함께 고치는 steering loop를 권장. 글의 대상은 코딩 Agent를 쓰는 개발자 | Agent Runtime의 harness 정의, Guardrails 장의 통제 분류 표, Evaluation·Tuning 장의 개선 루프 |
+
+</div>
