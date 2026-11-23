@@ -86,7 +86,7 @@ class TempPostgres:
 
 
 class Stack:
-    """with 문으로 쓴다. 들어갈 때 세 서비스를 띄우고, 나올 때 모두 끈다. 주소는 self.urls 에 이름별로 담긴다."""
+    """with 문으로 쓴다. 들어갈 때 서비스들을 띄우고, 나올 때 모두 끈다. 주소는 self.urls 에 이름별로 담긴다."""
 
     def __init__(self):
         self.procs = {}  # 서비스 이름 → 프로세스
@@ -137,6 +137,8 @@ class Stack:
             tool = self._start("fake-tool", "fakes/fake_tool.py")
             model_route = self._start("model-route", "gateway/model_route.py", "--upstream", model)
             tool_route = self._start("tool-route", "gateway/tool_route.py", "--upstream", tool)
+            # 같은 DB를 쓰는 두 번째 도구 경로 worker. 동시 실행 시나리오가 두 worker에 요청을 나눠 보낸다.
+            self._start("tool-route-2", "gateway/tool_route.py", "--upstream", tool)
             self._start("platform-api", "platform_api.py", "--gateway", model_route, "--tools", tool_route)
         except Exception:
             self.close()

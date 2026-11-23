@@ -6,6 +6,7 @@ GET  /_stats       → {"calls": n}   두 도구가 실제로 실행된 횟수 (
 POST /_reset       → {"calls": 0}   횟수를 0으로 되돌리고, 본문에 고장이 있으면 심는다
 
 고장 필드 (시나리오의 fault."fake-tool")
+  delayMs: n     실행은 하고(횟수가 는다) n ms 뒤에 답한다. 그사이 같은 키의 요청이 오면 pending을 보게 된다
   drop: true     실행은 하고(횟수가 는다) 답 없이 연결을 닫는다. 쓰기라면 티켓은 만들어졌는데 호출자는 결과를 모른다
   status: n      실행하지 않고 그 상태 코드로 답한다
 """
@@ -13,6 +14,7 @@ from __future__ import annotations
 
 import sys
 import threading
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -60,10 +62,14 @@ def make_server(port=0):
                     self.send_json(fault["status"], {"error": "injected failure"})
                     return
                 state["calls"] += 1
+            time.sleep(fault.get("delayMs", 0) / 1000)
             if fault.get("drop"):  # 실행은 했지만 답을 보내지 않고 연결을 닫는다
                 self.close_connection = True
                 return
-            self.send_json(200, {"content": TOOLS[self.path] + query})
+            try:
+                self.send_json(200, {"content": TOOLS[self.path] + query})
+            except OSError:  # 기다리는 사이 호출자(도구 경로)가 죽었다
+                pass
 
     return serve(Handler, port)
 
