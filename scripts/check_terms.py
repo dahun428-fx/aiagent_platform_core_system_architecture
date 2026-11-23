@@ -56,6 +56,7 @@ def compare(ref):
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a non-UTF-8 code page
     report()
     if "--compare" in sys.argv:
         print()
