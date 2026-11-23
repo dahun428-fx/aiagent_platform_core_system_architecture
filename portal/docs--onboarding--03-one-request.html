@@ -3,30 +3,27 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>Agent Platform APIs: 요청 하나 따라가기 · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html" aria-current="page">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 지도</a><a href="docs--onboarding--03-one-request.html" aria-current="page">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
 <main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-platform-apis-요청-하나-따라가기">Agent Platform APIs: 요청 하나 따라가기</h1>
 <blockquote>
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--architecture.html">아키텍처</a>, <a href="docs--agent-tools.html">Agent Tools</a>, <a href="docs--identity-and-credentials.html">Agent Identity</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
-<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 1번째"><ol><li class="on"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class=""><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class=""><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class=""><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class=""><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class=""><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+<nav class="journey" aria-label="요청 처리 11단계 중 1번째"><ol><li class="on"><a href="docs--onboarding--03-one-request.html"><i>①</i>호출 진입</a></li><li class=""><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>Agent 등록</a></li><li class=""><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행</a></li><li class=""><a href="docs--onboarding--15-agent-tools.html"><i>④</i>도구 호출</a></li><li class=""><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>권한 위임</a></li><li class=""><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델 호출</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>Guardrail 검사</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>실행 추적</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>평가</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>개선과 승격</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>사용 화면</a></li></ol></nav>
 
-<div class="sofar">
-<p><strong>지금까지</strong> <a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루</a>에서 장면 열한 개를 한 번 훑었습니다. 이제 첫 장면부터 하나씩 들여다봅니다. 등장인물은 재무팀 담당자 서연, Agent를 만든 개발자 민준입니다.</p>
-</div>
-<p class="part">설명</p>
+<p class="part">본문</p>
 
-<h2 id="장면">장면</h2>
-<p>서연이 재무팀 업무 앱에 "청구서 INV-2048 요약해 줘"라고 입력합니다(요청 A). 앱은 이 문장을 Agent Platform APIs로 보냅니다. 응답이 조금 늦자 앱이 같은 요청을 한 번 더 보냅니다. 그런데 Agent는 한 번만 실행됩니다. Agent Platform APIs가 이미 처리한 요청임을 알아봤고, 그보다 먼저 서연이 누구인지 확인했기 때문입니다. 모든 요청이 반드시 이곳을 지나므로, 플랫폼의 정문이라고 생각하면 됩니다.</p>
+<h2 id="개요">개요</h2>
+<p>Agent Platform APIs는 앱과 외부 솔루션이 플랫폼 기능을 호출하는 유일한 API 계층이자 진입 경계입니다. 모든 요청이 반드시 이곳을 지나므로 플랫폼의 정문이라고 생각하면 됩니다. Agent Platform APIs는 호출자를 인증하고, 호출할 Agent를 조회하고, 테넌트 인가와 멱등성을 확인한 뒤에만 요청을 Agent Runtime에 전달합니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Platform APIs가 없다면</strong> Agent마다 주소와 인증 방식이 달라지고, 같은 요청이 두 번 오면 두 번 실행됩니다.</p>
 </div>
-<h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
+<h2 id="처리-흐름">처리 흐름</h2>
 <p>요청 하나가 응답이 되기까지 다섯 단계를 지납니다. 이 장에서는 첫 단계인 Agent Platform APIs를 자세히 보고, 나머지 단계는 뒤의 장들에서 하나씩 다룹니다.</p>
 <ol class="flow">
 <li data-say="진입 단계입니다. 토큰으로 호출자가 누구인지 확인하고(인증), 어떤 Agent를 호출하는지 찾고(Agent 조회), 그 Agent를 호출할 권한이 있는지(인가), 같은 요청이 이미 처리됐는지(멱등성)를 봅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>1. 진입</b><span>Agent Platform APIs<br>인증 · Agent 조회 · 인가 · 멱등성</span></li>
-<li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 민준이 만든 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
+<li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 등록된 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
 <li data-say="Agent가 ERP 같은 도구를 써야 하면 Agent Gateway의 도구 경로에 요청합니다. 실제 접속 정보는 Credential Broker가 그 호출 한 번에만 쓸 수 있게 발급합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.7 6.3a4 4 0 0 0-5.3 5.3L3.5 17.5a1.5 1.5 0 0 0 0 2.1l.9.9a1.5 1.5 0 0 0 2.1 0l5.9-5.9a4 4 0 0 0 5.3-5.3l-2.6 2.6-2.3-.6-.6-2.3z"/></svg><b>3. 도구 호출</b><span>Agent Gateway 도구 경로<br>+ Credential Broker</span></li>
 <li data-say="Agent가 모델에게 묻는 단계입니다. 모델 경로가 데이터 분류를 보고 갈 수 있는 모델만 고릅니다. 기밀 데이터는 외부 모델로 보내지 않습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg><b>4. 모델 호출</b><span>Agent Gateway 모델 경로<br>분류 기반 라우팅</span></li>
 <li data-say="처음부터 끝까지 같은 추적 번호로 기록이 남고, 결과가 호출자에게 돌아갑니다. 문제가 생기면 이 기록으로 원인을 찾습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>5. 기록</b><span>Agent Observability<br>E2E 실행 추적</span></li>
@@ -34,102 +31,107 @@
 
 <p>Agent Platform APIs가 하는 일은 넷입니다.</p>
 <div class="cards">
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>인증</b><p>토큰의 발급자, 대상(audience), 서명, 만료를 확인해 서연이 누구인지 정합니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Agent 조회</b><p>Registry에서 <code>invoice-summary</code>의 고정된 버전을 찾습니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>테넌트 인가</b><p>서연이 재무팀(<code>finance</code>)의 이 Agent를 부를 권한이 있는지 봅니다.</p></div>
-<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>멱등성 처리</b><p>같은 요청 번호로 같은 내용이 또 오면 저장해 둔 결과를 돌려주고, 다른 내용이 오면 거부합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>인증</b><p>토큰의 발급자, 대상(audience), 서명, 만료를 확인해 호출자를 정합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>Agent 조회</b><p>Registry에서 요청 경로의 Agent ID로 실행할 고정 버전을 찾습니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><b>테넌트 인가</b><p>호출자가 그 테넌트의 이 Agent를 호출할 권한이 있는지 확인합니다.</p></div>
+<div class="card"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg><b>멱등성 처리</b><p>같은 <code>Idempotency-Key</code>로 같은 내용이 또 오면 저장해 둔 결과를 돌려주고, 다른 내용이 오면 거부합니다.</p></div>
 </div>
 
-<h2 id="실물-보기">실물 보기</h2>
-<p>서연의 앱이 보낸 요청입니다.</p>
-<p class="kind example" data-kind="example">예시</p>
-
-<pre><code class="language-text">POST /v1/agents/invoice-summary/invocations
-Authorization: Bearer &lt;회사 IdP가 발급한 access token&gt;
-traceparent: 00-&lt;trace-id&gt;-&lt;span-id&gt;-01
-Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
-</code></pre>
-<pre><code class="language-json">{
-  &quot;input&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;청구서 INV-2048 요약해 줘&quot;},
-  &quot;context&quot;: {&quot;tenantId&quot;: &quot;finance&quot;, &quot;dataClassification&quot;: &quot;confidential&quot;},
-  &quot;execution&quot;: {&quot;mode&quot;: &quot;sync&quot;, &quot;timeoutMs&quot;: 30000}
-}
-</code></pre>
-<ul>
-<li><code>Authorization</code>: 서연이 누구인지는 여기서만 정해집니다. 본문에 <code>"role": "admin"</code>을 적어도 권한이 생기지 않습니다.</li>
-<li><code>Idempotency-Key</code>: 앱이 요청마다 붙이는 번호입니다. 다시 보낼 때 같은 번호를 쓰면 Agent Platform APIs가 한 번으로 셉니다.</li>
-<li><code>context.tenantId</code>: 토큰의 테넌트와 <strong>비교하는 데만</strong> 씁니다. 다르면 거부합니다.</li>
-<li><code>execution.timeoutMs</code>: 앱이 기다릴 수 있는 시간입니다. 뒤의 모든 구간이 이 시간 안에서 움직입니다.</li>
-</ul>
-<p>서연이 받은 응답과, 같은 문장을 내 PC의 로컬 mock에 보냈을 때의 실제 응답입니다. 필드 구성은 같고 <code>agentVersion</code>과 <code>output.content</code>가 다릅니다.</p>
-<p class="kind example" data-kind="example">예시</p>
-
-<pre><code class="language-json">{
-  &quot;invocationId&quot;: &quot;inv-…&quot;,
-  &quot;agentVersion&quot;: &quot;1.2.0&quot;,
-  &quot;status&quot;: &quot;succeeded&quot;,
-  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;한빛상사 2026년 10월분 청구서(INV-2048)입니다. 합계 12,400,000원, 납기 11월 30일입니다.&quot;},
-  &quot;traceparent&quot;: &quot;00-…-…-01&quot;,
-  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
-  &quot;usage&quot;: {&quot;inputTokens&quot;: 412, &quot;outputTokens&quot;: 58}
-}
-</code></pre>
-<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
-
-<pre><code class="language-json">{
-  &quot;invocationId&quot;: &quot;inv-9946215c02f347bd8ba5de71ca079905&quot;,
-  &quot;agentVersion&quot;: &quot;0.1.0&quot;,
-  &quot;status&quot;: &quot;succeeded&quot;,
-  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘&quot;},
-  &quot;traceparent&quot;: &quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;,
-  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
-  &quot;usage&quot;: {&quot;inputTokens&quot;: 7, &quot;outputTokens&quot;: 7}
-}
-</code></pre>
-<ul>
-<li><code>invocationId</code>: 이 호출의 번호입니다. 문제가 생기면 이 번호로 기록을 찾습니다. 앱은 이 번호를 사용자에게 보여 줍니다.</li>
-<li><code>routeDecisionId</code>: 요청이 어느 모델로 갔는지 기록한 값입니다. 기밀이라 회사 안 모델(<code>route-self-hosted</code>)로 갔습니다.</li>
-<li>로컬 mock의 도구와 모델은 받은 글 앞에 <code>tool:</code>, <code>mock:</code>을 붙여 돌려주는 mock이라 실제 요약은 나오지 않습니다.</li>
-</ul>
-<h2 id="직접-해-보기">직접 해 보기</h2>
-<div class="sim" data-sim="request"></div>
-
-<ol class="mission">
-<li>토큰을 빼고 보내 보세요. 어느 단계에서 멈추나요.</li>
-<li>하준처럼 권한이 모자란 사용자로 보내면 Agent 코드가 실행되나요.</li>
-</ol>
-
-<details class="more">
-<summary>더 해 보기: 같은 요청을 여러 번 보내기</summary>
-<div class="sim" data-sim="idempotency"></div>
-<ol class="mission">
-<li>같은 키로 같은 요청을 두 번 보내면 Agent는 몇 번 실행되나요.</li>
-<li>같은 키에 다른 내용을 실으면 어떻게 되나요.</li>
-</ol>
-</details>
-<h2 id="잘못되면">잘못되면</h2>
-<p><strong>서연의 앱을 만든 개발자가 토큰을 붙이지 않으면</strong> 401을 받습니다. Agent Platform APIs는 누가 보냈는지 모르는 요청을 안으로 들이지 않으므로 Agent 코드는 한 줄도 실행되지 않습니다. 로그인한 사용자의 토큰을 <code>Authorization</code>에 실어 보내면 됩니다.</p>
-<p><strong>요청 본문에 다른 팀의 테넌트를 적으면</strong> 403을 받습니다. 테넌트는 검증된 토큰에서만 정하고 본문의 값은 비교에만 쓰기 때문에, 본문을 바꿔서는 다른 팀의 데이터에 접근할 수 없습니다.</p>
-<p>오류는 RFC 9457 Problem Details(<code>application/problem+json</code>) 형식으로 옵니다. 로컬 mock이 실제로 돌려주는 403입니다.</p>
-<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
-
-<pre><code class="language-json">{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;FORBIDDEN&quot;, &quot;status&quot;: 403, &quot;detail&quot;: &quot;Tenant assertion does not match authenticated identity&quot;, &quot;code&quot;: &quot;FORBIDDEN&quot;, &quot;traceId&quot;: &quot;…&quot;}
-</code></pre>
-<details class="more">
-<summary>더 보기: 권한 부족, 같은 키에 다른 내용, 그리고 비동기 호출</summary>
+<p>나머지 네 단계는 각 장에서 자세히 봅니다. 실행은 <a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a>, 도구 호출은 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>와 <a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>, 모델 호출은 <a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a>, 기록은 <a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a>입니다. 도구 호출의 구간별 순서는 아래 그림과 같습니다.</p>
+<p><img alt="Tool 호출과 Credential 발급 순서" src="../diagrams/tool-credential.svg" /></p>
+<h2 id="요청과-응답-형식">요청과 응답 형식</h2>
+<p>호출 주소는 <code>POST /v1/agents/{agentId}/invocations</code> 하나입니다. 계약은 <code>contracts/agent-gateway.openapi.json</code>에 있습니다.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>상황</th>
-<th>응답</th>
-<th>뜻</th>
+<th>위치</th>
+<th>필드</th>
+<th>의미</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Agent가 요구하는 권한이 호출자에게 없음</td>
+<td>헤더</td>
+<td><code>Authorization</code></td>
+<td>회사 IdP가 발급한 access token입니다. 호출자의 Identity와 테넌트는 이 값에서만 정합니다. 본문에 <code>"role": "admin"</code>을 적어도 권한이 생기지 않습니다</td>
+</tr>
+<tr>
+<td>헤더</td>
+<td><code>Idempotency-Key</code></td>
+<td>앱이 요청마다 붙이는 키입니다. 재전송할 때 같은 키를 쓰면 한 번으로 처리합니다. 없으면 422입니다</td>
+</tr>
+<tr>
+<td>헤더</td>
+<td><code>traceparent</code></td>
+<td>W3C Trace Context입니다. 없으면 Agent Platform APIs가 만들어 뒤의 모든 구간에 전파합니다</td>
+</tr>
+<tr>
+<td>본문</td>
+<td><code>input</code></td>
+<td>Agent에 전달할 입력입니다</td>
+</tr>
+<tr>
+<td>본문</td>
+<td><code>context.tenantId</code></td>
+<td>토큰의 테넌트와 <strong>비교하는 데만</strong> 씁니다. 다르면 403입니다</td>
+</tr>
+<tr>
+<td>본문</td>
+<td><code>context.dataClassification</code></td>
+<td>데이터 분류입니다. 플랫폼은 호출자가 낮춰 적은 분류를 받아들이지 않습니다</td>
+</tr>
+<tr>
+<td>본문</td>
+<td><code>execution.mode</code>, <code>execution.timeoutMs</code></td>
+<td><code>sync</code> 또는 <code>durable</code>, 그리고 앱이 기다릴 수 있는 시간입니다. 뒤의 모든 구간이 이 시간 안에서 동작합니다</td>
+</tr>
+<tr>
+<td>응답</td>
+<td><code>invocationId</code></td>
+<td>이 호출의 ID입니다. 기록을 찾을 때 쓰며, 앱은 사용자에게 보여 줍니다</td>
+</tr>
+<tr>
+<td>응답</td>
+<td><code>agentVersion</code></td>
+<td>실제로 실행된 Agent 버전입니다</td>
+</tr>
+<tr>
+<td>응답</td>
+<td><code>routeDecisionId</code></td>
+<td>모델 경로가 어느 모델로 보냈는지 기록한 값입니다</td>
+</tr>
+<tr>
+<td>응답</td>
+<td><code>usage</code></td>
+<td>입력·출력 토큰 수입니다</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="오류와-실패-동작">오류와 실패 동작</h2>
+<p>오류는 RFC 9457 Problem Details(<code>application/problem+json</code>) 형식으로 돌려줍니다. 진입 단계에서 거절된 요청은 Agent 코드를 한 줄도 실행하지 않습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>조건</th>
+<th>응답</th>
+<th>동작</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>토큰이 없거나 검증에 실패함</td>
+<td>401</td>
+<td>호출자를 알 수 없어 Agent Runtime에 전달하지 않습니다</td>
+</tr>
+<tr>
+<td>본문의 <code>tenantId</code>가 토큰의 테넌트와 다름</td>
 <td>403</td>
-<td>Manifest의 <code>requiredScopes</code>를 모두 갖지 못했습니다. 코드는 실행되지 않습니다(<a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>)</td>
+<td>테넌트는 검증된 토큰에서만 정합니다</td>
+</tr>
+<tr>
+<td>호출자에게 Manifest의 <code>requiredScopes</code>가 모두 있지 않음</td>
+<td>403</td>
+<td>Agent 코드는 실행되지 않습니다(<a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>)</td>
 </tr>
 <tr>
 <td>같은 <code>Idempotency-Key</code>에 다른 내용</td>
@@ -139,20 +141,18 @@ Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
 <tr>
 <td><code>Idempotency-Key</code>가 없음</td>
 <td>422 <code>VALIDATION_ERROR</code></td>
-<td>다시 보내도 안전하도록 키는 필수입니다</td>
+<td>재전송해도 안전하도록 키는 필수입니다</td>
 </tr>
 </tbody>
 </table></div>
-<p>메일을 보내는 요청 C처럼 오래 걸리는 호출은 <code>execution.mode</code>를 <code>durable</code>로 보내고 202를 받은 뒤, 상태 조회(<code>getInvocation</code>)와 승인 제출(<code>submitApproval</code>)로 이어 갑니다. 이 흐름은 계약만 있고 로컬 mock은 501을 돌려줍니다(<a href="docs--onboarding--20-applications.html">AI Platform Applications</a>).</p>
-</details>
-<h2 id="내가-할-일">내가 할 일</h2>
+<p>오래 걸리는 호출은 <code>execution.mode</code>를 <code>durable</code>로 보내고 202를 받은 뒤, 상태 조회(<code>getInvocation</code>)와 승인 제출(<code>submitApproval</code>)로 이어 갑니다. 이 흐름은 계약만 있고 로컬 mock은 501을 돌려줍니다(<a href="docs--onboarding--20-applications.html">AI Platform Applications</a>).</p>
+<h2 id="개발자가-할-일">개발자가 할 일</h2>
 <ol>
 <li>호출 코드를 씁니다. 주소는 <code>POST /v1/agents/{agentId}/invocations</code> 하나입니다.</li>
-<li>요청마다 <code>Idempotency-Key</code>를 붙이고, 다시 보낼 때는 같은 키를 씁니다.</li>
+<li>요청마다 <code>Idempotency-Key</code>를 붙이고, 재전송할 때는 같은 키를 씁니다.</li>
 <li>응답의 <code>invocationId</code>를 사용자에게 보여 주고 기록에 남깁니다.</li>
 <li>오류 응답은 상태 코드와 <code>code</code>로 처리합니다.</li>
 </ol>
-<p><strong>내 PC에서 해 보기</strong> <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a>의 실습 2가 이 요청을 그대로 보내 봅니다. 이 장의 응답을 그대로 재현하려면 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>의 명령을 씁니다.</p>
 <div class="scope">
 <p><strong>제공 범위 (v0.1)</strong></p>
 <div class="table-wrap"><table>
@@ -182,7 +182,7 @@ Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
 </tbody>
 </table></div>
 </div>
-<h2 id="규칙으로-정리">규칙으로 정리</h2>
+<h2 id="규칙">규칙</h2>
 <div class="compare">
 <div class="bad">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 신뢰하지 않는 값</strong></p>
@@ -194,18 +194,223 @@ Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
 </div>
 </div>
 <ul>
-<li>앱과 외부 솔루션은 Agent Platform APIs로만 들어옵니다(MUST). 장면 ①</li>
+<li>앱과 외부 솔루션은 Agent Platform APIs로만 들어옵니다(MUST).</li>
 <li>Agent Platform APIs는 Agent 버전, 검증된 실행 주체 정보(identity context), 정책 컨텍스트(policy context)를 Runtime에 넘깁니다. Runtime은 이 권한을 임의로 바꿀 수 없습니다(MUST NOT).</li>
-<li>같은 키·같은 내용은 저장된 결과를 돌려주고, 같은 키·다른 내용은 409로 거부합니다(MUST). 장면 ①</li>
+<li>같은 키·같은 내용은 저장된 결과를 돌려주고, 같은 키·다른 내용은 409로 거부합니다(MUST).</li>
 <li><code>traceparent</code>는 Agent Platform APIs에서 받거나 만들어 뒤의 모든 구간에 전파합니다(MUST).</li>
 </ul>
-<p>나머지 네 단계는 각 장에서 자세히 봅니다. 실행은 <a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a>, 도구 호출은 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>와 <a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>, 모델 호출은 <a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a>, 기록은 <a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a>입니다. 도구 호출의 구간별 순서는 아래 그림과 같습니다.</p>
-<p><img alt="Tool 호출과 Credential 발급 순서" src="../diagrams/tool-credential.svg" /></p>
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-platform-apis">Agent Platform APIs</a> <a href="docs--onboarding--09-glossary.html#term-idempotency">멱등성 키</a> <a href="docs--onboarding--09-glossary.html#term-identity-context">identity context</a> <a href="docs--onboarding--09-glossary.html#term-route-decision">routeDecisionId</a> <a href="docs--onboarding--09-glossary.html#term-trace">traceparent</a> <a href="docs--onboarding--09-glossary.html#term-problem">Problem Details</a> <a href="docs--onboarding--09-glossary.html#term-tenant">테넌트</a></p>
 </div>
-<p class="part">코드로 보기</p>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>모든 요청이 지나는 진입 계층이고, 누가 보냈는지와 같은 요청이 또 왔는지를 여기서 가립니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
+<details>
+<summary>Q1. 앱이 응답을 기다리다 같은 요청을 한 번 더 보냈습니다. Agent는 몇 번 실행되고 왜 그런가요?</summary>
+<p>한 번입니다. 두 요청의 Idempotency-Key와 내용이 같으므로 Agent Platform APIs가 저장해 둔 결과를 돌려주고 다시 실행하지 않습니다.</p>
+</details>
+<details>
+<summary>Q2. 요청 본문에 다른 팀의 tenantId를 적으면 그 팀의 데이터에 접근할 수 있나요?</summary>
+<p>아니요, 접근할 수 없습니다. 테넌트는 검증된 토큰에서 정하고 본문의 값은 비교에만 씁니다. 두 값이 다르면 403입니다.</p>
+</details>
+<details>
+<summary>Q3. 토큰 없이 보낸 요청에서 Agent 코드는 어디까지 실행되나요?</summary>
+<p>한 줄도 실행되지 않습니다. Agent Platform APIs가 401로 돌려보냅니다.</p>
+</details>
+</div>
+<p class="part">예시: 청구서 요약 Agent</p>
 
+<h2 id="사례-조건">사례 조건</h2>
+<p>재무팀 사용자가 업무 앱에서 청구서 <code>INV-2048</code>의 요약을 요청하고, 응답이 늦어 앱이 같은 요청을 재전송하는 경우입니다. 이 예시에서는 Agent Platform APIs가 호출자를 확인하고 재전송을 한 번으로 처리하는 과정을 요청·응답 원문으로 봅니다. 역할과 값은 <a href="docs--onboarding--02-big-picture.html">예시 구성</a>과 같습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>값</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>호출자</td>
+<td>재무팀 사용자 <code>finance.analyst</code> (<code>agents.invoke</code> <code>models.invoke</code> <code>tools.read</code> <code>tools.write</code>)</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td><code>invoice-summary</code> <code>1.2.0</code>, <code>requiredScopes</code>: <code>agents.invoke</code> <code>models.invoke</code> <code>tools.read</code></td>
+</tr>
+<tr>
+<td>테넌트</td>
+<td><code>finance</code></td>
+</tr>
+<tr>
+<td>입력</td>
+<td><code>"청구서 INV-2048 요약해 줘"</code></td>
+</tr>
+<tr>
+<td>데이터 분류</td>
+<td><code>confidential</code></td>
+</tr>
+<tr>
+<td>상황</td>
+<td>응답 지연으로 앱이 같은 <code>Idempotency-Key</code>로 한 번 더 보냅니다</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="요청과-응답">요청과 응답</h2>
+<p>업무 앱이 보낸 요청입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-text">POST /v1/agents/invoice-summary/invocations
+Authorization: Bearer &lt;회사 IdP가 발급한 access token&gt;
+traceparent: 00-&lt;trace-id&gt;-&lt;span-id&gt;-01
+Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
+</code></pre>
+<pre><code class="language-json">{
+  &quot;input&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;청구서 INV-2048 요약해 줘&quot;},
+  &quot;context&quot;: {&quot;tenantId&quot;: &quot;finance&quot;, &quot;dataClassification&quot;: &quot;confidential&quot;},
+  &quot;execution&quot;: {&quot;mode&quot;: &quot;sync&quot;, &quot;timeoutMs&quot;: 30000}
+}
+</code></pre>
+<p>앱이 받은 응답과, 같은 입력을 로컬 mock에 보냈을 때의 실제 응답입니다. 필드 구성은 같고 <code>agentVersion</code>과 <code>output.content</code>가 다릅니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{
+  &quot;invocationId&quot;: &quot;inv-…&quot;,
+  &quot;agentVersion&quot;: &quot;1.2.0&quot;,
+  &quot;status&quot;: &quot;succeeded&quot;,
+  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;한빛상사 2026년 10월분 청구서(INV-2048)입니다. 합계 12,400,000원, 납기 11월 30일입니다.&quot;},
+  &quot;traceparent&quot;: &quot;00-…-…-01&quot;,
+  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
+  &quot;usage&quot;: {&quot;inputTokens&quot;: 412, &quot;outputTokens&quot;: 58}
+}
+</code></pre>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-json">{
+  &quot;invocationId&quot;: &quot;inv-9946215c02f347bd8ba5de71ca079905&quot;,
+  &quot;agentVersion&quot;: &quot;0.1.0&quot;,
+  &quot;status&quot;: &quot;succeeded&quot;,
+  &quot;output&quot;: {&quot;type&quot;: &quot;message&quot;, &quot;content&quot;: &quot;mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘&quot;},
+  &quot;traceparent&quot;: &quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;,
+  &quot;routeDecisionId&quot;: &quot;route-self-hosted&quot;,
+  &quot;usage&quot;: {&quot;inputTokens&quot;: 7, &quot;outputTokens&quot;: 7}
+}
+</code></pre>
+<ul>
+<li><code>routeDecisionId</code>가 <code>route-self-hosted</code>입니다. 데이터 분류가 <code>confidential</code>이라 회사 안 모델로 갔습니다.</li>
+<li>로컬 mock의 도구와 모델은 받은 글 앞에 <code>tool:</code>, <code>mock:</code>을 붙여 돌려주는 mock이라 실제 요약은 나오지 않습니다.</li>
+</ul>
+<h2 id="처리-단계">처리 단계</h2>
+<p>위 요청이 Agent Platform APIs에서 거치는 확인과, 그 확인에 쓰인 이 요청의 값입니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>순서</th>
+<th>확인</th>
+<th>이 요청의 값</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>인증</td>
+<td>IdP가 발급한 토큰</td>
+<td>호출자 <code>finance.analyst</code>, 테넌트 <code>finance</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Agent 조회</td>
+<td>경로의 <code>invoice-summary</code></td>
+<td>Registry의 고정 버전 <code>1.2.0</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>테넌트 인가</td>
+<td>본문 <code>tenantId</code> <code>finance</code> = 토큰의 테넌트</td>
+<td>통과</td>
+</tr>
+<tr>
+<td>4</td>
+<td>scope 확인</td>
+<td><code>requiredScopes</code> 3개를 호출자가 모두 가짐</td>
+<td>통과</td>
+</tr>
+<tr>
+<td>5</td>
+<td>멱등성</td>
+<td>처음 보는 <code>Idempotency-Key</code></td>
+<td>Agent Runtime에 전달하고 결과를 키와 함께 저장</td>
+</tr>
+<tr>
+<td>6</td>
+<td>재전송</td>
+<td>같은 키, 같은 내용</td>
+<td>저장된 결과를 반환. Agent 실행 0회</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="실패-사례">실패 사례</h2>
+<p>같은 요청에서 조건 하나만 바꿨을 때의 결과입니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>바꾼 조건</th>
+<th>응답</th>
+<th>멈춘 곳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>앱이 <code>Authorization</code>을 붙이지 않음</td>
+<td>401</td>
+<td>1 인증. Agent 코드는 실행되지 않습니다</td>
+</tr>
+<tr>
+<td>본문 <code>tenantId</code>를 <code>hr</code>로 적음</td>
+<td>403</td>
+<td>3 테넌트 인가</td>
+</tr>
+<tr>
+<td>호출자가 <code>finance.viewer</code> (<code>agents.invoke</code>만 가짐)</td>
+<td>403</td>
+<td>4 scope 확인</td>
+</tr>
+<tr>
+<td>같은 키로 입력을 <code>"청구서 INV-9999 요약해 줘"</code>로 바꿈</td>
+<td>409 <code>CONFLICT</code></td>
+<td>5 멱등성</td>
+</tr>
+<tr>
+<td><code>Idempotency-Key</code>를 빼고 보냄</td>
+<td>422 <code>VALIDATION_ERROR</code></td>
+<td>요청 검증</td>
+</tr>
+</tbody>
+</table></div>
+<p>본문의 테넌트가 토큰과 다를 때 로컬 mock이 실제로 돌려주는 403입니다.</p>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-json">{&quot;type&quot;: &quot;about:blank&quot;, &quot;title&quot;: &quot;FORBIDDEN&quot;, &quot;status&quot;: 403, &quot;detail&quot;: &quot;Tenant assertion does not match authenticated identity&quot;, &quot;code&quot;: &quot;FORBIDDEN&quot;, &quot;traceId&quot;: &quot;…&quot;}
+</code></pre>
+<h2 id="직접-해-보기">직접 해 보기</h2>
+<div class="sim" data-sim="request"></div>
+
+<ol class="mission">
+<li>토큰을 빼고 보내 보세요. 어느 단계에서 멈추나요.</li>
+<li>권한이 모자란 사용자(<code>finance.viewer</code>)로 보내면 Agent 코드가 실행되나요.</li>
+</ol>
+
+<details class="more">
+<summary>더 해 보기: 같은 요청을 여러 번 보내기</summary>
+<div class="sim" data-sim="idempotency"></div>
+<ol class="mission">
+<li>같은 키로 같은 요청을 두 번 보내면 Agent는 몇 번 실행되나요.</li>
+<li>같은 키에 다른 내용을 실으면 어떻게 되나요.</li>
+</ol>
+</details>
+<p><strong>내 PC에서 해 보기</strong> <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a>의 실습 2가 이 요청을 그대로 보내 봅니다. 이 장의 응답을 그대로 재현하려면 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>의 명령을 씁니다.</p>
 <h2 id="코드로-보기-agent-platform-apis를-붙인다">코드로 보기: Agent Platform APIs를 붙인다</h2>
 <p>앞에서 설명한 Agent Platform APIs의 핵심 동작을 열 줄 남짓한 코드로 직접 짜 봅니다. <a href="docs--onboarding--02-big-picture.html">Core Systems 지도</a>의 출발점 코드에 첫 조각을 붙이는 단계입니다.</p>
 <div class="stack build" role="img" aria-label="Core System 조각 10개 중 1개를 붙였습니다"><div class="s-api new"><b>Agent Platform APIs</b><small>방금 붙임 · 정문</small></div><div class="s-tools"><b>Agent Tools</b><small>도구 경로</small></div><div class="s-identity"><b>Agent Identity</b><small>누구 권한으로</small></div><div class="s-gateway"><b>Agent Gateway</b><small>모델로 가는 길목</small></div><div class="s-runtime"><b>Agent Runtime</b><small>실행과 기억</small></div><div class="s-factory"><b>Agent Factory</b><small>등록과 검사</small></div><div class="s-obs"><b>Agent Observability</b><small>기록</small></div><div class="s-eval"><b>Agent Evaluation</b><small>채점</small></div><div class="s-tuning"><b>Agent Tuning</b><small>고쳐서 다시</small></div><div class="s-app"><b>AI Platform Applications</b><small>쓰는 화면</small></div></div>
@@ -233,7 +438,7 @@ agent.invoke({&quot;content&quot;: &quot;청구서 INV-2048 요약해 줘&quot;,
 <p class="kind example" data-kind="example">예시</p>
 
 <pre><code class="language-python"># examples/build/step1/mini_platform.py
-USERS = {&quot;token-seoyeon&quot;: &quot;서연&quot;, &quot;token-hajun&quot;: &quot;하준&quot;}  # 회사 IdP를 흉내 낸 가짜 사용자 목록
+USERS = {&quot;token-analyst&quot;: &quot;finance.analyst&quot;, &quot;token-viewer&quot;: &quot;finance.viewer&quot;}  # 회사 IdP를 흉내 낸 가짜 사용자 목록(토큰 -&gt; 역할)
 done = {}  # 요청 번호 -&gt; (내용, 결과)
 
 
@@ -283,7 +488,7 @@ def enter(request, agent):
 </tr>
 <tr>
 <td>2</td>
-<td>번호 <code>k1</code>, 서연의 토큰</td>
+<td>번호 <code>k1</code>, <code>finance.analyst</code>의 토큰</td>
 <td>④ ⑤</td>
 <td><code>{'status': 200, 'output': '요약: 한빛상사 …'}</code></td>
 <td><code>k1</code></td>
@@ -307,7 +512,7 @@ def enter(request, agent):
 </tr>
 </tbody>
 </table></div>
-<p>3번에서 모델 호출이 1에 머무는 것이 "한 번만 실행한다"의 실제 모습입니다. 4번은 번호는 같은데 내용이 다르므로, 실수이거나 누군가 번호를 가져다 쓴 것으로 보고 거절합니다. 1번이 <code>done</code>에 아무것도 남기지 않는다는 점도 눈여겨볼 만합니다. 거절된 요청이 번호를 차지하지 않으므로, 서연이 같은 번호 <code>k1</code>로 다시 보낸 2번이 정상 처리됩니다.</p>
+<p>3번에서 모델 호출이 1에 머무는 것이 "한 번만 실행한다"의 실제 모습입니다. 4번은 번호는 같은데 내용이 다르므로, 실수이거나 누군가 번호를 가져다 쓴 것으로 보고 거절합니다. 1번이 <code>done</code>에 아무것도 남기지 않는다는 점도 눈여겨볼 만합니다. 거절된 요청이 번호를 차지하지 않으므로, 같은 번호 <code>k1</code>로 다시 보낸 2번이 정상 처리됩니다.</p>
 <h3 id="agent-코드에서-바뀌는-것">Agent 코드에서 바뀌는 것</h3>
 <p class="kind example" data-kind="example">예시</p>
 
@@ -331,11 +536,11 @@ PASS 1 토큰 없는 요청은 거절한다
 PASS 2 같은 요청이 두 번 와도 한 번만 실행한다
 FAIL 3 Agent 코드에 ERP 비밀번호가 없다
 FAIL 4 Manifest에 없는 도구는 부를 수 없다
-FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 5 권한이 모자란 사용자(finance.viewer)는 거절한다
 FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
 2/6
 </code></pre>
-<p>서연이 받는 응답은 출발점과 글자 하나 다르지 않고, 검사 1과 2만 통과로 바뀌었습니다. 두 검사가 실제로 확인하는 것은 위 표의 1번 행과 3번 행입니다.</p>
+<p>호출자가 받는 응답은 출발점과 글자 하나 다르지 않고, 검사 1과 2만 통과로 바뀌었습니다. 두 검사가 실제로 확인하는 것은 위 표의 1번 행과 3번 행입니다.</p>
 <p class="kind example" data-kind="example">예시</p>
 
 <pre><code class="language-python">def rejects_missing_token():
@@ -344,8 +549,8 @@ FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
 
 def runs_once():
     before = world.model_calls
-    send({**ask, &quot;token&quot;: &quot;token-seoyeon&quot;})
-    send({**ask, &quot;token&quot;: &quot;token-seoyeon&quot;})
+    send({**ask, &quot;token&quot;: &quot;token-analyst&quot;})
+    send({**ask, &quot;token&quot;: &quot;token-analyst&quot;})
     return world.model_calls - before == 1                  # 표의 3번 행
 </code></pre>
 <h3 id="실제-플랫폼과의-대응">실제 플랫폼과의 대응</h3>
@@ -376,23 +581,7 @@ def runs_once():
 </tbody>
 </table></div>
 <p>Agent 코드에는 아직 <code>ERP_PASSWORD = "erp-s3cret"</code>이 남아 있습니다. 이 줄은 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>의 코드로 보기에서 지웁니다.</p>
-<h2 id="한-문장으로">한 문장으로</h2>
-<p>모든 요청이 지나는 진입 계층이고, 누가 보냈는지와 같은 요청이 또 왔는지를 여기서 가립니다.</p>
-<div class="check">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
-<details>
-<summary>Q1. 서연의 앱이 응답을 기다리다 같은 요청을 한 번 더 보냈습니다. Agent는 몇 번 실행되고 왜 그런가요?</summary>
-<p>한 번입니다. 두 요청의 Idempotency-Key와 내용이 같으므로 Agent Platform APIs가 저장해 둔 결과를 돌려주고 다시 실행하지 않습니다.</p>
-</details>
-<details>
-<summary>Q2. 요청 본문에 다른 팀의 tenantId를 적으면 그 팀의 데이터에 접근할 수 있나요?</summary>
-<p>아니요, 접근할 수 없습니다. 테넌트는 검증된 토큰에서 정하고 본문의 값은 비교에만 씁니다. 두 값이 다르면 403입니다.</p>
-</details>
-<details>
-<summary>Q3. 토큰 없이 보낸 요청에서 Agent 코드는 어디까지 실행되나요?</summary>
-<p>한 줄도 실행되지 않습니다. Agent Platform APIs가 401로 돌려보냅니다.</p>
-</details>
-</div>
+<p>다음 단계는 ② Agent 등록입니다. Agent Platform APIs가 조회한 <code>invoice-summary</code>가 어떻게 Registry에 등록됐는지 봅니다.</p>
 <div class="refs">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg> 근거와 참고 자료</strong></p>
 <ul>
@@ -400,5 +589,4 @@ def runs_once():
 <li>실행 추적 규격: <a href="docs--onboarding--10-references.html#ref-otel">OpenTelemetry GenAI</a></li>
 </ul>
 </div>
-<p>다음 장면은 ②입니다. Agent Platform APIs가 찾아낸 <code>invoice-summary</code>는 어떻게 거기 등록돼 있었을까요.</p>
-<nav class="pager"><a href="docs--onboarding--02-big-picture.html"><small>이전</small><b>청구서 Agent의 하루: Core Systems 지도</b></a><a class="next" href="docs--onboarding--05-agents-and-manifest.html"><small>다음</small><b>Agent Factory와 Manifest</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/03-one-request.md">docs/onboarding/03-one-request.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#코드로-보기-agent-platform-apis를-붙인다">코드로 보기: Agent Platform APIs를 붙인다</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--02-big-picture.html"><small>이전</small><b>Core Systems 지도</b></a><a class="next" href="docs--onboarding--05-agents-and-manifest.html"><small>다음</small><b>Agent Factory와 Manifest</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/03-one-request.md">docs/onboarding/03-one-request.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#개요">개요</a><a href="#처리-흐름">처리 흐름</a><a href="#요청과-응답-형식">요청과 응답 형식</a><a href="#오류와-실패-동작">오류와 실패 동작</a><a href="#개발자가-할-일">개발자가 할 일</a><a href="#규칙">규칙</a><a href="#한-문장으로">한 문장으로</a><a href="#사례-조건">사례 조건</a><a href="#요청과-응답">요청과 응답</a><a href="#처리-단계">처리 단계</a><a href="#실패-사례">실패 사례</a><a href="#직접-해-보기">직접 해 보기</a><a href="#코드로-보기-agent-platform-apis를-붙인다">코드로 보기: Agent Platform APIs를 붙인다</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

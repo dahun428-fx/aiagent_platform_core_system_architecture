@@ -24,8 +24,8 @@ def rejects_missing_token():
 
 def runs_once():
     before = world.model_calls
-    send({**ask, "token": "token-seoyeon"})
-    send({**ask, "token": "token-seoyeon"})
+    send({**ask, "token": "token-analyst"})
+    send({**ask, "token": "token-analyst"})
     return world.model_calls - before == 1
 
 
@@ -41,8 +41,8 @@ def undeclared_tool_denied():
     return False
 
 
-def intern_denied():
-    return send({**ask, "key": "k2", "token": "token-hajun"})["status"] == 403
+def viewer_denied():
+    return send({**ask, "key": "k2", "token": "token-viewer"})["status"] == 403
 
 
 def no_direct_model_call():
@@ -54,10 +54,10 @@ CHECKS = [
     ("같은 요청이 두 번 와도 한 번만 실행한다", runs_once),
     ("Agent 코드에 ERP 비밀번호가 없다", no_password_in_agent),
     ("Manifest에 없는 도구는 부를 수 없다", undeclared_tool_denied),
-    ("권한이 모자란 하준은 거절한다", intern_denied),
+    ("권한이 모자란 사용자(finance.viewer)는 거절한다", viewer_denied),
     ("Agent 코드가 모델을 직접 부르지 않는다", no_direct_model_call),
 ]
-print("응답", send({**ask, "key": "k-show", "token": "token-seoyeon"}))
+print("응답", send({**ask, "key": "k-show", "token": "token-analyst"}))
 passed = 0
 for number, (name, check) in enumerate(CHECKS, 1):
     try:

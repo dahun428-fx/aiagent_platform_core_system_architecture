@@ -23,7 +23,7 @@ def link(p):
 
 onboarding = [
     ("docs/onboarding/01-why.md", "플랫폼 도입 배경과 설계 원칙", "5분", "팀별 Agent 개발 환경과 전사 공통 보안·운영 통제의 책임 구분", "target"),
-    ("docs/onboarding/02-big-picture.md", "청구서 Agent의 하루: Core Systems 지도", "10분", "요청 하나가 10개 Core System을 지나는 순서를 장면 11개로 먼저 봅니다", "map"),
+    ("docs/onboarding/02-big-picture.md", "Core Systems 지도", "10분", "10개 Core System의 책임과 경계, 그리고 요청 하나가 거치는 11단계", "map"),
     ("docs/onboarding/03-one-request.md", "Agent Platform APIs: 요청 하나 따라가기", "10분", "모든 요청이 지나는 정문. 누가 보냈는지, 같은 요청이 또 왔는지를 가립니다", "trace"),
     ("docs/onboarding/05-agents-and-manifest.md", "Agent Factory와 Manifest", "10분", "Agent를 만들어 올리는 곳. 신청서(Manifest)를 먼저 검사합니다", "manifest"),
     ("docs/onboarding/11-runtime-memory.md", "Agent Runtime과 Memory", "10분", "내 함수 하나를 플랫폼이 불러 주고, 대화 중 기억할 것을 맡아 줍니다", "runtime"),
@@ -43,11 +43,11 @@ onboarding = [
     ("docs/onboarding/10-references.md", "근거와 참고 자료", "참조용", "클라우드 Agent 플랫폼, OpenTelemetry, MCP, A2A, IETF, OWASP 등 외부 근거", "book"),
     ("docs/onboarding/09-glossary.md", "주요 용어 정의", "참조용", "Core Systems, 실행 모델 및 기술 계약의 주요 용어", "book"),
 ]
-# The running case of the guide: one invoice request, eleven scenes, one chapter each.
-SCENES = [("부른다", "03-one-request.md"), ("어떻게 여기 있나", "05-agents-and-manifest.md"), ("실행된다", "11-runtime-memory.md"),
-          ("ERP를 읽고 메일을 보내려 한다", "15-agent-tools.md"), ("누구 권한으로", "16-agent-identity.md"), ("모델에 묻는다", "17-agent-gateway.md"),
-          ("함정을 만난다", "04-trust.md"), ("답이 틀렸다", "12-observability-evaluation.md"), ("점수를 매긴다", "18-agent-evaluation.md"),
-          ("고쳐서 다시 올린다", "19-agent-tuning.md"), ("어디서 이 일을 하나", "20-applications.md")]
+# The running case of the guide: one invoice request through eleven processing stages, one chapter each.
+SCENES = [("호출 진입", "03-one-request.md"), ("Agent 등록", "05-agents-and-manifest.md"), ("실행", "11-runtime-memory.md"),
+          ("도구 호출", "15-agent-tools.md"), ("권한 위임", "16-agent-identity.md"), ("모델 호출", "17-agent-gateway.md"),
+          ("Guardrail 검사", "04-trust.md"), ("실행 추적", "12-observability-evaluation.md"), ("평가", "18-agent-evaluation.md"),
+          ("개선과 승격", "19-agent-tuning.md"), ("사용 화면", "20-applications.md")]
 # Order in which the bricks attach. `{{blocks:2}}` lights the first two and marks the second as new.
 BRICKS = [("s-api", "Agent Platform APIs", "정문"), ("s-tools", "Agent Tools", "도구 경로"), ("s-identity", "Agent Identity", "누구 권한으로"),
           ("s-gateway", "Agent Gateway", "모델로 가는 길목"), ("s-runtime", "Agent Runtime", "실행과 기억"), ("s-factory", "Agent Factory", "등록과 검사"),
@@ -58,11 +58,11 @@ BOUNDARIES = {"app": "앱이 받은 응답", "route": "내부 진단 · 내부 �
 
 
 def journey(m):
-    """`{{journey:4}}` becomes the progress bar: where this chapter sits in the eleven scenes."""
+    """`{{journey:4}}` becomes the progress bar: where this chapter sits in the eleven processing stages."""
     now = int(m.group(1))
     items = "".join(f'<li class="{"on" if n == now else "done" if n < now else ""}"><a href="{f}"><i>{chr(0x2460 + n - 1)}</i>{html.escape(t)}</a></li>'
                     for n, (t, f) in enumerate(SCENES, 1))
-    return f'<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 {now}번째"><ol>{items}</ol></nav>'
+    return f'<nav class="journey" aria-label="요청 처리 11단계 중 {now}번째"><ol>{items}</ol></nav>'
 
 
 def blocks(m):

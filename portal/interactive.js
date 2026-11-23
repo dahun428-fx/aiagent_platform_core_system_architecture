@@ -145,7 +145,7 @@
       const RULES = [
         ["noToken", "토큰 없이 호출", 0, "401 Unauthorized", "호출자가 누구인지 확인할 수 없어 Agent Platform APIs에서 돌려보냅니다."],
         ["spoof", "요청 본문에 다른 테넌트 ID 넣기", 0, "403 Forbidden", "테넌트는 검증된 토큰에서만 정합니다. 본문으로 다른 테넌트를 지정할 수 없습니다."],
-        ["scope", "하준처럼 Agent가 요구하는 권한이 없는 사용자", 0, "403 Forbidden", "Manifest의 requiredScopes를 호출자가 모두 갖고 있지 않아 Agent를 실행하지 않습니다."],
+        ["scope", "Agent가 요구하는 권한이 없는 사용자(finance.viewer)", 0, "403 Forbidden", "Manifest의 requiredScopes를 호출자가 모두 갖고 있지 않아 Agent를 실행하지 않습니다."],
         ["conflict", "같은 멱등성 키로 다른 내용 보내기", 0, "409 Conflict", "같은 요청 번호로 내용이 다른 요청이 와서 거부합니다. 실수나 재전송 공격을 막습니다."],
         ["undeclared", "Manifest에 선언하지 않은 도구 호출", 2, "403 Forbidden", "Agent는 실행됐지만, 선언하지 않은 도구는 도구 경로가 거부합니다."],
         ["restricted", "제한(restricted) 데이터인데 외부 모델만 사용 가능", 3, "503 Service Unavailable", "제한 데이터는 외부 모델로 보낼 수 없고 다른 모델도 없어, 우회하지 않고 실패시킵니다(fail closed)."],
@@ -354,7 +354,7 @@
     "tool-call"(el) {
       const body = frame(el, "도구 불러 보기", "Agent 코드가 부르는 도구와 승인 상태를 바꿔 보세요. 결과마다 앱이 받는 응답과, 운영자가 도구 경로에서 보는 내부 진단을 나란히 보여 줍니다.");
       const tool = select("tool", [["read", "tool-erp-read · invoice-summary의 Manifest에 적은 읽기 도구"], ["undeclared", "tool-mail-send · invoice-summary의 Manifest에 없는 도구"], ["unregistered", "tool-fax-send · 플랫폼에 등록되지 않은 도구"], ["write", "tool-mail-send · invoice-mailer가 부르는 쓰기 도구"]]);
-      const approval = select("approval", [["none", "승인 없음"], ["valid", "지훈의 유효한 승인"], ["expired", "만료된 승인"], ["other", "다른 요청에서 받은 승인"]]);
+      const approval = select("approval", [["none", "승인 없음"], ["valid", "승인자(finance.approver)의 유효한 승인"], ["expired", "만료된 승인"], ["other", "다른 요청에서 받은 승인"]]);
       const lost = check("메일 서버의 응답이 오다가 끊김", "lost");
       const out = result();
       const two = (ok, head, app, route) => verdict(out, ok, head, ["앱이 받은 응답: " + app, "내부 진단(도구 경로): " + route]);

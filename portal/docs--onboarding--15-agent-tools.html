@@ -3,26 +3,24 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
 <title>Agent Tools · Agent Platform</title><link rel="stylesheet" href="styles.css">
 <script defer src="search-index.js"></script><script defer src="glossary-index.js"></script><script defer src="app.js"></script><script defer src="scenario.js"></script><script defer src="interactive.js"></script></head>
-<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">청구서 Agent의 하루: Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html" aria-current="page">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
+<body><a class="skip" href="#main">본문으로 이동</a><aside id="sidebar" class="sidebar"><nav aria-label="주 탐색"><a href="index.html" class="brand">Agent Platform<small>Technical Standard v0.1</small></a><h2>개발자 가이드</h2><a href="index.html">가이드 개요</a><a href="docs--onboarding--01-why.html">플랫폼 도입 배경과 설계 원칙</a><a href="docs--onboarding--02-big-picture.html">Core Systems 지도</a><a href="docs--onboarding--03-one-request.html">Agent Platform APIs: 요청 하나 따라가기</a><a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a><a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a><a href="docs--onboarding--15-agent-tools.html" aria-current="page">Agent Tools</a><a href="docs--onboarding--16-agent-identity.html">Agent Identity</a><a href="docs--onboarding--17-agent-gateway.html">Agent Gateway</a><a href="docs--onboarding--04-trust.html">신뢰 경계와 Guardrails</a><a href="docs--onboarding--12-observability-evaluation.html">Agent Observability</a><a href="docs--onboarding--18-agent-evaluation.html">Agent Evaluation</a><a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a><a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a><a href="docs--onboarding--20-applications.html">AI Platform Applications</a><a href="docs--onboarding--13-agent-card.html">Agent Card와 Agent 간 통신</a><a href="docs--onboarding--07-hands-on.html">로컬 환경 구성 및 호출 실습</a><a href="docs--onboarding--14-connect-your-agent.html">내 Agent 연결과 적합성 검증</a><a href="docs--onboarding--08-reading-the-spec.html">기술 표준 해석과 FAQ</a><a href="docs--onboarding--10-references.html">근거와 참고 자료</a><a href="docs--onboarding--09-glossary.html">주요 용어 정의</a><h2>설계 정의</h2><a href="docs--core-systems.html">Core Systems</a><a href="docs--architecture.html">아키텍처</a><a href="docs--agent-tools.html">Agent Tools</a><a href="docs--identity-and-credentials.html">Agent Identity</a><a href="docs--security.html">보안 경계</a><a href="docs--guardrails.html">Guardrails</a><a href="docs--memory.html">Memory</a><a href="docs--agent-card.html">Agent Card</a><a href="docs--execution.html">Durable / HITL</a><h2>운영 정의</h2><a href="docs--operating-model.html">운영·평가</a><a href="docs--observability.html">Observability</a><a href="docs--evaluation.html">Evaluation</a><a href="docs--agent-tuning.html">Agent Tuning</a><a href="docs--deployment.html">배포 프로파일</a><a href="docs--versioning.html">계약 변경</a><a href="docs--ci-integration.html">CI 통합</a><a href="docs--glossary.html">용어와 규범</a><h2>레퍼런스</h2><a href="catalog.html">계약 · 예제</a><a href="diagrams.html">아키텍처 도식 9종</a><a href="docs--tbd-register.html">TBD 등록부</a><a href="docs--release-scope.html">제공 범위와 한계</a><h2>결정 기록</h2><a href="records.html">결정 기록과 이력</a></nav></aside>
 <div class="layout"><header><button class="menu" id="menu" aria-controls="sidebar" aria-expanded="false">메뉴</button><span>전사 공통 AI Agent Platform</span><span class="version">v0.1</span>
 <div class="search"><label for="search">문서·계약 검색</label><input id="search" type="search" placeholder="문서·계약 검색  ( / )" autocomplete="off"><div id="results" class="search-results" role="status" aria-live="polite" hidden></div></div></header>
 <main id="main" class="content has-toc" tabindex="-1"><article class="doc"><h1 id="agent-tools">Agent Tools</h1>
 <blockquote>
 <p>개발자 가이드 문서입니다. 규범은 <a href="docs--agent-tools.html">Agent Tools</a>, <a href="docs--identity-and-credentials.html">Agent Identity</a>, <a href="docs--execution.html">Durable / HITL</a> 기술 표준 문서가 기준입니다.</p>
 </blockquote>
-<nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 4번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="on"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class=""><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class=""><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
+<nav class="journey" aria-label="요청 처리 11단계 중 4번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>호출 진입</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>Agent 등록</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행</a></li><li class="on"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>도구 호출</a></li><li class=""><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>권한 위임</a></li><li class=""><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델 호출</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>Guardrail 검사</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>실행 추적</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>평가</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>개선과 승격</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>사용 화면</a></li></ol></nav>
 
-<div class="sofar">
-<p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. Agent Platform APIs가 서연을 확인했고, 민준이 등록한 <code>invoice-summary</code>의 코드가 실행되기 시작했습니다.</p>
-</div>
-<p class="part">설명</p>
+<p class="part">본문</p>
 
-<h2 id="장면">장면</h2>
-<p>민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 <code>tool-erp-read</code>라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 <code>invoice-mailer</code>가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 이 장에서는 읽기는 바로 되는데 보내기는 왜 멈추는지를 봅니다.</p>
+<h2 id="개요">개요</h2>
+<p>Agent Tools는 Agent가 쓰는 도구를 등록하고 관리하는 Core System입니다. Tool Registry, 도구 등록 정보(descriptor), REST/OpenAPI/MCP adapter, 도구 정책과 감사를 소유합니다. 실제 호출은 Agent Gateway의 도구 경로가 집행합니다.</p>
+<p>Agent 코드는 도구의 ID, 버전, 인자만 넘깁니다. 도구의 주소와 자격증명은 플랫폼만 알고, 도구 경로는 Credential Broker가 발급한 lease를 adapter 안에서만 실제 자격증명으로 교환해 도구를 호출합니다. 외부 시스템에 영향을 주는 쓰기 도구는 그 요청에 묶인 승인이 있어야 실행됩니다.</p>
 <div class="point">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Tools가 없다면</strong> Agent마다 ERP 비밀번호를 들고 다니고, 메일은 누구의 확인도 없이 나갑니다.</p>
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Tools가 없다면</strong> Agent마다 도구의 자격증명을 코드에 가지고 다니고, 쓰기 작업은 아무 확인 없이 실행됩니다.</p>
 </div>
-<h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
+<h2 id="처리-흐름">처리 흐름</h2>
 <ol class="flow">
 <li data-say="Agent 코드는 도구의 이름과 버전, 그리고 검색어(query)만 넘깁니다. 주소나 비밀번호를 넣을 자리가 없습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>1. 이름과 검색어를 넘긴다</b><span>Agent 코드<br><strong>주소·자격증명 없음</strong></span></li>
 <li data-say="플랫폼이 이 도구가 Manifest에 적혀 있는지, 호출자에게 읽기 권한이 있는지를 봅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>2. 써도 되는 도구인지 본다</b><span>Agent Gateway 도구 경로</span></li>
@@ -31,35 +29,61 @@
 <li data-say="메일 보내기처럼 외부 시스템에 영향을 주는 작업은 사람이 승인할 때까지 실행이 멈춥니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4"/><path d="M2 21c.8-3.7 3.3-6 7-6 1.4 0 2.6.3 3.6.9"/><path d="M15 18l2 2 4-4"/></svg><b>5. 보내는 일은 승인까지 멈춘다</b><span>쓰기 도구 + 사람 승인</span></li>
 </ol>
 
-<h2 id="실물-보기">실물 보기</h2>
-<p>Agent가 도구를 부르는 코드 한 줄입니다.</p>
-<p class="kind example" data-kind="example">예시</p>
-
-<pre><code class="language-python">found = ctx.call_tool(&quot;tool-erp-read&quot;, &quot;1.0.0&quot;, {&quot;query&quot;: &quot;INV-2048&quot;})
-</code></pre>
-<ul>
-<li><code>"tool-erp-read"</code>: 주소가 아니라 이름입니다. 주소와 자격증명은 플랫폼만 압니다.</li>
-<li><code>"1.0.0"</code>: 도구에도 버전이 있어서, 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다.</li>
-<li><code>{"query": ...}</code>: 도구가 받겠다고 선언한 인자만 보낼 수 있으므로 주소를 넣을 자리가 없습니다.</li>
-</ul>
-<p>플랫폼이 이 이름으로 찾아보는 도구 등록 정보(descriptor)입니다. 저장소의 <code>examples/fixtures/tool-descriptor.json</code>과 같은 필드입니다.</p>
-<p class="kind example" data-kind="example">예시</p>
-
-<pre><code class="language-json">{
-  &quot;toolId&quot;: &quot;tool-erp-read&quot;,
-  &quot;version&quot;: &quot;1.0.0&quot;,
-  &quot;protocol&quot;: &quot;rest-openapi&quot;,
-  &quot;effect&quot;: &quot;read&quot;,
-  &quot;allowedScopes&quot;: [&quot;tools.read&quot;],
-  &quot;inputSchema&quot;: &quot;…/tool-input.schema.json&quot;,
-  &quot;outputSchema&quot;: &quot;…/tool-output.schema.json&quot;
-}
-</code></pre>
-<ul>
-<li><code>effect</code>: <code>read</code>는 읽기만 합니다. 메일 도구 <code>tool-mail-send</code>는 여기가 <code>write</code>이고, <code>write</code>인 도구는 승인이 있어야 실행됩니다.</li>
-<li><code>allowedScopes</code>: 이 도구를 쓰려면 호출자에게 있어야 하는 권한입니다. 서연에게 <code>tools.read</code>가 있어서 조회가 됩니다.</li>
-<li><code>inputSchema</code>, <code>outputSchema</code>: 들어가는 값과 나오는 값의 형식입니다. 형식에 맞지 않으면 ERP까지 가지 않습니다.</li>
-</ul>
+<h2 id="인터페이스">인터페이스</h2>
+<p>Agent 코드는 <code>ctx.call_tool(도구 ID, 버전, 인자)</code>로 도구를 호출합니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>인자</th>
+<th>의미</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>도구 ID</td>
+<td>주소가 아니라 Tool Registry에 등록된 이름입니다. 주소와 자격증명은 플랫폼만 압니다</td>
+</tr>
+<tr>
+<td>버전</td>
+<td>도구에도 버전이 있어서, 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다</td>
+</tr>
+<tr>
+<td>인자</td>
+<td>도구가 <code>inputSchema</code>로 선언한 값만 보낼 수 있습니다. 주소를 넣을 자리가 없습니다</td>
+</tr>
+</tbody>
+</table></div>
+<p>도구 경로는 도구 ID로 descriptor를 찾습니다. 형식은 <code>contracts/tool-descriptor.schema.json</code>입니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>필드</th>
+<th>의미</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>toolId</code>, <code>version</code></td>
+<td>도구의 이름과 버전입니다</td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>adapter 종류입니다. 예: <code>rest-openapi</code>, <code>mcp</code></td>
+</tr>
+<tr>
+<td><code>effect</code></td>
+<td><code>read</code>는 읽기만 합니다. <code>write</code>인 도구는 그 요청에 묶인 승인이 있어야 실행됩니다</td>
+</tr>
+<tr>
+<td><code>allowedScopes</code></td>
+<td>이 도구를 쓰려면 호출자에게 있어야 하는 scope입니다</td>
+</tr>
+<tr>
+<td><code>inputSchema</code>, <code>outputSchema</code></td>
+<td>들어가는 값과 나오는 값의 형식입니다. 형식에 맞지 않으면 도구까지 가지 않습니다</td>
+</tr>
+</tbody>
+</table></div>
 <details class="more">
 <summary>더 보기: 도구 경로가 실제로 받는 요청과 돌려주는 결과</summary>
 <p>Agent 코드의 한 줄이 도구 경로에 도착할 때는 플랫폼이 신원과 정책 정보를 덧붙인 모습입니다. 로컬 fixture <code>examples/fixtures/tool-invoke.json</code>의 발췌입니다.</p>
@@ -78,23 +102,12 @@
 <pre><code class="language-json">{&quot;invocationId&quot;: &quot;inv-demo&quot;, &quot;toolId&quot;: &quot;tool-search&quot;, &quot;status&quot;: &quot;succeeded&quot;, &quot;output&quot;: {&quot;content&quot;: &quot;tool:hello&quot;}}
 </code></pre>
 </details>
-<h2 id="직접-해-보기">직접 해 보기</h2>
-<div class="sim" data-sim="tool-call"></div>
-
-<ol class="mission">
-<li>코드에서 Manifest에 없는 도구를 불러 보세요. 이것은 등록 실패인가요, 등록한 코드가 실행 중에 거절된 것인가요.</li>
-<li>쓰기 도구에 다른 요청에서 받은 승인을 붙여 보세요. 앱은 무엇을 받나요. 승인이 아예 없을 때와 구별할 수 있나요.</li>
-</ol>
-
-<h2 id="잘못되면">잘못되면</h2>
-<p><strong>민준의 코드가 Manifest에 적지 않은 도구를 부르면</strong> 서연의 요청은 실행 중에 403을 받습니다. 로컬 mock의 응답 본문에는 <code>Tool is not declared in the Agent Manifest</code>라고 적혀 있습니다. Manifest가 유효했고 등록도 됐고 코드까지 실행된 뒤에 나는 실패입니다. <code>capabilities.tools</code>에 도구 이름을 추가하고 새 버전으로 등록하면 고쳐집니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다(<a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a>).</p>
-<p><strong>승인이 붙지 않은 채 메일 도구를 부르면</strong> 앱은 403 <code>Policy denied</code>를 받습니다. 평소에는 플랫폼이 승인까지 실행을 멈춰 주지만, 어떤 이유로든 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 운영자가 도구 경로를 직접 보면 이유가 <code>Write tool requires approval</code>로 적혀 있습니다. 코드를 고쳐서 풀 일이 아니고, 승인자가 승인해야 풀립니다.</p>
-<details class="more">
-<summary>더 보기: 앱에서는 같아 보이는 거절 셋, 그리고 응답이 끊겼을 때</summary>
+<h2 id="오류와-실패-동작">오류와 실패 동작</h2>
+<p>Manifest의 <code>capabilities.tools</code>에 없는 도구를 코드가 호출하면 실행 중에 403으로 거절됩니다. Manifest가 유효했고 등록도 됐고 코드까지 실행된 뒤에 나는 실패이므로, <code>capabilities.tools</code>에 도구 ID를 추가해 새 버전으로 등록해야 합니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다(<a href="docs--onboarding--05-agents-and-manifest.html">Agent Factory와 Manifest</a>).</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>상황</th>
+<th>조건</th>
 <th>앱이 받은 응답</th>
 <th>도구 경로의 내부 진단</th>
 <th>참조 구현 시나리오</th>
@@ -102,13 +115,19 @@
 </thead>
 <tbody>
 <tr>
-<td>등록되지 않은 도구를 부름</td>
+<td>Manifest에 선언하지 않은 도구를 호출</td>
+<td>403 <code>Tool is not declared in the Agent Manifest</code></td>
+<td>등록한 코드가 실행 중에 거절됨</td>
+<td>적합성 C8</td>
+</tr>
+<tr>
+<td>Tool Registry에 승인되지 않은 도구를 호출</td>
 <td>403 <code>Policy denied</code></td>
 <td><code>Tool not approved</code></td>
 <td>S5 <code>tool-not-approved</code></td>
 </tr>
 <tr>
-<td>승인 없이 쓰기 도구를 부름</td>
+<td>승인 없이 쓰기 도구를 호출</td>
 <td>403 <code>Policy denied</code></td>
 <td><code>Write tool requires approval</code></td>
 <td>S6a <code>write-no-approval</code></td>
@@ -120,66 +139,33 @@
 <td>S6a <code>write-approval-expired</code>, <code>write-approval-other-request</code></td>
 </tr>
 <tr>
-<td>메일 서버의 응답이 오다가 끊김</td>
+<td>쓰기 도구의 응답이 도중에 끊김</td>
 <td>실패 응답</td>
 <td><code>unknown_outcome</code></td>
 <td>S6a <code>write-response-lost</code></td>
 </tr>
 <tr>
-<td>다시 실행할 때 같은 키에 다른 인자가 실림</td>
+<td>재실행할 때 같은 키에 다른 인자가 실림</td>
 <td>409 <code>CONFLICT</code></td>
 <td>같은 키, 다른 내용</td>
 <td>S5 <code>tool-key-conflict</code></td>
 </tr>
 </tbody>
 </table></div>
-<p>앞의 셋은 앱에서 모두 같은 <code>Policy denied</code>로 보입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이라 일부러 구분하지 않습니다. 어느 경우인지는 호출 번호(<code>invocationId</code>)로 운영자에게 묻습니다.</p>
-<p><code>unknown_outcome</code>은 메일이 나갔는지 알 수 없는 상태입니다. 자동으로 다시 보내면 두 번 나갈 수 있으므로 다시 보내지 않고 메일 서버의 기록과 대조합니다. 도구 호출의 멱등성 키는 Agent 코드가 아니라 Runtime이 붙입니다.</p>
-<p>Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 그런 길이 있다면 문서에 숨은 지시문이 Agent를 시켜 <code>http://10.0.0.5/admin</code> 같은 사내망 주소를 찔러 볼 수 있기 때문입니다.</p>
-</details>
-<h2 id="내가-할-일">내가 할 일</h2>
+<ul>
+<li>앱에서는 정책 거절이 모두 같은 <code>Policy denied</code>로 보입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이라 일부러 구분하지 않습니다. 이유는 <code>invocationId</code>로 운영자가 도구 경로의 기록에서 확인합니다.</li>
+<li>평소에는 플랫폼이 승인까지 실행을 멈춥니다(<code>waiting_approval</code>). 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 코드를 고쳐서 풀 일이 아니고, 승인자가 승인해야 풀립니다.</li>
+<li><code>unknown_outcome</code>은 쓰기가 실행됐는지 알 수 없는 상태입니다. 자동으로 재실행하면 두 번 실행될 수 있으므로 재실행하지 않고 대상 시스템의 기록과 대조합니다. 도구 호출의 멱등성 키는 Agent 코드가 아니라 Runtime이 붙입니다.</li>
+<li>Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 그런 길이 있다면 문서에 숨은 지시문이 Agent를 시켜 <code>http://10.0.0.5/admin</code> 같은 사내망 주소를 호출하게 할 수 있기 때문입니다.</li>
+</ul>
+<h2 id="개발자가-할-일">개발자가 할 일</h2>
 <ol>
 <li>쓸 도구의 ID와 버전을 확인합니다.</li>
 <li>Manifest의 <code>capabilities.tools</code>에 그 ID를 적고, <code>identity.requiredScopes</code>에 도구가 요구하는 scope를 적습니다.</li>
-<li>코드에서 <code>ctx.call_tool(도구 ID, 버전, 인자)</code>로 부릅니다. 주소와 키는 넣지 않습니다.</li>
+<li>코드에서 <code>ctx.call_tool(도구 ID, 버전, 인자)</code>로 호출합니다. 주소와 키는 넣지 않습니다.</li>
 <li>로컬에서 실행해 보고 적합성 검사의 C8(선언하지 않은 도구, 자격증명 노출)을 확인합니다.</li>
 <li>쓰기 도구가 필요하면 읽기 Agent에 덧붙이지 말고 별도 Agent로 나눕니다.</li>
 </ol>
-<p><strong>내 PC에서 해 보기</strong> 저장소 루트에서 실행합니다. 로컬에서는 이야기 속 이름 대신 아래 mock 도구를 씁니다.</p>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>이야기</th>
-<th>내 PC</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>tool-erp-read</code> <code>1.0.0</code></td>
-<td><code>tool-search</code> <code>0.1.0</code></td>
-</tr>
-<tr>
-<td>테넌트 <code>finance</code></td>
-<td><code>tenant-demo</code></td>
-</tr>
-<tr>
-<td>서연의 토큰</td>
-<td><code>Bearer mock-user</code></td>
-</tr>
-</tbody>
-</table></div>
-<pre><code class="language-bash">python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
-</code></pre>
-<p>다른 터미널에서 요청을 보냅니다.</p>
-<pre><code class="language-bash">curl -s -X POST http://127.0.0.1:8765/v1/agents/invoice-summary/invocations \
-  -H &quot;Authorization: Bearer mock-user&quot; -H &quot;Idempotency-Key: demo-a1&quot; -H &quot;Content-Type: application/json&quot; \
-  -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;청구서 INV-2048 요약해 줘&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;confidential&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:30000}}'
-</code></pre>
-<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
-
-<pre><code class="language-json">{&quot;invocationId&quot;:&quot;inv-9946215c02f347bd8ba5de71ca079905&quot;,&quot;agentVersion&quot;:&quot;0.1.0&quot;,&quot;status&quot;:&quot;succeeded&quot;,&quot;output&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘&quot;},&quot;traceparent&quot;:&quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;,&quot;routeDecisionId&quot;:&quot;route-self-hosted&quot;,&quot;usage&quot;:{&quot;inputTokens&quot;:7,&quot;outputTokens&quot;:7}}
-</code></pre>
-<p><code>output.content</code> 안의 <code>tool:청구서 INV-2048 요약해 줘</code>가 도구가 돌려준 값입니다. 로컬 mock 도구는 받은 검색어 앞에 <code>tool:</code>을, mock 모델은 받은 글 앞에 <code>mock:</code>을 붙여 돌려주므로 실제 요약은 나오지 않습니다. 호출 번호와 추적 번호는 실행할 때마다 달라집니다. 쓰기와 승인은 <code>make scenarios</code>의 S5, S6a 줄에서 확인합니다(PostgreSQL이 필요합니다. <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성</a>).</p>
 <div class="scope">
 <p><strong>제공 범위 (v0.1)</strong></p>
 <div class="table-wrap"><table>
@@ -214,19 +200,237 @@
 </tbody>
 </table></div>
 </div>
-<h2 id="규칙으로-정리">규칙으로 정리</h2>
+<h2 id="규칙">규칙</h2>
 <ul>
-<li>Agent는 도구의 ID, 버전, 인자만 넘깁니다. 주소와 자격증명은 넘길 수 없습니다(MUST NOT). 장면 ④</li>
-<li>Manifest의 <code>capabilities.tools</code>에 없는 도구 호출은 거절합니다(MUST). 장면 ④</li>
-<li>쓰기 도구는 그 요청에 묶인 유효한 승인이 있어야 실행합니다(MUST). 장면 ④ 뒷부분</li>
+<li>Agent는 도구의 ID, 버전, 인자만 넘깁니다. 주소와 자격증명은 넘길 수 없습니다(MUST NOT).</li>
+<li>Manifest의 <code>capabilities.tools</code>에 없는 도구 호출은 거절합니다(MUST).</li>
+<li>쓰기 도구는 그 요청에 묶인 유효한 승인이 있어야 실행합니다(MUST).</li>
 <li>쓰기의 성공 여부를 알 수 없으면 자동으로 다시 실행하지 않고 <code>unknown_outcome</code>으로 기록합니다(MUST).</li>
 <li>MCP 서버는 도구를 제공하는 방식 가운데 하나이며 같은 도구 경로를 지납니다. 토큰을 그대로 넘겨주는 방식(token passthrough)은 쓰지 않습니다(MUST NOT).</li>
 </ul>
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-agent-tools">Agent Tools</a> <a href="docs--onboarding--09-glossary.html#term-tool-gateway">도구 경로</a> <a href="docs--onboarding--09-glossary.html#term-credential-broker">Credential Broker</a> <a href="docs--onboarding--09-glossary.html#term-lease">Lease</a> <a href="docs--onboarding--09-glossary.html#term-scope">scope</a> <a href="docs--onboarding--09-glossary.html#term-hitl">HITL</a> <a href="docs--onboarding--09-glossary.html#term-unknown">unknown_outcome</a> <a href="docs--onboarding--09-glossary.html#term-mcp">MCP</a></p>
 </div>
-<p class="part">코드로 보기</p>
+<h2 id="한-문장으로">한 문장으로</h2>
+<p>Agent는 도구의 이름만 알고, 주소와 자격증명은 플랫폼이 가진 채 도구를 대신 호출합니다.</p>
+<div class="check">
+<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
+<details>
+<summary>Q1. 등록을 통과한 Agent의 코드가 Manifest에 적지 않은 도구를 호출합니다. 요청이 오면 어떻게 되나요?</summary>
+<p>코드는 실행되지만 그 도구를 호출하는 순간 403으로 거절됩니다. 등록에 실패한 것이 아니라 실행 중에 거절된 것이므로, Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.</p>
+</details>
+<details>
+<summary>Q2. 앱이 403 Policy denied를 받았습니다. 승인이 없어서인지 승인이 만료돼서인지 앱이 구별할 수 있나요?</summary>
+<p>앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 ID를 전달하면 운영자가 도구 경로의 기록에서 이유를 확인합니다.</p>
+</details>
+<details>
+<summary>Q3. 쓰기 도구를 호출한 뒤 응답이 끊겼습니다. Agent가 한 번 더 호출하면 안 되는 이유는 무엇인가요?</summary>
+<p>쓰기가 이미 실행됐을 수 있기 때문입니다. 성공했는지 알 수 없는 쓰기는 재실행하지 않고 대상 시스템의 기록과 대조해 확정합니다.</p>
+</details>
+</div>
+<p class="part">예시: 청구서 요약 Agent</p>
 
+<h2 id="사례-조건">사례 조건</h2>
+<p><code>invoice-summary</code>가 ERP에서 청구서 <code>INV-2048</code>을 읽고, 이어서 재무팀 사용자가 그 요약을 거래처 담당자에게 메일로 보내 달라고 요청하는 경우입니다. 읽기는 바로 실행되고 메일 발송은 승인자가 승인할 때까지 멈추는 과정을 봅니다. 역할과 값은 <a href="docs--onboarding--02-big-picture.html">예시 구성</a>과 같습니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>읽기</th>
+<th>쓰기</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent</td>
+<td><code>invoice-summary</code></td>
+<td><code>invoice-mailer</code></td>
+</tr>
+<tr>
+<td>Manifest <code>capabilities.tools</code></td>
+<td><code>tool-erp-read</code></td>
+<td><code>tool-mail-send</code></td>
+</tr>
+<tr>
+<td>도구 <code>effect</code></td>
+<td><code>read</code></td>
+<td><code>write</code></td>
+</tr>
+<tr>
+<td>호출자</td>
+<td>재무팀 사용자 <code>finance.analyst</code></td>
+<td>재무팀 사용자 <code>finance.analyst</code></td>
+</tr>
+<tr>
+<td>입력</td>
+<td><code>"청구서 INV-2048 요약해 줘"</code></td>
+<td><code>"이 요약을 한빛상사 담당자에게 메일로 보내 줘"</code></td>
+</tr>
+<tr>
+<td>승인</td>
+<td>필요 없음</td>
+<td>승인자 <code>finance.approver</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="호출과-등록-정보">호출과 등록 정보</h2>
+<p><code>invoice-summary</code>가 ERP를 조회하는 코드입니다. 주소와 자격증명이 없습니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-python">found = ctx.call_tool(&quot;tool-erp-read&quot;, &quot;1.0.0&quot;, {&quot;query&quot;: &quot;INV-2048&quot;})
+</code></pre>
+<p>도구 경로가 <code>tool-erp-read</code>로 찾는 descriptor입니다. 저장소의 <code>examples/fixtures/tool-descriptor.json</code>과 같은 필드입니다.</p>
+<p class="kind example" data-kind="example">예시</p>
+
+<pre><code class="language-json">{
+  &quot;toolId&quot;: &quot;tool-erp-read&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;protocol&quot;: &quot;rest-openapi&quot;,
+  &quot;effect&quot;: &quot;read&quot;,
+  &quot;allowedScopes&quot;: [&quot;tools.read&quot;],
+  &quot;inputSchema&quot;: &quot;…/tool-input.schema.json&quot;,
+  &quot;outputSchema&quot;: &quot;…/tool-output.schema.json&quot;
+}
+</code></pre>
+<ul>
+<li><code>effect</code>가 <code>read</code>이므로 승인 없이 실행됩니다. <code>tool-mail-send</code>는 여기가 <code>write</code>입니다.</li>
+<li><code>allowedScopes</code>의 <code>tools.read</code>를 <code>finance.analyst</code>가 가지고 있어 조회가 됩니다.</li>
+</ul>
+<h2 id="처리-단계">처리 단계</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>순서</th>
+<th>단계</th>
+<th>이 예시의 값</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Agent 코드가 도구 호출</td>
+<td><code>tool-erp-read</code> <code>1.0.0</code>, <code>{"query": "INV-2048"}</code></td>
+<td>도구 경로로 전달</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Manifest 확인</td>
+<td><code>invoice-summary</code>의 <code>capabilities.tools</code>에 <code>tool-erp-read</code> 있음</td>
+<td>통과</td>
+</tr>
+<tr>
+<td>3</td>
+<td>scope 확인</td>
+<td><code>finance.analyst</code>에게 <code>tools.read</code> 있음</td>
+<td>통과</td>
+</tr>
+<tr>
+<td>4</td>
+<td>자격증명 사용</td>
+<td>Credential Broker가 이 호출에 묶인 lease 발급, adapter 안에서 교환</td>
+<td>ERP 조회 1건</td>
+</tr>
+<tr>
+<td>5</td>
+<td>결과 반환</td>
+<td>한빛상사, 12,400,000원, 납기 2026-11-30</td>
+<td>응답에 토큰과 주소 없음</td>
+</tr>
+<tr>
+<td>6</td>
+<td>쓰기 요청</td>
+<td><code>invoice-mailer</code>가 <code>tool-mail-send</code> 호출</td>
+<td><code>waiting_approval</code>로 멈춤</td>
+</tr>
+<tr>
+<td>7</td>
+<td>승인 후 재개</td>
+<td><code>finance.approver</code>가 이 요청에 묶인 승인 제출</td>
+<td>메일 1건 발송</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="실패-사례">실패 사례</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>바꾼 조건</th>
+<th>앱이 받은 응답</th>
+<th>내부 진단</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>invoice-summary</code> 코드가 Manifest에 없는 <code>tool-mail-send</code>를 호출</td>
+<td>403 <code>Tool is not declared in the Agent Manifest</code></td>
+<td>실행 중 거절. Manifest에 추가해 새 버전으로 등록해야 합니다</td>
+</tr>
+<tr>
+<td>등록되지 않은 <code>tool-fax-send</code>를 호출</td>
+<td>403 <code>Policy denied</code></td>
+<td><code>Tool not approved</code></td>
+</tr>
+<tr>
+<td><code>invoice-mailer</code>가 승인 없이 <code>tool-mail-send</code>를 호출</td>
+<td>403 <code>Policy denied</code></td>
+<td><code>Write tool requires approval</code></td>
+</tr>
+<tr>
+<td>만료된 승인, 또는 다른 요청에서 받은 승인을 붙임</td>
+<td>403 <code>Policy denied</code></td>
+<td><code>Approval is stale or not bound to this request</code></td>
+</tr>
+<tr>
+<td>승인된 발송 중 메일 서버 응답이 끊김</td>
+<td>실패 응답</td>
+<td><code>unknown_outcome</code>. 메일 서버의 발송 기록과 대조합니다</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="직접-해-보기">직접 해 보기</h2>
+<div class="sim" data-sim="tool-call"></div>
+
+<ol class="mission">
+<li>코드에서 Manifest에 없는 도구를 불러 보세요. 이것은 등록 실패인가요, 등록한 코드가 실행 중에 거절된 것인가요.</li>
+<li>쓰기 도구에 다른 요청에서 받은 승인을 붙여 보세요. 앱은 무엇을 받나요. 승인이 아예 없을 때와 구별할 수 있나요.</li>
+</ol>
+
+<p><strong>내 PC에서 해 보기</strong> 저장소 루트에서 실행합니다. 로컬에서는 예시의 이름 대신 아래 mock 도구를 씁니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>예시</th>
+<th>내 PC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tool-erp-read</code> <code>1.0.0</code></td>
+<td><code>tool-search</code> <code>0.1.0</code></td>
+</tr>
+<tr>
+<td>테넌트 <code>finance</code></td>
+<td><code>tenant-demo</code></td>
+</tr>
+<tr>
+<td><code>finance.analyst</code>의 토큰</td>
+<td><code>Bearer mock-user</code></td>
+</tr>
+</tbody>
+</table></div>
+<pre><code class="language-bash">python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
+</code></pre>
+<p>다른 터미널에서 요청을 보냅니다.</p>
+<pre><code class="language-bash">curl -s -X POST http://127.0.0.1:8765/v1/agents/invoice-summary/invocations \
+  -H &quot;Authorization: Bearer mock-user&quot; -H &quot;Idempotency-Key: demo-a1&quot; -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;input&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;청구서 INV-2048 요약해 줘&quot;},&quot;context&quot;:{&quot;tenantId&quot;:&quot;tenant-demo&quot;,&quot;dataClassification&quot;:&quot;confidential&quot;},&quot;execution&quot;:{&quot;mode&quot;:&quot;sync&quot;,&quot;timeoutMs&quot;:30000}}'
+</code></pre>
+<p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
+
+<pre><code class="language-json">{&quot;invocationId&quot;:&quot;inv-9946215c02f347bd8ba5de71ca079905&quot;,&quot;agentVersion&quot;:&quot;0.1.0&quot;,&quot;status&quot;:&quot;succeeded&quot;,&quot;output&quot;:{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:&quot;mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘&quot;},&quot;traceparent&quot;:&quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;,&quot;routeDecisionId&quot;:&quot;route-self-hosted&quot;,&quot;usage&quot;:{&quot;inputTokens&quot;:7,&quot;outputTokens&quot;:7}}
+</code></pre>
+<p><code>output.content</code> 안의 <code>tool:청구서 INV-2048 요약해 줘</code>가 도구가 돌려준 값입니다. 로컬 mock 도구는 받은 검색어 앞에 <code>tool:</code>을, mock 모델은 받은 글 앞에 <code>mock:</code>을 붙여 돌려주므로 실제 요약은 나오지 않습니다. 호출 번호와 추적 번호는 실행할 때마다 달라집니다. 쓰기와 승인은 <code>make scenarios</code>의 S5, S6a 줄에서 확인합니다(PostgreSQL이 필요합니다. <a href="docs--onboarding--07-hands-on.html">로컬 환경 구성</a>).</p>
 <h2 id="코드로-보기-도구-경로를-붙인다">코드로 보기: 도구 경로를 붙인다</h2>
 <p><a href="docs--onboarding--03-one-request.html">Agent Platform APIs를 붙인</a> 코드에 두 번째 조각을 붙입니다. 이번에 지울 것은 Agent 코드에 남아 있는 비밀번호 한 줄입니다.</p>
 <div class="stack build" role="img" aria-label="Core System 조각 10개 중 2개를 붙였습니다"><div class="s-api lit"><b>Agent Platform APIs</b><small>정문</small></div><div class="s-tools new"><b>Agent Tools</b><small>방금 붙임 · 도구 경로</small></div><div class="s-identity"><b>Agent Identity</b><small>누구 권한으로</small></div><div class="s-gateway"><b>Agent Gateway</b><small>모델로 가는 길목</small></div><div class="s-runtime"><b>Agent Runtime</b><small>실행과 기억</small></div><div class="s-factory"><b>Agent Factory</b><small>등록과 검사</small></div><div class="s-obs"><b>Agent Observability</b><small>기록</small></div><div class="s-eval"><b>Agent Evaluation</b><small>채점</small></div><div class="s-tuning"><b>Agent Tuning</b><small>고쳐서 다시</small></div><div class="s-app"><b>AI Platform Applications</b><small>쓰는 화면</small></div></div>
@@ -338,11 +542,11 @@ PASS 1 토큰 없는 요청은 거절한다
 PASS 2 같은 요청이 두 번 와도 한 번만 실행한다
 PASS 3 Agent 코드에 ERP 비밀번호가 없다
 PASS 4 Manifest에 없는 도구는 부를 수 없다
-FAIL 5 권한이 모자란 하준은 거절한다
+FAIL 5 권한이 모자란 사용자(finance.viewer)는 거절한다
 FAIL 6 Agent 코드가 모델을 직접 부르지 않는다
 4/6
 </code></pre>
-<p>이번에도 서연이 받는 응답은 그대로입니다. 새로 통과한 두 검사는 이렇게 생겼습니다.</p>
+<p>이번에도 호출자가 받는 응답은 그대로입니다. 새로 통과한 두 검사는 이렇게 생겼습니다.</p>
 <p class="kind example" data-kind="example">예시</p>
 
 <pre><code class="language-python">def no_password_in_agent():
@@ -388,23 +592,6 @@ def undeclared_tool_denied():
 </tr>
 </tbody>
 </table></div>
-<p>남은 FAIL 두 줄이 다음에 붙일 조각입니다. 검사 5는 같은 Agent를 불러도 사람에 따라 결과가 달라야 한다는 것이고(Agent Identity), 검사 6은 모델도 도구처럼 플랫폼을 거쳐 불러야 한다는 것입니다(Agent Gateway).</p>
-<h2 id="한-문장으로">한 문장으로</h2>
-<p>Agent는 도구의 이름만 알고, 주소와 비밀번호는 플랫폼이 쥐고 대신 불러 줍니다.</p>
-<div class="check">
-<p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
-<details>
-<summary>Q1. 민준의 코드가 Manifest에 적지 않은 tool-mail-send를 부릅니다. 등록은 통과했습니다. 서연이 요청을 보내면 어떻게 되나요?</summary>
-<p>코드는 실행되지만 그 도구를 부르는 순간 403으로 거절됩니다. 등록에 실패한 것이 아니라 실행 중에 거절된 것이므로, Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.</p>
-</details>
-<details>
-<summary>Q2. 서연의 앱이 403 Policy denied를 받았습니다. 승인이 없어서인지 승인이 만료돼서인지 앱이 구별할 수 있나요?</summary>
-<p>앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 번호를 전달하면 운영자가 도구 경로의 기록에서 이유를 확인합니다.</p>
-</details>
-<details>
-<summary>Q3. 메일 도구를 부른 뒤 응답이 끊겼습니다. Agent가 한 번 더 보내면 안 되는 이유는 무엇인가요?</summary>
-<p>메일이 이미 나갔을 수 있기 때문입니다. 성공했는지 알 수 없는 쓰기는 다시 실행하지 않고 대상 시스템의 기록과 대조해 확정합니다.</p>
-</details>
-</div>
-<p>다음 장면은 ⑤입니다. 같은 Agent인데 왜 서연이 부르면 되고 인턴 하준이 부르면 안 되는지를 봅니다.</p>
-<nav class="pager"><a href="docs--onboarding--11-runtime-memory.html"><small>이전</small><b>Agent Runtime과 Memory</b></a><a class="next" href="docs--onboarding--16-agent-identity.html"><small>다음</small><b>Agent Identity</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/15-agent-tools.md">docs/onboarding/15-agent-tools.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#코드로-보기-도구-경로를-붙인다">코드로 보기: 도구 경로를 붙인다</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<p>남은 FAIL 두 줄이 다음에 붙일 조각입니다. 검사 5는 같은 Agent를 호출해도 호출자의 권한에 따라 결과가 달라야 한다는 것이고(Agent Identity), 검사 6은 모델도 도구처럼 플랫폼을 거쳐 불러야 한다는 것입니다(Agent Gateway).</p>
+<p>다음 단계는 ⑤ 권한 위임입니다. 같은 Agent라도 <code>finance.analyst</code>의 호출은 실행되고 <code>finance.viewer</code>의 호출은 거절되는 이유를 봅니다.</p>
+<nav class="pager"><a href="docs--onboarding--11-runtime-memory.html"><small>이전</small><b>Agent Runtime과 Memory</b></a><a class="next" href="docs--onboarding--16-agent-identity.html"><small>다음</small><b>Agent Identity</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/15-agent-tools.md">docs/onboarding/15-agent-tools.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#개요">개요</a><a href="#처리-흐름">처리 흐름</a><a href="#인터페이스">인터페이스</a><a href="#오류와-실패-동작">오류와 실패 동작</a><a href="#개발자가-할-일">개발자가 할 일</a><a href="#규칙">규칙</a><a href="#한-문장으로">한 문장으로</a><a href="#사례-조건">사례 조건</a><a href="#호출과-등록-정보">호출과 등록 정보</a><a href="#처리-단계">처리 단계</a><a href="#실패-사례">실패 사례</a><a href="#직접-해-보기">직접 해 보기</a><a href="#코드로-보기-도구-경로를-붙인다">코드로 보기: 도구 경로를 붙인다</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
