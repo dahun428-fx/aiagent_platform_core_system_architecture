@@ -10,7 +10,7 @@
 
 ## 장면
 
-`1.3.0`은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 `1.2.0`이 받습니다. 업무 요청을 받으려면 프로덕션 승인이 필요하기 때문입니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모읍니다. 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 `1.3.0`이 업무 요청을 받습니다.
+`1.3.0`은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 `1.2.0`이 받습니다. 업무 요청을 받으려면 프로덕션 승인까지 받아야 합니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모으면서, 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 `1.3.0`이 업무 요청을 받습니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} 승인 단계가 없다면** 등록만 하면 곧바로 업무 데이터를 만지게 되고, 무엇을 근거로 올렸는지 나중에 아무도 답하지 못합니다.
@@ -18,7 +18,7 @@
 
 ## 실물 보기
 
-지훈이 본 `1.3.0`의 승인 기록입니다. 승인 요건 여섯 가지가 한 줄씩입니다.
+지훈이 본 `1.3.0`의 승인 기록입니다. 승인 요건 여섯 가지를 한 줄씩 적고 알려진 한계를 덧붙였습니다.
 
 <!-- kind: example -->
 
@@ -37,7 +37,7 @@
 
 ## 잘못되면
 
-**"지시문만 고쳤으니 평가는 건너뛰자"고 하면** 수단 나 같은 수정이 그대로 올라갑니다. 월 누락을 고치려다 번호 질문 6행을 망가뜨린 그 수정입니다([Agent Tuning](19-agent-tuning.md)). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.
+**"지시문만 고쳤으니 평가는 건너뛰자"고 하면** 월 누락을 고치려다 번호 질문 6행을 망가뜨린 수단 나 같은 수정이 그대로 올라갑니다([Agent Tuning](19-agent-tuning.md)). 지시문 한 줄도 Agent의 동작을 바꾸므로 새 버전이고, 새 버전은 같은 요건을 모두 거칩니다.
 
 **롤백을 검증하지 않고 올리면** 문제가 생긴 날 되돌리는 방법을 그때 처음 시험하게 됩니다. `1.2.0`으로 실제로 되돌려 보고 요청 A가 통과하는지 확인한 뒤에 올립니다.
 
@@ -58,7 +58,7 @@
 </div>
 </div>
 
-실험 단계의 중앙 등록은 선택 사항입니다. **공동 시험이나 프로덕션 승격**이 필요한 시점에 등록합니다.
+실험하는 동안에는 중앙에 등록하지 않아도 됩니다. **공동 시험이나 프로덕션 승격**이 필요해질 때 등록합니다.
 
 ## 수명주기 단계
 
@@ -74,40 +74,40 @@
 
 <div class="sim" data-sim="lifecycle"></div>
 
-Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리(quarantined)** 상태를 관리합니다.
+이 단계들과 별도로, Registry는 문제가 확인된 버전을 **격리(quarantined)** 상태로 두어 차단합니다.
 
 ## 프로덕션 승인 요건 (MUST)
 
 <div class="cards">
-<div class="card">{{icon:lock}}<b>불변 버전과 digest</b><p>승격 대상 산출물을 변경 불가능한 참조로 고정합니다.</p></div>
+<div class="card">{{icon:lock}}<b>불변 버전과 digest</b><p>승격할 산출물을 바뀌지 않는 참조로 고정합니다.</p></div>
 <div class="card">{{icon:test}}<b>계약 적합성 검증</b><p>Manifest의 JSON Schema 검증과 API 계약 검증을 통과합니다.</p></div>
-<div class="card">{{icon:shield}}<b>보안 검토 기록</b><p>Identity, 위임, 데이터 이동에 대한 보안 검토를 완료합니다.</p></div>
+<div class="card">{{icon:shield}}<b>보안 검토 기록</b><p>Identity, 위임, 데이터 이동의 보안 검토를 마칩니다.</p></div>
 <div class="card">{{icon:eye}}<b>평가 결과</b><p>데이터셋·Agent·Manifest·정책 버전, 지표, 통과 기준, traceId가 결합된 평가 결과입니다.</p></div>
-<div class="card">{{icon:clock}}<b>롤백 검증 결과</b><p>문제 발생 시 이전 버전으로 복구할 수 있음을 검증합니다.</p></div>
-<div class="card">{{icon:approve}}<b>위험도별 사람의 승인</b><p>위험도가 높을수록 사람의 승인 단계가 추가됩니다.</p></div>
+<div class="card">{{icon:clock}}<b>롤백 검증 결과</b><p>문제가 생기면 이전 버전으로 되돌릴 수 있는지 실제로 확인합니다.</p></div>
+<div class="card">{{icon:approve}}<b>위험도별 사람의 승인</b><p>위험도가 높을수록 사람의 승인 단계가 늘어납니다.</p></div>
 </div>
 
 <div class="point" markdown="1">
-**{{icon:bulb}} 핵심 포인트** 셀프서비스가 기본입니다. 자동 검사를 통과하면 팀이 직접 진행하며, 위험도가 높은 경우에만 사람의 승인이 추가됩니다. 코드 외에도 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 변경되면 재평가합니다.
+**{{icon:bulb}} 핵심 포인트** 셀프서비스가 기본입니다. 자동 검사를 통과하면 팀이 직접 다음 단계로 넘기고, 위험도가 높을 때만 사람의 승인이 더해집니다. 코드가 아니라 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 바뀌어도 다시 평가합니다.
 </div>
 
 ## 배포 프로파일
 
 <div class="cards">
-<div class="card">{{icon:laptop}}<b>local</b><p>개발자 장비에서 계약 검증과 합성 데이터 실험을 수행합니다.</p><span class="sub">프로덕션 승인 대상 아님</span></div>
-<div class="card">{{icon:server}}<b>shared-experiment</b><p>등록된 사내·클라우드 자원에서 통합 시험과 평가를 수행합니다.</p><span class="sub">테넌트 격리 · 사용량 한도 · 감사</span></div>
+<div class="card">{{icon:laptop}}<b>local</b><p>개발자 장비에서 계약을 검증하고 합성 데이터로 실험합니다.</p><span class="sub">프로덕션 승인 대상 아님</span></div>
+<div class="card">{{icon:server}}<b>shared-experiment</b><p>등록된 사내·클라우드 자원에서 통합 시험과 평가를 합니다.</p><span class="sub">테넌트 격리 · 사용량 한도 · 감사</span></div>
 <div class="card">{{icon:cloud}}<b>production</b><p>승인된 hybrid 실행 환경에서 업무 트래픽을 처리합니다.</p><span class="sub">보안 · 평가 · 복구 · 위험도별 SLO 근거</span></div>
 </div>
 
 <div class="point" markdown="1">
-**{{icon:warn}} 주의** 등록된 실행 환경은 프로덕션 승인 환경이 아닙니다. 개발자 PC나 Mac mini가 의도치 않게 프로덕션 환경으로 사용되는 것은 이 설계가 방지하려는 위험입니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.
+**{{icon:warn}} 주의** 실행 환경을 등록했다고 프로덕션 승인을 받은 것은 아닙니다. 이 설계는 개발자 PC나 Mac mini가 어느새 프로덕션 환경으로 쓰이는 일을 막으려고 둘을 구분합니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.
 </div>
 
 멈췄다 이어 하는 실행(Durable, HITL)은 [Agent Runtime과 Memory](11-runtime-memory.md)와 [Agent Tools](15-agent-tools.md)에서, 평가 결과로 Agent를 고치는 흐름은 [Agent Tuning](19-agent-tuning.md)에서 다룹니다.
 
 ## 초기 구현 범위: 종단 간 실행 경로
 
-플랫폼은 전체 모듈을 동시에 구현하지 않습니다. 다음 종단 간 실행 경로를 먼저 완성한 뒤, 도구·RAG·Durable 실행·Multi-Agent·분산 실행 환경을 단계적으로 추가합니다.
+플랫폼은 모든 모듈을 한꺼번에 구현하지 않습니다. 아래의 종단 간 실행 경로를 먼저 완성하고, 그 위에 도구, RAG, Durable 실행, Multi-Agent, 분산 실행 환경을 차례로 더합니다.
 
 <ol class="flow">
 <li data-say="내 PC의 Agent와 Manifest를 검증합니다.">{{icon:laptop}}<b>로컬 Agent</b><span>Manifest 검증</span></li>
@@ -122,7 +122,7 @@ Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리
 
 ## CI 품질 게이트
 
-계약 검증은 문서가 아닌 코드로 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 `scripts/release.py`로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.
+계약은 문서로 당부하지 않고 코드로 검증해 강제합니다(Contract-as-Code). CI에서 검사가 하나라도 실패하면 산출물 업로드와 승격을 차단합니다(MUST). 이 패키지는 `scripts/release.py`로 포털 생성, 계약·런타임 테스트, TypeScript 검사, 클라이언트 smoke 테스트, 브라우저 오프라인 검사를 실행합니다. 회사 CI 제품은 TBD입니다.
 
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [Local-First](09-glossary.md#term-local-first) [Registry](09-glossary.md#term-registry) [등록 / 승인 / 배포](09-glossary.md#term-approved) [배포 프로파일](09-glossary.md#term-profile) [Contract-as-Code](09-glossary.md#term-contract-as-code) [Agent Tuning](09-glossary.md#term-tuning) [프로덕션](09-glossary.md#term-production) [승인 검증 근거](09-glossary.md#term-evidence)
@@ -135,12 +135,12 @@ Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리
 <div class="check" markdown="1">
 **{{icon:question}} 이해 점검**
 
-<details markdown="1"><summary>Q1. registered 상태의 Agent는 업무 트래픽을 처리할 수 있습니까?</summary>
-처리할 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.
+<details markdown="1"><summary>Q1. registered 상태의 Agent가 업무 트래픽을 받을 수 있나요?</summary>
+받을 수 없습니다. 승인 요건을 충족해 production-approved 상태가 되어야 합니다.
 </details>
 
-<details markdown="1"><summary>Q2. 코드 변경 없이 모델 라우팅 정책만 변경되어도 재평가가 필요합니까?</summary>
-필요합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책의 변경도 재평가 대상입니다.
+<details markdown="1"><summary>Q2. 코드는 그대로이고 모델 라우팅 정책만 바뀌어도 다시 평가해야 하나요?</summary>
+해야 합니다. 런타임 이미지, 의존성, 도구 descriptor, 모델 라우팅 정책이 바뀌어도 다시 평가합니다.
 </details>
 
 <details markdown="1"><summary>Q3. 민준이 승인 기록에 "3회 채점에서 흔들리는 2행"을 적었습니다. 적지 않았다면 무엇이 달라지나요?</summary>
@@ -152,9 +152,9 @@ Registry는 이와 별도로 문제가 확인된 버전을 차단하는 **격리
 <div class="summary" markdown="1">
 **요약**
 
-- 개발과 실험은 팀이 자율적으로 수행하고, 프로덕션 승격은 6가지 검증 근거로 판단합니다.
-- 배포 프로파일은 local, shared-experiment, production 3가지이며, 등록과 승인은 구분됩니다.
-- 종단 간 실행 경로를 먼저 완성하고, 기능은 단계적으로 추가합니다.
+- 개발과 실험은 팀이 알아서 하고, 프로덕션 승격은 검증 근거 6가지로 판단합니다.
+- 배포 프로파일은 local, shared-experiment, production 세 가지이고, 등록과 승인은 서로 다른 단계입니다.
+- 종단 간 실행 경로를 먼저 완성하고 기능은 차례로 더합니다.
 </div>
 
 <div class="refs" markdown="1">

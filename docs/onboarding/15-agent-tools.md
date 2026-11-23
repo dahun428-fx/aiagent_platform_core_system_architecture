@@ -12,7 +12,7 @@
 
 ## 장면
 
-민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 `tool-erp-read`라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 `invoice-mailer`가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 읽기는 바로 되고 보내기는 멈추는 이유가 이 장의 내용입니다.
+민준의 코드는 이제 ERP에서 청구서를 읽어 와야 합니다. 그런데 코드 어디에도 ERP 주소나 API 키가 없고, Manifest에 `tool-erp-read`라는 이름 하나만 적혀 있습니다. 잠시 뒤 서연이 "이 요약을 한빛상사 담당자에게 메일로 보내 줘"라고 합니다. 보내는 일은 다른 Agent인 `invoice-mailer`가 맡는데, 메일은 바로 나가지 않고 재무팀장 지훈의 승인을 기다립니다. 이 장에서는 읽기는 바로 되는데 보내기는 왜 멈추는지를 봅니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} Agent Tools가 없다면** Agent마다 ERP 비밀번호를 들고 다니고, 메일은 누구의 확인도 없이 나갑니다.
@@ -38,9 +38,9 @@ Agent가 도구를 부르는 코드 한 줄입니다.
 found = ctx.call_tool("tool-erp-read", "1.0.0", {"query": "INV-2048"})
 ```
 
-- `"tool-erp-read"`: 주소가 아니라 이름입니다. 주소와 자격증명은 플랫폼이 압니다.
-- `"1.0.0"`: 도구도 버전이 있습니다. 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다.
-- `{"query": ...}`: 도구가 받겠다고 선언한 인자만 보낼 수 있습니다. 주소를 넣을 자리가 없습니다.
+- `"tool-erp-read"`: 주소가 아니라 이름입니다. 주소와 자격증명은 플랫폼만 압니다.
+- `"1.0.0"`: 도구에도 버전이 있어서, 도구가 바뀌어도 Agent가 모르는 사이에 동작이 달라지지 않습니다.
+- `{"query": ...}`: 도구가 받겠다고 선언한 인자만 보낼 수 있으므로 주소를 넣을 자리가 없습니다.
 
 플랫폼이 이 이름으로 찾아보는 도구 등록 정보(descriptor)입니다. 저장소의 `examples/fixtures/tool-descriptor.json`과 같은 필드입니다.
 
@@ -80,7 +80,7 @@ Agent 코드의 한 줄이 도구 경로에 도착할 때는 플랫폼이 신원
 }
 ```
 
-`identity`, `policy`, `idempotencyKey`는 Agent 코드가 적은 것이 아닙니다. Runtime이 붙입니다. 결과(`tool-result.json`)에는 `status`와 `output`만 있고 자격증명은 없습니다.
+`identity`, `policy`, `idempotencyKey`는 Agent 코드가 적은 것이 아니라 Runtime이 붙인 것입니다. 결과(`tool-result.json`)에는 `status`와 `output`만 있고 자격증명은 없습니다.
 
 ```json
 {"invocationId": "inv-demo", "toolId": "tool-search", "status": "succeeded", "output": {"content": "tool:hello"}}
@@ -98,9 +98,9 @@ Agent 코드의 한 줄이 도구 경로에 도착할 때는 플랫폼이 신원
 
 ## 잘못되면
 
-**민준의 코드가 Manifest에 적지 않은 도구를 부르면** 서연의 요청은 실행 중에 403을 받습니다. 로컬 mock의 응답 본문에는 `Tool is not declared in the Agent Manifest`라고 적혀 있습니다. Manifest는 유효했고 등록도 됐고 코드도 실행된 뒤에 나는 실패입니다. 고치려면 `capabilities.tools`에 도구 이름을 추가하고 새 버전으로 등록합니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다([Agent Factory와 Manifest](05-agents-and-manifest.md)).
+**민준의 코드가 Manifest에 적지 않은 도구를 부르면** 서연의 요청은 실행 중에 403을 받습니다. 로컬 mock의 응답 본문에는 `Tool is not declared in the Agent Manifest`라고 적혀 있습니다. Manifest가 유효했고 등록도 됐고 코드까지 실행된 뒤에 나는 실패입니다. `capabilities.tools`에 도구 이름을 추가하고 새 버전으로 등록하면 고쳐집니다. 도구 목록을 아예 비운 Manifest는 여기까지 오지 못하고 등록 전 검증에서 멈춥니다([Agent Factory와 Manifest](05-agents-and-manifest.md)).
 
-**승인이 붙지 않은 채 메일 도구를 부르면** 앱은 403 `Policy denied`를 받습니다. 평소에는 플랫폼이 승인까지 실행을 멈춰 주지만, 어떤 이유로든 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 운영자가 도구 경로를 직접 보면 이유가 `Write tool requires approval`로 적혀 있습니다. 코드로 고칠 일이 아니라 승인자가 승인해야 풀립니다.
+**승인이 붙지 않은 채 메일 도구를 부르면** 앱은 403 `Policy denied`를 받습니다. 평소에는 플랫폼이 승인까지 실행을 멈춰 주지만, 어떤 이유로든 승인 없는 호출이 도구 앞까지 오면 도구 경로가 마지막으로 거절합니다. 운영자가 도구 경로를 직접 보면 이유가 `Write tool requires approval`로 적혀 있습니다. 코드를 고쳐서 풀 일이 아니고, 승인자가 승인해야 풀립니다.
 
 <details class="more" markdown="1"><summary>더 보기: 앱에서는 같아 보이는 거절 셋, 그리고 응답이 끊겼을 때</summary>
 
@@ -112,11 +112,11 @@ Agent 코드의 한 줄이 도구 경로에 도착할 때는 플랫폼이 신원
 | 메일 서버의 응답이 오다가 끊김 | 실패 응답 | `unknown_outcome` | S6a `write-response-lost` |
 | 다시 실행할 때 같은 키에 다른 인자가 실림 | 409 `CONFLICT` | 같은 키, 다른 내용 | S5 `tool-key-conflict` |
 
-앞의 셋은 앱에서 모두 같은 `Policy denied`입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이기 때문입니다. 어느 것인지는 호출 번호(`invocationId`)로 운영자에게 묻습니다.
+앞의 셋은 앱에서 모두 같은 `Policy denied`로 보입니다. 거절 이유를 바깥에 자세히 알려 주면 공격자에게도 알려 주는 셈이라 일부러 구분하지 않습니다. 어느 경우인지는 호출 번호(`invocationId`)로 운영자에게 묻습니다.
 
 `unknown_outcome`은 메일이 나갔는지 알 수 없는 상태입니다. 자동으로 다시 보내면 두 번 나갈 수 있으므로 다시 보내지 않고 메일 서버의 기록과 대조합니다. 도구 호출의 멱등성 키는 Agent 코드가 아니라 Runtime이 붙입니다.
 
-Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 주소를 넘길 수 있다면 문서에 숨은 지시문이 Agent에게 `http://10.0.0.5/admin` 같은 사내망 주소를 찔러 보게 할 수 있습니다.
+Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 그런 길이 있다면 문서에 숨은 지시문이 Agent를 시켜 `http://10.0.0.5/admin` 같은 사내망 주소를 찔러 볼 수 있기 때문입니다.
 </details>
 
 ## 내가 할 일
@@ -337,11 +337,11 @@ Agent는 도구의 이름만 알고, 주소와 비밀번호는 플랫폼이 쥐�
 **{{icon:question}} 이해 점검**
 
 <details markdown="1"><summary>Q1. 민준의 코드가 Manifest에 적지 않은 tool-mail-send를 부릅니다. 등록은 통과했습니다. 서연이 요청을 보내면 어떻게 되나요?</summary>
-코드는 실행되지만 그 도구를 부르는 순간 403으로 거절됩니다. 등록 실패가 아니라 실행 중 거절입니다. Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.
+코드는 실행되지만 그 도구를 부르는 순간 403으로 거절됩니다. 등록에 실패한 것이 아니라 실행 중에 거절된 것이므로, Manifest에 도구를 추가해 새 버전으로 등록해야 합니다.
 </details>
 
 <details markdown="1"><summary>Q2. 서연의 앱이 403 Policy denied를 받았습니다. 승인이 없어서인지 승인이 만료돼서인지 앱이 구별할 수 있나요?</summary>
-구별할 수 없습니다. 앱이 받는 응답은 같습니다. 호출 번호를 운영자에게 전달하면 도구 경로의 기록에서 이유를 확인할 수 있습니다.
+앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 번호를 운영자에게 전달하면 도구 경로의 기록에서 이유를 확인해 줍니다.
 </details>
 
 <details markdown="1"><summary>Q3. 메일 도구를 부른 뒤 응답이 끊겼습니다. Agent가 한 번 더 보내면 안 되는 이유는 무엇인가요?</summary>

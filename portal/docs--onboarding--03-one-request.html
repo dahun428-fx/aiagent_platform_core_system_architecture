@@ -18,12 +18,12 @@
 <p class="part">설명</p>
 
 <h2 id="장면">장면</h2>
-<p>서연이 재무팀 업무 앱에 "청구서 INV-2048 요약해 줘"라고 입력합니다(요청 A). 앱은 이 문장을 플랫폼의 정문인 Agent Platform APIs로 보냅니다. 응답이 조금 늦자 앱이 같은 요청을 한 번 더 보냅니다. 그런데 Agent는 한 번만 실행됩니다. 정문이 "이 요청은 이미 받았다"는 것을 알아봤기 때문입니다. 정문은 그 전에 서연이 누구인지부터 확인했습니다.</p>
+<p>서연이 재무팀 업무 앱에 "청구서 INV-2048 요약해 줘"라고 입력합니다(요청 A). 앱은 이 문장을 플랫폼의 정문인 Agent Platform APIs로 보냅니다. 응답이 조금 늦자 앱이 같은 요청을 한 번 더 보냅니다. 그런데 Agent는 한 번만 실행됩니다. 정문이 이미 받은 요청이라는 것을 알아봤고, 그보다 먼저 서연이 누구인지부터 확인했습니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Platform APIs가 없다면</strong> Agent마다 주소와 인증 방식이 달라지고, 같은 요청이 두 번 오면 두 번 실행됩니다.</p>
 </div>
 <h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
-<p>요청 하나가 응답이 되기까지 다섯 단계를 지납니다. 이 장은 첫 단계인 정문을 자세히 보고, 나머지 단계는 각 장으로 이어집니다.</p>
+<p>요청 하나가 응답이 되기까지 다섯 단계를 지납니다. 이 장에서는 첫 단계인 정문을 자세히 보고, 나머지 단계는 뒤의 장들에서 하나씩 다룹니다.</p>
 <ol class="flow">
 <li data-say="정문 단계입니다. 토큰으로 호출자가 누구인지 확인하고(인증), 어떤 Agent를 부르는지 찾고, 그 Agent를 부를 권한이 있는지(인가), 같은 요청이 이미 처리됐는지(멱등성)를 봅니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>1. 진입</b><span>Agent Platform APIs<br>인증 · 해석 · 인가 · 멱등성</span></li>
 <li data-say="검사를 통과한 요청만 Agent Runtime에 전달됩니다. Runtime은 민준이 만든 Agent 코드를 adapter라는 공통 연결 방식으로 실행합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>2. 실행</b><span>Agent Runtime<br>adapter 기반 Agent 실행</span></li>
@@ -108,8 +108,8 @@ Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
 </ol>
 </details>
 <h2 id="잘못되면">잘못되면</h2>
-<p><strong>서연의 앱을 만든 개발자가 토큰을 붙이지 않으면</strong> 401을 받습니다. 정문은 누가 보냈는지 모르는 요청을 안으로 들이지 않습니다. Agent 코드는 한 줄도 실행되지 않습니다. 로그인한 사용자의 토큰을 <code>Authorization</code>에 실어 보냅니다.</p>
-<p><strong>요청 본문에 다른 팀의 테넌트를 적으면</strong> 403을 받습니다. 테넌트는 검증된 토큰에서만 정하고 본문의 값은 비교에만 씁니다. 본문을 바꿔 다른 팀의 데이터에 닿을 수 없습니다.</p>
+<p><strong>서연의 앱을 만든 개발자가 토큰을 붙이지 않으면</strong> 401을 받습니다. 정문은 누가 보냈는지 모르는 요청을 안으로 들이지 않으므로 Agent 코드는 한 줄도 실행되지 않습니다. 로그인한 사용자의 토큰을 <code>Authorization</code>에 실어 보내면 됩니다.</p>
+<p><strong>요청 본문에 다른 팀의 테넌트를 적으면</strong> 403을 받습니다. 테넌트는 검증된 토큰에서만 정하고 본문의 값은 비교에만 쓰기 때문에, 본문을 바꿔서는 다른 팀의 데이터에 닿을 수 없습니다.</p>
 <p>오류는 RFC 9457 Problem Details(<code>application/problem+json</code>) 형식으로 옵니다. 로컬 mock이 실제로 돌려주는 403입니다.</p>
 <p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
 
@@ -186,11 +186,11 @@ Idempotency-Key: &lt;재전송 요청을 식별하는 키&gt;
 <div class="compare">
 <div class="bad">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg> 신뢰하지 않는 값</strong></p>
-<p>요청 본문의 <code>tenantId</code>, <code>"role": "admin"</code> 등. 요청 본문의 값으로는 권한이 부여되지 않습니다.</p>
+<p>요청 본문의 <code>tenantId</code>, <code>"role": "admin"</code> 같은 값입니다. 요청 본문에 무엇을 적어도 권한은 생기지 않습니다.</p>
 </div>
 <div class="good">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg> 신뢰하는 값</strong></p>
-<p>검증된 토큰에서 도출한 Identity와 테넌트. 요청 본문의 값은 토큰 값과의 <strong>비교에만</strong> 사용합니다.</p>
+<p>검증된 토큰에서 얻은 Identity와 테넌트입니다. 요청 본문의 값은 토큰 값과 <strong>비교하는 데만</strong> 씁니다.</p>
 </div>
 </div>
 <ul>

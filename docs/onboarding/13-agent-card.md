@@ -22,11 +22,11 @@
 ## 배경
 
 <div class="opener" markdown="1">
-<span class="tag">{{icon:question}} 문제 정의</span> 다른 팀의 Agent를 호출하려면, 그 Agent가 무엇을 할 수 있고 어디로 어떻게 인증해 호출하는지 알아야 합니다.
+<span class="tag">{{icon:question}} 문제 정의</span> 다른 팀의 Agent를 호출하려면 그 Agent가 무엇을 할 수 있고, 어디로 어떻게 인증해 호출하는지 알아야 합니다.
 
-<span class="tag">{{icon:eye}} 현황</span> Agent 정보를 팀마다 문서나 메신저로 공유하면 최신 상태를 보장할 수 없고, 정보가 위조되었는지도 확인할 수 없습니다.
+<span class="tag">{{icon:eye}} 현황</span> Agent 정보를 팀마다 문서나 메신저로 주고받으면 그 정보가 지금도 맞는지, 누가 고쳐 놓지는 않았는지 확인할 길이 없습니다.
 
-<span class="tag">{{icon:bulb}} 설계 방향</span> Registry가 Manifest와 등록 정보로 **A2A Agent Card**를 생성하고 **조직 키로 서명**해 발행합니다. 호출하는 쪽은 서명을 검증한 카드만 신뢰합니다.
+<span class="tag">{{icon:bulb}} 설계 방향</span> Registry가 Manifest와 등록 정보로 **A2A Agent Card**를 만들고 **조직 키로 서명**해 발행합니다. 호출하는 쪽은 서명을 검증한 카드만 믿습니다.
 </div>
 
 ## Agent 간 통신의 두 계층
@@ -36,7 +36,7 @@
 | 발견(discovery) | A2A 1.0.0 Agent Card | Agent의 기능, 접속 인터페이스, 인증 방식을 알림 |
 | 호출 | 공통 Agent 통신 계약(`cross-agent.schema.json`) | 상위 호출 ID, 축소된 권한 범위, 호출 깊이·예산 전달 |
 
-A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를 발행할 때는 Agent Card 형식을 사용합니다.
+호출까지 A2A 프로토콜로 할지는 선택입니다. 발견 정보는 Agent Card 형식으로 발행합니다.
 
 ## Agent Card 필드 (A2A 1.0.0)
 
@@ -88,7 +88,7 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를
 <li data-say="이번 세션 동안은 공개 카드 대신 확장 카드를 사용합니다.">{{icon:check}}<b>카드 교체</b><span>세션 동안 공개 카드 대신 사용</span></li>
 </ol>
 
-확장 카드는 반드시 인증을 요구하며(MUST), 확장 카드에도 유출 시 악용될 수 있는 정보는 넣지 않습니다(SHOULD NOT). 플랫폼은 확장 카드의 내용을 권한 교집합에 따라 제한합니다.
+확장 카드는 반드시 인증을 요구합니다(MUST). 확장 카드라도 새어 나가면 악용될 수 있는 정보는 넣지 않습니다(SHOULD NOT). 플랫폼은 요청한 쪽의 권한 교집합에 맞춰 확장 카드의 내용을 줄여서 보여 줍니다.
 
 ## 서명과 검증
 
@@ -105,37 +105,37 @@ A2A 프로토콜로 호출하는 것은 선택 사항입니다. 발견 정보를
 {"alg": "ES256", "typ": "JOSE", "kid": "key-1", "jku": "https://example.com/agent/jwks.json"}
 ```
 
-- 소비 측은 서명을 검증한 카드만 신뢰합니다(MUST). 키는 HTTPS로 받거나 신뢰 키 저장소를 사용합니다.
-- 만료·폐기된 키는 사용하지 않습니다(MUST NOT). 키 교체 기간에는 서명을 여러 개 둘 수 있습니다.
-- 서명이 유효하더라도 카드 내용(skill 설명 등)은 비신뢰 데이터입니다. 카드 내용으로 권한 정책을 변경할 수 없습니다.
+- 카드를 받는 쪽은 서명을 검증한 카드만 믿습니다(MUST). 키는 HTTPS로 받거나 신뢰하는 키 저장소에서 가져옵니다.
+- 만료되거나 폐기된 키는 쓰지 않습니다(MUST NOT). 키를 교체하는 동안에는 서명을 여러 개 둘 수 있습니다.
+- 서명이 유효해도 skill 설명 같은 카드 내용은 비신뢰 데이터입니다. 카드에 무엇이 적혀 있든 권한 정책은 바뀌지 않습니다.
 
 ## Registry의 발행 규칙
 
 | 규칙 | 내용 |
 |---|---|
-| 생성 | Registry가 Manifest와 등록 정보에서 생성합니다. 수동 작성 카드는 받지 않습니다 |
+| 생성 | Registry가 Manifest와 등록 정보에서 만듭니다. 사람이 직접 쓴 카드는 받지 않습니다 |
 | 필드 대응 | `metadata.name`·`version` → `name`·`version`, 기능 선언 → `skills`, `identity.requiredScopes` → 보안 요구, 승인된 실행 환경 endpoint → `supportedInterfaces`, `metadata.owner.team` → `provider.organization` |
-| 상태 연동 | `production-approved` 버전만 발행하고, `deprecated`·`quarantined`·`retired` 전환 시 갱신·회수합니다(상태 정의: [수명주기와 프로덕션 승인](06-lifecycle.md)) |
+| 상태 연동 | `production-approved` 버전만 발행하고, `deprecated`·`quarantined`·`retired`로 바뀌면 카드를 갱신하거나 회수합니다(상태 정의: [수명주기와 프로덕션 승인](06-lifecycle.md)) |
 | 캐시 | `Cache-Control`과 카드 `version` 또는 내용 해시 기반 `ETag`를 제공합니다 |
-| 버전 | A2A 1.0.0을 기준으로 하며 `A2A-Version` 헤더를 사용합니다 |
+| 버전 | A2A 1.0.0을 기준으로 하고 `A2A-Version` 헤더를 씁니다 |
 | 조회 API | A2A는 레지스트리 API를 표준으로 정하지 않으므로 Agent Platform APIs에 Registry 조회 API를 정의합니다 |
 
 ## 제공 범위
 
-v0.1은 Agent Card 발행·소비 규칙을 정의합니다. 카드 생성·서명 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계로 제공합니다.
+v0.1은 Agent Card를 발행하고 소비하는 규칙까지 정의합니다. 카드를 만들고 서명하는 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계에서 제공합니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
 
-<details markdown="1"><summary>Q1. 사내 전용 Agent의 Agent Card는 어디에서 조회합니까?</summary>
-공개 <code>/.well-known/agent-card.json</code>이 아니라, Agent Platform APIs의 인증된 Registry 조회로만 조회합니다.
+<details markdown="1"><summary>Q1. 사내 전용 Agent의 Agent Card는 어디에서 조회하나요?</summary>
+공개 <code>/.well-known/agent-card.json</code>에는 없고, Agent Platform APIs의 인증된 Registry 조회로만 볼 수 있습니다.
 </details>
 
-<details markdown="1"><summary>Q2. 서명 검증 전에 수행해야 하는 정규화 방식은 무엇입니까?</summary>
+<details markdown="1"><summary>Q2. 서명을 검증하기 전에 카드를 어떻게 정규화하나요?</summary>
 <code>signatures</code> 필드를 제외하고 JCS(RFC 8785)로 정규화합니다.
 </details>
 
-<details markdown="1"><summary>Q3. Agent Card는 어떤 상태의 Agent 버전에 발행됩니까?</summary>
+<details markdown="1"><summary>Q3. Agent Card는 어떤 상태의 Agent 버전에 발행되나요?</summary>
 production-approved 상태의 버전에만 발행합니다.
 </details>
 </div>
@@ -143,9 +143,9 @@ production-approved 상태의 버전에만 발행합니다.
 <div class="summary" markdown="1">
 **요약**
 
-- Agent 발견은 A2A 1.0.0 Agent Card, 호출은 공통 Agent 통신 계약을 따릅니다.
-- 사내 Agent는 인증된 Registry 조회로만 카드를 제공하고, 상세 정보는 확장 카드로 제한합니다.
-- Registry가 JCS 정규화 후 JWS로 서명하며, 소비 측은 서명을 검증한 카드만 신뢰합니다.
+- Agent를 발견할 때는 A2A 1.0.0 Agent Card를, 호출할 때는 공통 Agent 통신 계약을 따릅니다.
+- 사내 Agent의 카드는 인증된 Registry 조회로만 볼 수 있고, 상세 정보는 확장 카드에만 둡니다.
+- Registry가 카드를 JCS로 정규화한 뒤 JWS로 서명하고, 받는 쪽은 서명을 검증한 카드만 믿습니다.
 </div>
 
 <div class="refs" markdown="1">

@@ -9,19 +9,19 @@
 <div class="goals" markdown="1">
 **{{icon:target}} 실습 목표**
 
-- 템플릿을 복사해 자신의 Agent adapter와 Manifest를 작성합니다.
-- 플랫폼 핵심 코드를 수정하지 않고 새 Agent ID로 Agent를 호출합니다.
+- 템플릿을 복사해 내 Agent의 adapter와 Manifest를 작성합니다.
+- 플랫폼 핵심 코드는 건드리지 않고 새 Agent ID로 Agent를 호출합니다.
 - `agentctl conformance`로 11개 적합성 검사를 통과하고, 각 검사가 무엇을 보장하는지 구분합니다.
 </div>
 
 ## 배경
 
 <div class="opener" markdown="1">
-<span class="tag">{{icon:question}} 문제 정의</span> 예제 Agent를 호출하는 것만으로는, 자신의 Agent를 어떤 인터페이스로 구현하고 어떻게 등록하는지 알 수 없습니다.
+<span class="tag">{{icon:question}} 문제 정의</span> 예제 Agent를 호출해 본 것만으로는 내 Agent를 어떤 인터페이스로 구현하고 어떻게 등록하는지 알 수 없습니다.
 
-<span class="tag">{{icon:eye}} 현황</span> Agent마다 프레임워크와 로직이 다르지만, 인증·인가·데이터 분류·멱등성·도구 권한 같은 규칙은 모든 Agent에 동일하게 적용되어야 합니다.
+<span class="tag">{{icon:eye}} 현황</span> Agent마다 프레임워크와 로직이 다르지만, 인증·인가·데이터 분류·멱등성·도구 권한 같은 규칙은 모든 Agent에 똑같이 적용되어야 합니다.
 
-<span class="tag">{{icon:bulb}} 설계 방향</span> Agent는 **업무 로직만 담은 adapter**를 구현하고, 규칙은 플랫폼이 적용합니다. 규칙 준수 여부는 **적합성 검사**로 자동 확인합니다.
+<span class="tag">{{icon:bulb}} 설계 방향</span> Agent는 **업무 로직만 담은 adapter**를 구현하고 규칙은 플랫폼이 적용합니다. 규칙이 지켜지는지는 **적합성 검사**가 자동으로 확인합니다.
 </div>
 
 ## Adapter 인터페이스
@@ -40,8 +40,8 @@ def create():
 ```
 
 <div class="cards">
-<div class="card">{{icon:model}}<b>ctx.generate(prompt)</b><p>Agent Gateway 모델 경로를 호출하고 응답 텍스트를 반환합니다. 데이터 분류에 따른 경로 선택은 플랫폼이 수행합니다.</p></div>
-<div class="card">{{icon:tools}}<b>ctx.call_tool(id, version, args)</b><p>Manifest `capabilities.tools`에 선언한 도구만 호출합니다. 자격증명은 플랫폼 내부에서 발급·사용되며, 결과 텍스트만 반환됩니다.</p></div>
+<div class="card">{{icon:model}}<b>ctx.generate(prompt)</b><p>Agent Gateway 모델 경로를 호출하고 응답 텍스트를 돌려줍니다. 데이터 분류에 맞는 경로는 플랫폼이 고릅니다.</p></div>
+<div class="card">{{icon:tools}}<b>ctx.call_tool(id, version, args)</b><p>Manifest `capabilities.tools`에 선언한 도구만 호출합니다. 자격증명은 플랫폼 안에서 발급되고 쓰이며, adapter에는 결과 텍스트만 돌아옵니다.</p></div>
 <div class="card">{{icon:eye}}<b>ctx.log(event, **fields)</b><p>감사 기록에 이벤트를 남깁니다. 허용된 필드만 기록됩니다.</p></div>
 </div>
 
@@ -103,7 +103,7 @@ cp -r templates/agents/tool my-agents/order-agent
 
 ### 3. adapter 작성
 
-`agent.py`의 `handle()`에 업무 로직을 작성합니다. `create()`는 adapter 인스턴스를 반환합니다.
+`agent.py`의 `handle()`에 업무 로직을 작성합니다. `create()`는 adapter 인스턴스를 돌려줍니다.
 
 ### 4. 검증과 적합성
 
@@ -120,7 +120,7 @@ PASS  C11  platform-enforcement  Manifest identity.mode  delegated runs as the c
 NOTE  Local conformance covers Manifest loading, this adapter's basic path and platform rule enforcement. It is not a business-quality, security or production certification.
 ```
 
-검사가 하나라도 실패하면 종료 코드 1을 반환합니다. CI에서 그대로 사용할 수 있습니다.
+검사가 하나라도 실패하면 종료 코드 1로 끝나므로 CI에서 그대로 쓸 수 있습니다.
 
 ### 5. 실행과 호출
 
@@ -156,7 +156,7 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 | C10 | platform-enforcement | Manifest `requiredScopes`에 호출자가 갖지 않은 scope 추가 | 403, adapter 미실행 |
 | C11 | platform-enforcement | Manifest `identity.mode` | `delegated`는 호출자 신원, `independent`는 사용자 principal 없는 workload 신원 |
 
-모든 판정은 응답, 감사 기록, 호출 횟수 등 플랫폼 경계에서 수행합니다. 구분별 보장 범위는 다음과 같습니다.
+판정은 모두 응답, 감사 기록, 호출 횟수처럼 플랫폼 경계에서 보이는 것으로 합니다. 구분마다 PASS가 보장하는 범위는 다음과 같습니다.
 
 | 구분 | PASS의 의미 | 보장하지 않는 것 |
 |---|---|---|
@@ -164,11 +164,11 @@ curl -X POST http://127.0.0.1:8765/v1/agents/order-agent/invocations \
 | `adapter-path` | 이 adapter가 자기 코드 경로로 유효한 결과를 만듦 | 응답의 정확성·업무 품질 |
 | `platform-enforcement` | 이 adapter 주변에서 플랫폼 규칙이 집행되고 adapter가 규칙을 약화하지 못함 | adapter의 모든 실패 동작, 모든 형태의 정보 유출 탐지 |
 
-C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스틱이며 모든 자격증명·개인정보 유출을 탐지하지 않습니다. 업무 품질은 [Agent Evaluation](18-agent-evaluation.md), 운영 승인은 [수명주기](06-lifecycle.md)에서 별도로 판단합니다. 적합성 PASS는 업무 품질·보안·프로덕션 인증이 아닙니다.
+C8의 자격증명 형태 검사는 몇 가지 문자열 패턴을 찾는 휴리스틱이어서 자격증명이나 개인정보 유출을 전부 잡아내지는 못합니다. 업무 품질은 [Agent Evaluation](18-agent-evaluation.md)에서, 운영 승인은 [수명주기](06-lifecycle.md)에서 따로 판단합니다. 적합성 PASS는 업무 품질, 보안, 프로덕션 인증 가운데 어느 것도 아닙니다.
 
 ## 신원 모드: delegated와 independent
 
-`identity.mode`는 adapter가 누구의 권한으로 모델과 도구를 호출하는지 정합니다. 두 모드 모두 호출자는 `requiredScopes`를 모두 보유해야 하며, 차이는 adapter 실행 중에 쓰이는 신원과 권한입니다.
+`identity.mode`는 adapter가 누구의 권한으로 모델과 도구를 호출하는지 정합니다. 어느 모드든 호출자는 `requiredScopes`를 모두 갖고 있어야 합니다. 두 모드는 adapter가 실행되는 동안 쓰이는 신원과 권한에서 갈립니다.
 
 | 항목 | `delegated` | `independent` |
 |---|---|---|
@@ -178,7 +178,7 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 | 모델·도구 호출 권한 | 호출자 권한과 정책의 교집합 | Manifest `requiredScopes`와 정책의 교집합 |
 | 적합한 용도 | 사용자를 대신해 그 사용자의 데이터에 접근 | 사용자와 무관한 배치·집계 작업 |
 
-`independent` Agent의 권한은 Manifest에 선언한 scope에서만 나옵니다. 따라서 adapter가 쓰는 경로의 scope를 모두 선언해야 합니다(MUST).
+`independent` Agent의 권한은 Manifest에 선언한 scope에서만 나오므로 adapter가 쓰는 경로의 scope를 모두 선언해야 합니다(MUST).
 
 | adapter가 호출하는 경로 | 필요한 scope |
 |---|---|
@@ -195,9 +195,9 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 }
 ```
 
-음성 예입니다. 같은 Agent에서 `tools.read`를 빼면 adapter는 실행되지만 `ctx.call_tool`에서 403으로 실패합니다. `models.invoke`를 빼면 `ctx.generate`에서 같은 이유로 실패합니다. `delegated` 모드에서는 호출자가 해당 scope를 보유하므로 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 발생하면 먼저 이 표와 `requiredScopes`를 대조합니다.
+실패하는 예도 보겠습니다. 같은 Agent에서 `tools.read`를 빼면 adapter는 실행되지만 `ctx.call_tool`에서 403으로 실패하고, `models.invoke`를 빼면 `ctx.generate`에서 같은 이유로 실패합니다. `delegated` 모드에서는 호출자가 그 scope를 갖고 있어서 같은 Manifest가 성공할 수 있습니다. 모드를 바꾼 뒤 403이 나오면 먼저 이 표와 `requiredScopes`를 맞춰 봅니다.
 
-신원 원문은 응답에 포함되지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(`tests/test_conformance.py`의 `ManifestEnforcementTests`: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값이며, 실제 workload grant 발급·검증은 회사 Identity 연동 단계에서 제공합니다.
+신원 원문은 응답에 들어가지 않습니다. 모드별 신원은 테스트에서 실행 envelope으로 확인합니다(`tests/test_conformance.py`의 `ManifestEnforcementTests`: 사용자 principal 유무, workload 모드, 허용 scope). 로컬 mock의 workload 권한은 Manifest와 정책에서 계산한 값입니다. 실제 workload grant의 발급과 검증은 회사 Identity를 연동하는 단계에서 제공합니다.
 
 <div class="sim" data-sim="authz"></div>
 
@@ -227,11 +227,11 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 ## 제약과 한계
 
 <div class="point" markdown="1">
-**{{icon:warn}} in-process 로딩은 격리 경계가 아닙니다** 로딩된 adapter 코드는 같은 프로세스의 내부 객체에 접근할 수 있습니다. 이 방식은 로컬 학습과 적합성 확인 전용이며, 신뢰하지 않는 코드에 사용해서는 안 됩니다(MUST NOT). 격리된 실행은 후속 단계의 원격 adapter로 제공합니다.
+**{{icon:warn}} in-process 로딩은 격리 경계가 아닙니다** 로딩된 adapter 코드는 같은 프로세스의 내부 객체에 접근할 수 있습니다. 그래서 이 방식은 로컬 학습과 적합성 확인에만 쓰고, 신뢰하지 않는 코드에는 써서는 안 됩니다(MUST NOT). 격리된 실행은 후속 단계의 원격 adapter로 제공합니다.
 </div>
 
 - entrypoint 모듈은 Agent 폴더 바로 아래 파일만 허용합니다. 폴더 밖 경로와 폴더 밖을 가리키는 링크는 거부합니다.
-- adapter는 전역 잠금 안에서 실행되며 `timeoutMs`가 적용되지 않습니다.
+- adapter는 전역 잠금 안에서 실행되고 `timeoutMs`가 적용되지 않습니다.
 - 로컬 mock 도구는 `tool-search` 0.1.0 하나입니다.
 - `async`, `durable` 실행 모드는 지원하지 않습니다.
 
@@ -250,20 +250,20 @@ C8의 자격증명 형태 검사는 일부 문자열 패턴을 찾는 휴리스�
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
 
-<details markdown="1"><summary>Q1. adapter가 사용자 Identity나 토큰에 접근할 수 있습니까?</summary>
-공개 adapter 인터페이스(<code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>)는 Identity·정책·자격증명을 제공하지 않으며, 플랫폼이 호출 내부에서 주입합니다. 다만 in-process adapter는 같은 프로세스에서 실행되므로 언어 수준의 접근(비공개 속성, closure 조사 등)을 보안적으로 차단하지 않습니다. 이 방식은 신뢰된 코드에만 사용하며, 신뢰하지 않는 코드는 별도 프로세스·원격 adapter에서 실행해야 합니다.
+<details markdown="1"><summary>Q1. adapter가 사용자 Identity나 토큰에 접근할 수 있나요?</summary>
+공개 adapter 인터페이스(<code>AgentContext</code>의 <code>generate</code>, <code>call_tool</code>, <code>log</code>)는 Identity, 정책, 자격증명을 내주지 않고, 플랫폼이 호출 안에서 알아서 넣습니다. 다만 in-process adapter는 같은 프로세스에서 실행되므로 비공개 속성이나 closure를 들여다보는 식의 언어 수준 접근까지 막지는 못합니다. 그래서 이 방식은 신뢰하는 코드에만 쓰고, 신뢰하지 않는 코드는 별도 프로세스나 원격 adapter에서 실행해야 합니다.
 </details>
 
-<details markdown="1"><summary>Q2. 새 Agent를 연결할 때 플랫폼 코드를 수정해야 합니까?</summary>
-수정하지 않습니다. Agent 폴더(Manifest와 adapter)를 만들고 <code>agentctl run --agents-dir</code>로 등록합니다.
+<details markdown="1"><summary>Q2. 새 Agent를 연결할 때 플랫폼 코드를 고쳐야 하나요?</summary>
+고치지 않습니다. Agent 폴더(Manifest와 adapter)를 만들고 <code>agentctl run --agents-dir</code>로 등록합니다.
 </details>
 </div>
 
 <div class="summary" markdown="1">
 **요약**
 
-- Agent는 `handle(ctx, message)`를 구현하는 adapter로 연결하며, `requiredScopes`·`identity.mode`·분류·도구 목록 등 Manifest 선언은 플랫폼이 집행합니다.
-- 템플릿 복사 → Manifest 수정 → adapter 작성 → `conformance` 통과 → 새 ID로 호출 순서로 진행합니다.
-- in-process 로딩은 로컬 학습·적합성 확인 전용이며 격리 경계가 아닙니다.
+- Agent는 `handle(ctx, message)`를 구현한 adapter로 연결하고, `requiredScopes`, `identity.mode`, 분류, 도구 목록처럼 Manifest에 선언한 것은 플랫폼이 집행합니다.
+- 템플릿을 복사하고, Manifest를 고치고, adapter를 작성하고, `conformance`를 통과한 다음 새 ID로 호출합니다.
+- in-process 로딩은 로컬 학습과 적합성 확인에만 쓰며 격리 경계가 아닙니다.
 </div>
 

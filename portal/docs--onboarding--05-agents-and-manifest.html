@@ -16,7 +16,7 @@
 <p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, 정문이 서연을 확인한 뒤 <code>invoice-summary</code>라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.</p>
 </div>
 <h2 id="장면">장면</h2>
-<p>3주 전 민준은 템플릿 폴더를 복사해 <code>invoice-summary</code>를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서 한 장, 곧 Manifest를 채웠습니다. 첫 검증은 실패했습니다. 소스의 <code>revision</code>에 <code>main</code>이라고 적었기 때문입니다. 민준은 그 자리를 커밋 번호로 바꿨고, 검증을 통과한 버전이 목록(Registry)에 올랐습니다.</p>
+<p>3주 전 민준은 템플릿 폴더를 복사해 <code>invoice-summary</code>를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서 한 장, 곧 Manifest를 채웠습니다. 첫 검증은 소스의 <code>revision</code>에 <code>main</code>이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Factory가 없다면</strong> 플랫폼은 Agent가 어떤 도구를 쓰고 어떤 데이터를 다루는지 알 길이 없어, 통제하려면 팀마다 다른 코드를 일일이 읽어야 합니다.</p>
 </div>
@@ -79,7 +79,7 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 ]
 </code></pre>
 <ul>
-<li>CLI는 실패 이유를 말해 주지 않습니다. 이유는 이렇습니다. <code>main</code>은 브랜치 이름이라 내일이면 다른 코드를 가리킵니다. <code>revision</code>은 40자 커밋 번호여야 등록한 코드와 실행되는 코드가 같다고 말할 수 있습니다.</li>
+<li>CLI는 실패 이유를 말해 주지 않습니다. <code>main</code>은 브랜치 이름이라 내일이면 다른 코드를 가리킬 수 있어서 실패한 것입니다. <code>revision</code>이 40자 커밋 번호여야 등록한 코드와 실행되는 코드가 같다고 말할 수 있습니다.</li>
 <li><code>valid: true</code>는 형식이 맞다는 뜻입니다. 업무에 써도 된다는 승인은 아닙니다.</li>
 </ul>
 <details class="more">
@@ -214,11 +214,11 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 </ol>
 
 <h2 id="잘못되면">잘못되면</h2>
-<p><strong>민준이 <code>revision</code>에 브랜치 이름을 적으면</strong> 검증에서 실패합니다. 플랫폼은 "등록한 그 코드"가 실행된다는 것을 보장해야 하는데, <code>main</code>은 내일이면 다른 커밋을 가리킵니다. 커밋 SHA 40자와 산출물 digest를 적습니다.</p>
-<p><strong>민준이 편하게 하려고 Manifest에 ERP의 API 키를 적으면</strong> 검증에서 실패합니다. Manifest 스키마는 정의되지 않은 필드를 받지 않고, 자격증명을 적을 자리가 없습니다. 접근 자격증명은 호출할 때마다 Credential Broker가 발급합니다(<a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>).</p>
+<p><strong>민준이 <code>revision</code>에 브랜치 이름을 적으면</strong> 검증에서 실패합니다. 플랫폼은 "등록한 그 코드"가 실행된다는 것을 보장해야 하는데, <code>main</code>은 내일이면 다른 커밋을 가리킬 수 있습니다. 그 자리에는 커밋 SHA 40자와 산출물 digest를 적습니다.</p>
+<p><strong>민준이 편하게 하려고 Manifest에 ERP의 API 키를 적으면</strong> 검증에서 실패합니다. Manifest 스키마는 정의되지 않은 필드를 받지 않아서 자격증명을 적을 자리가 아예 없습니다. 접근 자격증명은 호출할 때마다 Credential Broker가 발급합니다(<a href="docs--onboarding--16-agent-identity.html">Agent Identity</a>).</p>
 <details class="more">
 <summary>더 보기: 도구 목록을 비울 때, 그리고 나머지 다섯 가지</summary>
-<p><strong>유일한 도구를 지워 <code>capabilities.tools</code>가 비면</strong> <code>tool</code> 유형은 도구가 하나 이상 있어야 하므로 검증에서 실패합니다(<code>empty-tools</code>). 이것은 <strong>등록 전</strong> 실패입니다. Manifest는 유효한데 코드가 적지 않은 도구를 부르는 <strong>실행 중</strong> 403과는 다른 실패입니다(<a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>).</p>
+<p><strong>유일한 도구를 지워 <code>capabilities.tools</code>가 비면</strong> <code>tool</code> 유형은 도구가 하나 이상 있어야 하므로 검증에서 실패합니다(<code>empty-tools</code>). 이것은 <strong>등록 전</strong>에 나는 실패입니다. Manifest는 유효한데 거기 적지 않은 도구를 코드가 불러서 <strong>실행 중</strong>에 받는 403과는 다릅니다(<a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>).</p>
 <p><code>examples/negative/</code>에는 검증 실패를 확인하는 Manifest 8종이 있습니다.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -311,7 +311,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 <li>Manifest는 플랫폼이 Agent를 통제하고 호출하는 데 필요한 정보만 선언합니다. 인증 수단이 아니며 자격증명을 담지 않습니다(MUST NOT). 장면 ②</li>
 <li>소스는 불변 revision과 artifact digest로 참조합니다(MUST). 등록된 버전은 바뀌지 않습니다.</li>
 <li>등록은 "존재를 알렸다"는 뜻이고 프로덕션 승인이 아닙니다(<a href="docs--onboarding--06-lifecycle.html">수명주기와 프로덕션 승인</a>).</li>
-<li>Factory의 도구는 AI Platform Applications의 DevTools로 제공됩니다(<a href="docs--onboarding--20-applications.html">AI Platform Applications</a>).</li>
+<li>Factory의 도구는 AI Platform Applications의 DevTools에 들어 있습니다(<a href="docs--onboarding--20-applications.html">AI Platform Applications</a>).</li>
 </ul>
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-factory">Agent Factory</a> <a href="docs--onboarding--09-glossary.html#term-manifest">Manifest</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-immutable">불변 버전</a> <a href="docs--onboarding--09-glossary.html#term-delegated">위임 모드</a> <a href="docs--onboarding--09-glossary.html#term-classification">데이터 분류</a> <a href="docs--onboarding--09-glossary.html#term-conformance">적합성 검증</a> <a href="docs--onboarding--09-glossary.html#term-rag">RAG</a></p>
@@ -326,7 +326,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 </details>
 <details>
 <summary>Q2. Manifest에 API 키를 적으면 어떻게 되나요?</summary>
-<p>검증에 실패합니다. 스키마가 정의되지 않은 필드를 받지 않습니다. 자격증명은 Credential Broker가 호출 시점에 발급합니다.</p>
+<p>스키마가 정의되지 않은 필드를 받지 않으므로 검증에 실패합니다. 자격증명은 호출할 때 Credential Broker가 발급합니다.</p>
 </details>
 <details>
 <summary>Q3. agentctl validate가 valid: true를 돌려줬습니다. 이제 업무에 써도 되나요?</summary>

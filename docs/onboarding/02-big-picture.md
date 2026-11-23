@@ -2,7 +2,7 @@
 
 > 개발자 가이드 문서입니다. 규범은 [Core Systems](../core-systems.md)와 [아키텍처](../architecture.md) 기술 표준 문서가 기준입니다.
 
-플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에, 요청 하나가 그 열 개를 지나가는 모습을 먼저 봅니다. 이 가이드 전체가 같은 이야기 하나를 따라갑니다.
+플랫폼은 10개의 Core System으로 이루어져 있습니다. 이름 열 개를 외우기 전에 요청 하나가 그 열 개를 지나가는 모습부터 봅니다. 이 가이드는 처음부터 끝까지 같은 이야기 하나를 따라갑니다.
 
 <p class="part">설명</p>
 
@@ -15,7 +15,7 @@
 | 지훈 | 재무팀장 | 메일 발송과 프로덕션 승격을 승인합니다. 승인자가 누구인지는 회사가 정하며 여기서는 예시 역할입니다 |
 | 하준 | 인턴 | 권한이 모자란 사용자입니다. 실패 사례에만 나옵니다 |
 
-Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약합니다. `invoice-mailer`는 그 요약을 거래처 담당자에게 메일로 보냅니다. 읽기만 하는 일과 바깥을 바꾸는 일을 다른 Agent로 나눴습니다.
+Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약하고, `invoice-mailer`는 그 요약을 거래처 담당자에게 메일로 보냅니다. 읽기만 하는 일과 바깥을 바꾸는 일을 서로 다른 Agent에 맡겼습니다.
 
 ## 청구서 Agent의 하루
 
@@ -38,7 +38,7 @@ Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약
 이야기를 꿰는 고장은 하나입니다. 번호로만 시험한 Agent가 거래처 이름으로 묻는 질문에서 틀렸고(⑧), 시험지를 고쳐 그 사실을 숫자로 확인했고(⑨), 원인을 고쳐 새 버전으로 올렸습니다(⑩).
 
 <div class="point" markdown="1">
-**{{icon:bulb}} 값의 표지** 이 가이드의 코드와 표에는 표지가 붙어 있습니다. **실행 결과**는 저장소의 코드를 실제로 돌려 얻은 값이고, **예시**는 이야기를 위한 값입니다. 실행 결과에는 어디서 본 값인지도 적습니다. 앱이 받은 응답과 운영자가 안쪽에서 본 값은 다를 수 있기 때문입니다.
+**{{icon:bulb}} 값의 표지** 이 가이드의 코드와 표에는 표지가 붙어 있습니다. **실행 결과**는 저장소의 코드를 실제로 돌려 얻은 값이고, **예시**는 이야기를 위한 값입니다. 앱이 받은 응답과 운영자가 안쪽에서 본 값은 다를 수 있어서, 실행 결과에는 어디서 본 값인지도 적습니다.
 </div>
 
 ## 10개 Core System
@@ -66,20 +66,20 @@ Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약
 ## Core System별 책임
 
 <div class="cards">
-<div class="card">{{icon:laptop}}<b>AI Platform Applications</b><p>개발자·운영자가 사용하는 응용 계층입니다. DevTools는 CLI·SDK·템플릿·mock, Space는 Agent 카탈로그·추적·평가·승인 조회를 위한 공유 작업 공간입니다. Space 사용은 강제하지 않습니다.</p><span class="sub">Agent Platform APIs만 호출</span></div>
-<div class="card">{{icon:gateway}}<b>Agent Platform APIs</b><p>플랫폼 기능을 노출하는 단일 API 계층이자 진입 경계입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 처리합니다.</p><span class="sub">계약: agent-gateway.openapi.json 외</span></div>
-<div class="card">{{icon:manifest}}<b>Agent Factory</b><p>Agent 생성, Manifest 선언, 로컬 검증, CI 게이트, Registry 등록으로 이어지는 개발 흐름을 담당합니다.</p><span class="sub">agentctl validate · Manifest 스키마</span></div>
-<div class="card">{{icon:runtime}}<b>Agent Runtime</b><p>framework adapter로 Agent를 실행합니다. 하위 구성요소로 Durable 실행·상태와 Memory를 포함하며, 실행 제어 Guardrail의 집행 지점입니다.</p><span class="sub">Runtime 계약 · execution.schema</span></div>
-<div class="card">{{icon:tools}}<b>Agent Tools</b><p>Tool Registry, 도구 descriptor, REST/OpenAPI/MCP adapter, 도구 정책과 감사를 소유합니다. 도구 호출의 집행은 Agent Gateway 도구 경로가 수행합니다.</p><span class="sub">tool-descriptor.schema</span></div>
-<div class="card">{{icon:identity}}<b>Agent Identity</b><p>사용자 Identity, Agent(workload) Identity, 위임, 자격증명 중개를 담당합니다. Credential Broker를 포함합니다.</p><span class="sub">credential-broker.openapi</span></div>
+<div class="card">{{icon:laptop}}<b>AI Platform Applications</b><p>개발자와 운영자가 쓰는 응용 계층입니다. DevTools는 CLI·SDK·템플릿·mock이고, Space는 Agent 카탈로그·추적·평가·승인을 함께 보는 공유 작업 공간입니다. Space를 꼭 써야 하는 것은 아닙니다.</p><span class="sub">Agent Platform APIs만 호출</span></div>
+<div class="card">{{icon:gateway}}<b>Agent Platform APIs</b><p>플랫폼 기능을 밖에 내놓는 하나뿐인 API 계층이자 진입 경계입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 처리합니다.</p><span class="sub">계약: agent-gateway.openapi.json 외</span></div>
+<div class="card">{{icon:manifest}}<b>Agent Factory</b><p>Agent를 만들고, Manifest를 선언하고, 로컬과 CI에서 검증해 Registry에 등록하기까지의 개발 흐름을 맡습니다.</p><span class="sub">agentctl validate · Manifest 스키마</span></div>
+<div class="card">{{icon:runtime}}<b>Agent Runtime</b><p>framework adapter로 Agent를 실행합니다. Durable 실행·상태와 Memory가 이 안에 있고, 실행 제어 Guardrail을 여기서 집행합니다.</p><span class="sub">Runtime 계약 · execution.schema</span></div>
+<div class="card">{{icon:tools}}<b>Agent Tools</b><p>Tool Registry, 도구 descriptor, REST/OpenAPI/MCP adapter, 도구 정책과 감사를 소유합니다. 실제 도구 호출은 Agent Gateway의 도구 경로가 집행합니다.</p><span class="sub">tool-descriptor.schema</span></div>
+<div class="card">{{icon:identity}}<b>Agent Identity</b><p>사용자 Identity, Agent(workload) Identity, 위임, 자격증명 중개를 맡습니다. Credential Broker가 여기에 속합니다.</p><span class="sub">credential-broker.openapi</span></div>
 <div class="card">{{icon:eye}}<b>Agent Observability</b><p>실행 추적·지표·로그를 수집합니다. span은 OpenTelemetry GenAI semantic conventions를 따릅니다.</p><span class="sub">W3C Trace Context · OTel GenAI</span></div>
-<div class="card">{{icon:test}}<b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 측정하고 승격 판단 근거를 제공합니다.</p><span class="sub">evaluation.schema</span></div>
-<div class="card">{{icon:gateway}}<b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류 기반 라우팅, 도구 경로는 승인된 endpoint와 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
-<div class="card">{{icon:rocket}}<b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트·도구 구성·모델 선택·미세조정을 개선합니다. 결과는 새 불변 버전으로 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
+<div class="card">{{icon:test}}<b>Agent Evaluation</b><p>배포 전 평가, 실행 추적 분석, 운영 모니터링으로 품질과 안전성을 재고, 승격을 판단할 근거를 냅니다.</p><span class="sub">evaluation.schema</span></div>
+<div class="card">{{icon:gateway}}<b>Agent Gateway</b><p>외부 모델·도구로 나가는 반출(egress) 관문입니다. 모델 경로는 데이터 분류를 보고 보낼 모델을 고르고, 도구 경로는 승인된 endpoint를 단기 자격증명으로 호출합니다.</p><span class="sub">model-gateway · tool-gateway.openapi</span></div>
+<div class="card">{{icon:rocket}}<b>Agent Tuning</b><p>평가 결과와 실행 추적을 근거로 프롬프트, 도구 구성, 모델 선택, 미세조정을 고칩니다. 고친 결과는 새 불변 버전이 되어 다시 평가받습니다.</p><span class="sub">승인 요건은 생략하지 않음</span></div>
 </div>
 
 <div class="point" markdown="1">
-**{{icon:bulb}} 계약 파일 대응** 계약 파일명은 호환성을 위해 유지합니다. `agent-gateway.openapi.json`은 Agent Platform APIs의 Agent 호출 API이고, `model-gateway.openapi.json`과 `tool-gateway.openapi.json`은 Agent Gateway의 모델 경로와 도구 경로입니다. 코드와 감사 기록의 component 이름(`agent-gateway`, `model-gateway`)도 그대로 사용합니다.
+**{{icon:bulb}} 계약 파일 대응** 계약 파일명은 호환성 때문에 그대로 둡니다. `agent-gateway.openapi.json`은 Agent Platform APIs의 Agent 호출 API이고, `model-gateway.openapi.json`과 `tool-gateway.openapi.json`은 Agent Gateway의 모델 경로와 도구 경로입니다. 코드와 감사 기록의 component 이름(`agent-gateway`, `model-gateway`)도 그대로 씁니다.
 </div>
 
 ## 진입 경계와 반출 경계
@@ -90,7 +90,7 @@ Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약
 <div class="lane" data-say="Agent가 사내·외부 도구를 부르는 길입니다. Agent Gateway의 도구 경로가 승인된 도구인지 확인하고, 자격증명이 Agent에 노출되지 않게 대신 연결합니다."><div>{{icon:runtime}} Agent Runtime</div><i>&#8594;</i><div class="gate">{{icon:tools}}<span>Agent Gateway · 도구 경로<small>반출: 미승인 호출, 자격증명 유출, 비신뢰 결과 차단</small></span></div><i>&#8594;</i><div>{{icon:server}} 사내 · 외부 도구</div></div>
 </div>
 
-진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 호출 통제와 모델 공급사 추상화는 서로 다른 책임이기 때문입니다. 논리적 분리이므로 물리적으로 통합 배포할 수 있으나, Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).
+호출 통제와 모델 공급사 추상화는 서로 다른 책임이므로 진입 경계와 모델 경로는 논리적으로 분리해야 합니다(MUST). 논리적 분리이니 물리적으로는 한데 배포해도 되지만, 그때도 Identity와 데이터 반출의 신뢰 경계는 유지해야 합니다(MUST).
 
 <details class="more" markdown="1"><summary>더 보기: 어디에 놓이나 (공통 제어 평면과 분산 실행 평면)</summary>
 
@@ -102,10 +102,10 @@ Agent는 둘입니다. `invoice-summary`는 ERP에서 청구서를 읽어 요약
 
 ![C4 Container 도식](../../diagrams/c4-container.svg)
 
-Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구분입니다. 공통 제어 평면의 **Registry**는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장하는 구성요소이며, 이후 장에서 계속 사용됩니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가·정책·기록을 담당하며, Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 배치됩니다.
+Core System은 기능으로 나눈 것이고, 두 평면은 어디에 배치하느냐로 나눈 것입니다. 공통 제어 평면의 **Registry**는 Agent·도구·모델·실행 환경의 불변 revision, artifact digest, Manifest, 평가 결과를 저장합니다. 뒤의 장에서도 계속 나오는 구성요소입니다. 공통 제어 평면은 Agent를 직접 실행하지 않고 실행 허가, 정책, 기록을 맡습니다. Agent Runtime과 Agent Gateway의 실행 인스턴스는 분산 실행 평면에 놓입니다.
 
 <div class="point" markdown="1">
-**{{icon:warn}} 등록과 승인의 구분** 실행 환경의 **등록(registered)**은 **프로덕션 승인(production-approved)**과 다릅니다. 업무 트래픽을 처리하려면 별도의 승인 요건을 충족해야 합니다.
+**{{icon:warn}} 등록과 승인의 구분** 실행 환경의 **등록(registered)**은 **프로덕션 승인(production-approved)**과 다릅니다. 업무 트래픽을 받으려면 승인 요건을 따로 충족해야 합니다.
 </div>
 </details>
 
@@ -134,15 +134,15 @@ Core System은 기능 관점의 구분이고, 두 평면은 배치 관점의 구
 <div class="check" markdown="1">
 **{{icon:question}} 이해 점검**
 
-<details markdown="1"><summary>Q1. 업무 앱이 Agent를 호출할 때 처음 만나는 Core System은 무엇입니까?</summary>
-Agent Platform APIs입니다. 인증, Agent 해석, 테넌트 인가, 멱등성 처리가 이 계층에서 수행됩니다.
+<details markdown="1"><summary>Q1. 업무 앱이 Agent를 호출할 때 처음 만나는 Core System은 무엇인가요?</summary>
+Agent Platform APIs입니다. 인증, Agent 해석, 테넌트 인가, 멱등성을 이 계층에서 처리합니다.
 </details>
 
-<details markdown="1"><summary>Q2. Agent가 외부 모델이나 도구를 호출할 때 거치는 Core System은 무엇입니까?</summary>
-Agent Gateway입니다. 모델은 모델 경로, 도구는 도구 경로를 거치며, 두 경로 모두 Guardrail 집행 지점입니다.
+<details markdown="1"><summary>Q2. Agent가 외부 모델이나 도구를 호출할 때 거치는 Core System은 무엇인가요?</summary>
+Agent Gateway입니다. 모델은 모델 경로를, 도구는 도구 경로를 거치고 두 경로 모두 Guardrail 집행 지점입니다.
 </details>
 
-<details markdown="1"><summary>Q3. Tool Registry와 도구 정책은 어느 Core System이 소유합니까?</summary>
+<details markdown="1"><summary>Q3. Tool Registry와 도구 정책은 어느 Core System이 소유하나요?</summary>
 Agent Tools입니다. Agent Gateway의 도구 경로는 Agent Tools의 정의에 따라 호출을 집행합니다.
 </details>
 </div>
@@ -229,9 +229,9 @@ Agent가 하나라면 민준이 여섯 가지를 직접 고칠 수도 있습니�
 <div class="summary" markdown="1">
 **요약**
 
-- 플랫폼은 Applications, Platform APIs, Factory, Runtime, Tools, Identity, Observability, Evaluation, Gateway, Tuning의 10개 Core System으로 구성됩니다.
+- 플랫폼은 Applications, Platform APIs, Factory, Runtime, Tools, Identity, Observability, Evaluation, Gateway, Tuning의 10개 Core System으로 이루어집니다.
 - 진입은 Agent Platform APIs, 외부 모델·도구 접근은 Agent Gateway로 일원화합니다.
-- Core System은 기능 관점, 공통 제어 평면·분산 실행 평면은 배치 관점의 구분입니다.
+- Core System은 기능으로, 공통 제어 평면과 분산 실행 평면은 배치로 나눈 것입니다.
 </div>
 
 <div class="refs" markdown="1">
