@@ -228,6 +228,7 @@
 <li>개선 흐름은 프로덕션 승인 요건을 줄이지 않습니다(MUST NOT).</li>
 <li>미세조정 데이터는 데이터 분류와 반출 정책을 따르고, 외부 튜닝 서비스에도 모델 경로 정책을 적용합니다(MUST).</li>
 </ul>
+<p>같은 원인의 실패가 반복되면 고치는 곳은 두 군데입니다. 실행 전 통제(feedforward)인 지시문과 도구 설명을 고쳐 같은 잘못을 덜 하게 만들고, 실행 후 통제(feedback)인 평가 데이터셋에 그 유형의 행을 더해 다시 나타나면 게이트에서 잡히게 합니다. 개선 흐름은 이 두 가지를 함께 고치는 루프입니다(<a href="docs--onboarding--04-trust.html#통제를-두-축으로-보기">통제를 두 축으로 보기</a>).</p>
 <div class="terms">
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-tuning">Agent Tuning</a> <a href="docs--onboarding--09-glossary.html#term-regression">회귀</a> <a href="docs--onboarding--09-glossary.html#term-immutable">불변 버전</a> <a href="docs--onboarding--09-glossary.html#term-dataset">평가 데이터셋</a> <a href="docs--onboarding--09-glossary.html#term-gate">게이트</a></p>
 </div>

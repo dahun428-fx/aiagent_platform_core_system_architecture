@@ -150,6 +150,8 @@ python -m unittest tests.test_contracts
 - 위험도 high Agent는 프로덕션 승인 전에 red teaming을 포함합니다(MUST).
 - 게이트를 통과한 버전은 승격 후보일 뿐이고 프로덕션 승인은 사람이 따로 합니다([수명주기와 프로덕션 승인](06-lifecycle.md)).
 
+평가 데이터셋과 채점기는 Agent가 실행한 뒤 잘못을 찾아내는 통제(feedback)입니다([통제를 두 축으로 보기](04-trust.md#통제를-두-축으로-보기)). 운영에서 틀린 요청을 데이터셋의 행으로 더하는 일은 이 통제가 잡아낼 수 있는 범위를 넓히는 일입니다.
+
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [평가 데이터셋](09-glossary.md#term-dataset) [게이트](09-glossary.md#term-gate) [평가 3단계](09-glossary.md#term-evaluation) [Red teaming](09-glossary.md#term-red-teaming) [근거 자료](09-glossary.md#term-evidence)
 </div>

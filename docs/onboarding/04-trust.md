@@ -172,6 +172,19 @@ LLM이 그 지시를 따르더라도 도구 호출은 Agent Gateway 도구 경�
 | {{icon:clock}} 재시도·재개 | 승인 재사용, 중복 쓰기 | digest·만료 검증, 멱등성 키, unknown outcome 처리 |
 | {{icon:eye}} 실행 추적·감사 | 로그를 통한 정보 유출 | 허용된 메타데이터만 기록, 토큰·개인정보 제거 |
 
+### 통제를 두 축으로 보기
+
+플랫폼이 Agent 주위에 두는 통제, 즉 harness의 통제는 두 축으로 나눠 볼 수 있습니다. 첫째 축은 언제 작동하는지입니다. 실행 전에 Agent가 맞게 움직이도록 정해 두는 통제(feedforward)와, 실행한 뒤 결과를 보고 잘못을 찾아내는 통제(feedback)로 나뉩니다. 둘째 축은 어떻게 판단하는지입니다. 규칙과 코드로 같은 입력에 늘 같은 답을 내는 결정적 검사(computational)와, 모델이나 사람이 의미를 읽고 판단하는 추론형 검사(inferential)로 나뉩니다. 이 분류는 [harness engineering](10-references.md#ref-harness)에서 가져왔으며, 새 규칙을 더하지 않고 이 가이드에 이미 있는 통제를 정리한 것입니다.
+
+| | 결정적 검사 (computational) | 추론형 검사 (inferential) |
+|---|---|---|
+| **실행 전** | Manifest 검증과 적합성 검사([Agent와 Manifest](05-agents-and-manifest.md)), `requiredScopes` 진입 검사([Agent Identity](16-agent-identity.md)), 데이터 분류 기반 라우팅([Agent Gateway](17-agent-gateway.md)) | 지시문과 도구 설명([Agent Tuning](19-agent-tuning.md)) |
+| **실행 후** | 도구 호출의 권한 교집합 재검증, 규칙 기반 Guardrail 검사, 코드 채점기([Agent Evaluation](18-agent-evaluation.md)), 실행 추적과 지표([Agent Observability](12-observability-evaluation.md)) | 모델 기반 Guardrail 검사, 모델 채점기, 사람 채점과 쓰기 승인 |
+
+- 공통 검사 서비스는 연결한 검사 제품에 따라 결정적 검사일 수도, 추론형 검사일 수도 있습니다. 어느 쪽이든 판정만 돌려주고 차단은 집행 지점이 정합니다.
+- 실행 전 통제만 있으면 지켜졌는지 확인할 수 없고, 실행 후 통제만 있으면 같은 잘못이 되풀이됩니다. 그래서 두 줄을 함께 둡니다.
+- 결정적 검사는 빠르고 결과가 매번 같아서 요청마다 돌릴 수 있습니다. 추론형 검사는 느리고 비용이 들며 결과가 흔들릴 수 있어, 의미를 읽어야 하는 곳에 둡니다.
+
 
 <div class="terms" markdown="1">
 <span class="label">주요 용어</span> [Guardrail](09-glossary.md#term-guardrail) [프롬프트 인젝션](09-glossary.md#term-injection) [신뢰 경계](09-glossary.md#term-boundary) [fail closed](09-glossary.md#term-fail-closed) [권한 교집합](09-glossary.md#term-scope) [HITL](09-glossary.md#term-hitl) [시크릿 / 자격증명](09-glossary.md#term-secret)

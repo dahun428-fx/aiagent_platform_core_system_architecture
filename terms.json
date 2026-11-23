@@ -51,6 +51,15 @@
      "aliases": [], "discouraged": ["닿", "발견 정보", "Agent를 발견", "소비"]},
     {"id": "label", "canonical": "표시", "glossary": null,
      "definition": "값이 실행 결과인지 예시인지 알려 주는 표시(label).",
-     "aliases": [], "discouraged": ["표지"]}
+     "aliases": [], "discouraged": ["표지"]},
+    {"id": "harness", "canonical": "harness", "glossary": "harness",
+     "definition": "Agent에서 모델을 뺀 나머지 전부. 지시문, 실행 루프, 권한·Guardrail 검사, 실행 기록이 들어갑니다. 이 플랫폼에서는 실행 루프와 지시문만 Agent 함수에 쓰고 나머지는 플랫폼이 맡습니다.",
+     "aliases": ["하네스"], "discouraged": ["하네스"]},
+    {"id": "control-timing", "canonical": "실행 전(feedforward) · 실행 후(feedback)", "glossary": null,
+     "definition": "harness의 통제를 작동 시점으로 나눈 축. 실행 전에 정해 두는 통제와, 실행한 뒤 결과를 보고 잘못을 찾아내는 통제입니다.",
+     "aliases": ["guide", "sensor"], "discouraged": ["사전 유도", "사후 감지"]},
+    {"id": "control-kind", "canonical": "결정적 검사(computational) · 추론형 검사(inferential)", "glossary": null,
+     "definition": "harness의 통제를 판단 방식으로 나눈 축. 규칙과 코드로 같은 입력에 늘 같은 답을 내는 검사와, 모델이나 사람이 의미를 읽고 판단하는 검사입니다.",
+     "aliases": [], "discouraged": ["계산형"]}
   ]
 }

@@ -25,6 +25,8 @@
 <li data-say="이어 묻는 질문이 오면 대화 Memory에서 직전에 본 청구서 번호를 찾습니다.">{{icon:knowledge}}<b>4. "아까 그 청구서"를 기억에서 찾는다</b><span>Memory</span></li>
 </ol>
 
+Agent는 모델과 harness(하네스)로 나눠 볼 수 있습니다. harness는 Agent에서 모델을 뺀 나머지 전부를 말합니다. 지시문, 모델과 도구를 호출하는 실행 루프, 권한과 Guardrail 검사, 실행 기록이 모두 harness에 들어갑니다. 이 플랫폼에서는 이 가운데 실행 루프와 지시문만 개발자가 Agent 함수 안에 쓰고, 나머지는 플랫폼이 맡습니다. Agent Runtime이 함수를 실행하고, `ctx`가 호출 경로를 하나로 좁히고, Agent Gateway와 Guardrails가 호출마다 검사하고, Agent Observability가 기록합니다. harness가 하는 통제를 두 축으로 나눈 표는 [신뢰 경계와 Guardrails](04-trust.md#통제를-두-축으로-보기)에 있습니다.
+
 ## 실물 보기
 
 민준이 쓴 코드 전부입니다. 로컬 예제 `examples/agents/invoice-summary/agent.py`입니다.
