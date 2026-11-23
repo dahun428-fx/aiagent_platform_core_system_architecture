@@ -87,7 +87,7 @@
 <td><a href="docs--memory.html">Memory</a></td>
 </tr>
 <tr>
-<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg> A2A Agent Card 발행·소비</td>
+<td><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="9" width="10" height="9" rx="2"/><rect x="12" y="6" width="10" height="9" rx="2"/><circle cx="5.5" cy="13.5" r=".8"/><circle cx="8.5" cy="13.5" r=".8"/></svg> A2A Agent Card 발행·사용</td>
 <td><a href="docs--agent-card.html">Agent Card</a></td>
 </tr>
 <tr>
@@ -156,7 +156,7 @@
 </details>
 <details>
 <summary>도구 접근용 API 키는 어디에 두나요?</summary>
-<p>Agent 코드, Manifest, 환경 변수 어디에도 두지 않습니다. Credential Broker가 호출할 때마다 단기 자격증명을 발급하고, 그 자격증명은 Agent Gateway 도구 경로의 adapter 안에서만 쓰입니다.</p>
+<p>Agent 코드, Manifest, 환경 변수 어디에도 두지 않습니다. Credential Broker가 호출할 때마다 짧게 만료되는 lease를 발급하고, lease는 Agent Gateway 도구 경로의 adapter 안에서만 실제 자격증명으로 교환됩니다.</p>
 </details>
 <details>
 <summary>등록한 Mac mini를 바로 서비스에 써도 되나요?</summary>

@@ -38,7 +38,7 @@ def report():
 
 def facts(text):
     """Numbers and normative words: what a wording change must not move."""
-    return Counter(re.findall(r"\d[\d,.]*", text)) + Counter(NORMS.findall(text))
+    return Counter(re.findall(r"(?<![A-Za-z])\d[\d,.]*(?![A-Za-z])", text)) + Counter(NORMS.findall(text))
 
 
 def compare(ref):

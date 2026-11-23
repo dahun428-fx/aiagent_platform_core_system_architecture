@@ -1,4 +1,4 @@
-"""1단계: 정문 뒤에 선 Agent. 요청을 직접 받지 않고 내용만 건네받습니다."""
+"""1단계: Agent Platform APIs 뒤에 있는 Agent. 요청을 직접 받지 않고 내용만 전달받습니다."""
 import re
 
 import world

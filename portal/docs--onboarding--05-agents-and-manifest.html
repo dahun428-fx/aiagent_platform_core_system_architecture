@@ -13,17 +13,17 @@
 <nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 2번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="on"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class=""><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class=""><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class=""><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class=""><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class=""><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class=""><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class=""><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class=""><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
 
 <div class="sofar">
-<p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, 정문이 서연을 확인한 뒤 <code>invoice-summary</code>라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.</p>
+<p><strong>지금까지</strong> 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, Agent Platform APIs가 서연을 확인한 뒤 <code>invoice-summary</code>라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.</p>
 </div>
 <h2 id="장면">장면</h2>
-<p>3주 전 민준은 템플릿 폴더를 복사해 <code>invoice-summary</code>를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서 한 장, 곧 Manifest를 채웠습니다. 첫 검증은 소스의 <code>revision</code>에 <code>main</code>이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.</p>
+<p>3주 전 민준은 템플릿 폴더를 복사해 <code>invoice-summary</code>를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 선언하는 파일인 Manifest를 채웠습니다. 플랫폼은 Manifest에 선언한 만큼만 허용합니다. 첫 검증은 소스의 <code>revision</code>에 <code>main</code>이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.</p>
 <div class="point">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.6.6.8 1.4.8 2.4h6c0-1 .2-1.8.8-2.4A6 6 0 0 0 12 3z"/></svg> Agent Factory가 없다면</strong> 플랫폼은 Agent가 어떤 도구를 쓰고 어떤 데이터를 다루는지 알 길이 없어, 통제하려면 팀마다 다른 코드를 일일이 읽어야 합니다.</p>
 </div>
 <h2 id="무슨-일이-일어나나">무슨 일이 일어나나</h2>
 <ol class="flow">
 <li data-say="빈 화면에서 시작하지 않습니다. 동작하는 템플릿 폴더를 복사해 고칩니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>1. 틀을 복사한다</b><span>templates/agents/</span></li>
-<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>2. 신청서(Manifest)를 채운다</b><span>agent-manifest.json</span></li>
+<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><b>2. Manifest를 채운다</b><span>agent-manifest.json</span></li>
 <li data-say="내 PC에서 agentctl validate가 형식을 검사합니다. 틀린 곳은 올리기 전에 잡힙니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><b>3. 검사가 틀린 곳을 잡는다</b><span>agentctl validate · conformance</span></li>
 <li data-say="통과한 버전이 Registry에 오릅니다. 한번 오른 버전은 내용이 바뀌지 않습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 9v12M8 21h8"/><circle cx="12" cy="7" r="2"/><path d="M7.8 2.8a6 6 0 0 0 0 8.4M16.2 2.8a6 6 0 0 1 0 8.4"/></svg><b>4. 통과한 버전이 목록에 오른다</b><span>Registry · 불변 버전</span></li>
 </ol>
@@ -84,7 +84,7 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 </ul>
 <details class="more">
 <summary>더 보기: Manifest 전문과 블록별 의미</summary>
-<p>로컬 예제 <code>examples/agents/invoice-summary/agent-manifest.json</code> 전문입니다. 로컬에서는 도구 이름이 대역 <code>tool-search</code>입니다.</p>
+<p>로컬 예제 <code>examples/agents/invoice-summary/agent-manifest.json</code> 전문입니다. 로컬에서는 도구 이름이 mock 도구 <code>tool-search</code>입니다.</p>
 <p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
 <pre><code class="language-json">{
   &quot;apiVersion&quot;: &quot;agent.platform/v1alpha1&quot;,
@@ -317,7 +317,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 <p><span class="label">주요 용어</span> <a href="docs--onboarding--09-glossary.html#term-factory">Agent Factory</a> <a href="docs--onboarding--09-glossary.html#term-manifest">Manifest</a> <a href="docs--onboarding--09-glossary.html#term-registry">Registry</a> <a href="docs--onboarding--09-glossary.html#term-immutable">불변 버전</a> <a href="docs--onboarding--09-glossary.html#term-delegated">위임 모드</a> <a href="docs--onboarding--09-glossary.html#term-classification">데이터 분류</a> <a href="docs--onboarding--09-glossary.html#term-conformance">적합성 검증</a> <a href="docs--onboarding--09-glossary.html#term-rag">RAG</a></p>
 </div>
 <h2 id="한-문장으로">한 문장으로</h2>
-<p>Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서를 먼저 검사합니다.</p>
+<p>Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 선언한 Manifest를 먼저 검사합니다.</p>
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해 점검</strong></p>
 <details>

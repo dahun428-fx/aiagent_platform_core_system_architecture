@@ -123,7 +123,7 @@ Local synthetic Agent Gateway: http://127.0.0.1:8765 ; Ctrl-C to stop
 |---|---|---|
 | {{icon:gateway}} `invocationId` | Agent Platform APIs | 호출 식별자 |
 | {{icon:manifest}} `agentVersion` | Registry | 실행된 불변 버전 |
-| {{icon:trace}} `traceparent` | 전 구간 | 종단 간 실행 추적 컨텍스트 |
+| {{icon:trace}} `traceparent` | 전 구간 | E2E 실행 추적 컨텍스트 |
 | {{icon:model}} `routeDecisionId` | Agent Gateway 모델 경로 | 모델 라우팅 결정. 이 예시에서는 자체 호스팅 경로 |
 | {{icon:eye}} `usage` | Agent Gateway 모델 경로 | 토큰 사용량 |
 

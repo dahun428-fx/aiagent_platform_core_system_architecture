@@ -52,7 +52,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>호출까지 A2A 프로토콜로 할지는 선택입니다. 발견 정보는 Agent Card 형식으로 발행합니다.</p>
+<p>호출까지 A2A 프로토콜로 할지는 선택입니다. Agent를 찾는 데 필요한 정보는 Agent Card 형식으로 발행합니다.</p>
 <h2 id="agent-card-필드-a2a-100">Agent Card 필드 (A2A 1.0.0)</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -199,7 +199,7 @@
 </tbody>
 </table></div>
 <h2 id="제공-범위">제공 범위</h2>
-<p>v0.1은 Agent Card를 발행하고 소비하는 규칙까지 정의합니다. 카드를 만들고 서명하는 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계에서 제공합니다.</p>
+<p>v0.1은 Agent Card를 발행하고 사용하는 규칙까지 정의합니다. 카드를 만들고 서명하는 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계에서 제공합니다.</p>
 <div class="check">
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.7"/><path d="M12 17h.01"/></svg> 이해도 점검</strong></p>
 <details>
@@ -218,7 +218,7 @@
 <div class="summary">
 <p><strong>요약</strong></p>
 <ul>
-<li>Agent를 발견할 때는 A2A 1.0.0 Agent Card를, 호출할 때는 공통 Agent 통신 계약을 따릅니다.</li>
+<li>Agent를 찾을 때는 A2A 1.0.0 Agent Card를, 호출할 때는 공통 Agent 통신 계약을 따릅니다.</li>
 <li>사내 Agent의 카드는 인증된 Registry 조회로만 볼 수 있고, 상세 정보는 확장 카드에만 둡니다.</li>
 <li>Registry가 카드를 JCS로 정규화한 뒤 JWS로 서명하고, 받는 쪽은 서명을 검증한 카드만 믿습니다.</li>
 </ul>

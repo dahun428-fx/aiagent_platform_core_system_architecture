@@ -60,7 +60,7 @@
 | {{icon:shield}} 위협 모델과 보안 통제 | [보안 경계](../security.md) |
 | {{icon:shield}} Guardrail 검사 서비스와 집행 지점 | [Guardrails](../guardrails.md) |
 | {{icon:knowledge}} 단기·장기 Memory | [Memory](../memory.md) |
-| {{icon:agents}} A2A Agent Card 발행·소비 | [Agent Card](../agent-card.md) |
+| {{icon:agents}} A2A Agent Card 발행·사용 | [Agent Card](../agent-card.md) |
 | {{icon:clock}} 실행 상태, 승인, Durable 실행 | [Durable / HITL](../execution.md) |
 | {{icon:eye}} 역할, 수명주기, 승인 요건 | [운영·평가](../operating-model.md) |
 | {{icon:eye}} 실행 추적 규격과 지표 | [Observability](../observability.md) |
@@ -93,7 +93,7 @@
 </details>
 
 <details markdown="1"><summary>도구 접근용 API 키는 어디에 두나요?</summary>
-Agent 코드, Manifest, 환경 변수 어디에도 두지 않습니다. Credential Broker가 호출할 때마다 단기 자격증명을 발급하고, 그 자격증명은 Agent Gateway 도구 경로의 adapter 안에서만 쓰입니다.
+Agent 코드, Manifest, 환경 변수 어디에도 두지 않습니다. Credential Broker가 호출할 때마다 짧게 만료되는 lease를 발급하고, lease는 Agent Gateway 도구 경로의 adapter 안에서만 실제 자격증명으로 교환됩니다.
 </details>
 
 <details markdown="1"><summary>등록한 Mac mini를 바로 서비스에 써도 되나요?</summary>

@@ -25,7 +25,7 @@
 <li data-say="응답에 들어 있던 호출 번호나 추적 번호로 그 요청의 기록을 찾습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></svg><b>1. 번호로 기록을 찾는다</b><span>invocationId · traceparent</span></li>
 <li data-say="요청이 거친 구간(span)마다 걸린 시간과 성공 여부가 남아 있습니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>2. 구간별 시간과 성공 여부를 본다</b><span>span 트리</span></li>
 <li data-say="오류가 없으면 네트워크, 정책, 도구 고장은 아니라는 뜻입니다. 남은 가설만 추립니다." class="hi"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><b>3. 오류가 없으면 범위를 좁힌다</b><span>남은 가설 둘</span></li>
-<li data-say="기록에는 질문과 조회어의 원문이 없습니다. 개발 환경에서 같은 질문을 다시 실행해 원인을 확정합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>4. 다시 실행해 원인을 확인한다</b><span>개발 환경</span></li>
+<li data-say="기록에는 질문과 검색어의 원문이 없습니다. 개발 환경에서 같은 질문을 다시 실행해 원인을 확정합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg><b>4. 다시 실행해 원인을 확인한다</b><span>개발 환경</span></li>
 </ol>
 
 <h2 id="실물-보기">실물 보기</h2>
@@ -33,14 +33,14 @@
 <p class="kind example" data-kind="example">예시</p>
 
 <pre><code class="language-text">invoke_agent invoice-summary          1,840ms  성공
-├─ chat (조회어 만들기)                  320ms  성공
+├─ chat (검색어 만들기)                  320ms  성공
 ├─ execute_tool tool-erp-read           210ms  성공   결과 1건
 └─ chat (요약 만들기)                  1,160ms  성공
 </code></pre>
 <ul>
 <li>네 줄의 추적 번호가 같아서 한 요청의 일로 묶여 보입니다.</li>
 <li><code>결과 1건</code>: 도구가 청구서 하나를 돌려줬다는 것까지만 남습니다. 어느 청구서였는지는 없습니다.</li>
-<li>고장은 첫째 <code>chat</code>에서 났습니다. 모델이 조회어를 "한빛상사"로만 만들어 월이 빠졌습니다. 그런데 모델은 오류 없이 답을 냈기 때문에 기록에는 성공으로만 보입니다.</li>
+<li>고장은 첫째 <code>chat</code>에서 났습니다. 모델이 검색어(query)를 "한빛상사"로만 만들어 월이 빠졌습니다. 그런데 모델은 오류 없이 답을 냈기 때문에 기록에는 성공으로만 보입니다.</li>
 </ul>
 <p>내 PC의 로컬 mock이 요청 A 한 번에 실제로 남기는 감사 기록 다섯 줄입니다.</p>
 <p class="kind run" data-kind="run" data-boundary="local">실행 결과 · 내 PC의 로컬 mock</p>
@@ -52,11 +52,11 @@
 {&quot;component&quot;: &quot;model-gateway&quot;, &quot;traceparent&quot;: &quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;, &quot;decisionId&quot;: &quot;policy-demo&quot;, &quot;provider&quot;: &quot;self-hosted&quot;}
 </code></pre>
 <ul>
-<li>다섯 줄의 <code>traceparent</code>가 같습니다. 정문, Runtime, Credential Broker, 도구 경로, 모델 경로가 한 요청의 일로 묶입니다.</li>
+<li>다섯 줄의 <code>traceparent</code>가 같습니다. Agent Platform APIs, Runtime, Credential Broker, 도구 경로, 모델 경로가 한 요청의 일로 묶입니다.</li>
 <li>어느 테넌트의 어느 호출이(<code>tenantId</code>, <code>invocationId</code>), 어떤 정책 결정으로(<code>decisionId</code>), 어떤 도구와 모델 쪽을(<code>toolId</code>, <code>provider</code>) 썼는지가 남습니다.</li>
-<li>질문 문장, 조회어, 도구가 돌려준 내용은 어느 줄에도 없습니다. 기밀이 로그로 새는 길을 만들지 않으려고 일부러 남기지 않습니다.</li>
+<li>질문 문장, 검색어, 도구가 돌려준 내용은 어느 줄에도 없습니다. 기밀이 로그로 새는 경로를 만들지 않으려고 일부러 남기지 않습니다.</li>
 </ul>
-<p>그래서 추적 기록으로는 원인을 확정할 수 없고 <strong>범위를 좁힐</strong> 수 있습니다. 요청 B에서 기록이 지워 준 가설은 "네트워크, 정책, 도구 오류"이고, 남는 가설은 둘입니다. 조회가 엉뚱한 청구서를 가져왔거나, 조회는 맞았는데 요약이 금액을 틀렸거나입니다. 민준은 개발 환경에서 같은 질문을 다시 실행해 기대한 <code>INV-2048</code> 대신 <code>INV-2101</code>이 조회된 것을 보고, 조회어에 월이 빠진 것을 확인합니다.</p>
+<p>그래서 추적 기록으로는 원인을 확정할 수 없고 <strong>범위를 좁힐</strong> 수 있습니다. 요청 B에서 기록으로 배제한 가설은 "네트워크, 정책, 도구 오류"이고, 남는 가설은 둘입니다. 조회가 엉뚱한 청구서를 가져왔거나, 조회는 맞았는데 요약이 금액을 틀렸거나입니다. 민준은 개발 환경에서 같은 질문을 다시 실행해 기대한 <code>INV-2048</code> 대신 <code>INV-2101</code>이 조회된 것을 보고, 검색어에 월이 빠진 것을 확인합니다.</p>
 <h2 id="직접-해-보기">직접 해 보기</h2>
 <div class="sim" data-sim="trace"></div>
 
@@ -85,7 +85,7 @@
 
 <pre><code class="language-json">{&quot;invocationId&quot;:&quot;inv-9946215c02f347bd8ba5de71ca079905&quot;, &quot;traceparent&quot;:&quot;00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01&quot;}
 </code></pre>
-<p><code>make scenarios</code>는 시나리오마다 추적 번호와, 같은 번호로 서비스별로 남은 감사 기록을 출력합니다. 로컬 mock 모델은 조회어를 만들지 않으므로 내 PC에서는 "월 누락"이 재현되지 않습니다. 민준이 다시 실행해 확인하는 대목은 이야기 속에서만 일어납니다.</p>
+<p><code>make scenarios</code>는 시나리오마다 추적 번호와, 같은 번호로 서비스별로 남은 감사 기록을 출력합니다. 로컬 mock 모델은 검색어를 만들지 않으므로 내 PC에서는 "월 누락"이 재현되지 않습니다. 민준이 다시 실행해 확인하는 대목은 이야기 속에서만 일어납니다.</p>
 <div class="scope">
 <p><strong>제공 범위 (v0.1)</strong></p>
 <div class="table-wrap"><table>
@@ -205,5 +205,5 @@
 <li>span 규격: <a href="docs--onboarding--10-references.html#ref-otel">OpenTelemetry GenAI</a></li>
 </ul>
 </div>
-<p>다음 장면은 ⑨입니다. 만점을 받고 승인된 버전이 왜 운영에서 틀렸는지를 시험지에서 찾습니다.</p>
+<p>다음 장면은 ⑨입니다. 만점을 받고 승인된 버전이 왜 운영에서 틀렸는지를 평가 데이터셋에서 찾습니다.</p>
 <nav class="pager"><a href="docs--onboarding--04-trust.html"><small>이전</small><b>신뢰 경계와 Guardrails</b></a><a class="next" href="docs--onboarding--18-agent-evaluation.html"><small>다음</small><b>Agent Evaluation</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/12-observability-evaluation.md">docs/onboarding/12-observability-evaluation.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#무슨-일이-일어나나">무슨 일이 일어나나</a><a href="#실물-보기">실물 보기</a><a href="#직접-해-보기">직접 해 보기</a><a href="#잘못되면">잘못되면</a><a href="#내가-할-일">내가 할 일</a><a href="#규칙으로-정리">규칙으로 정리</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

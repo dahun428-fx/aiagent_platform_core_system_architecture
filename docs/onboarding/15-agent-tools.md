@@ -5,7 +5,7 @@
 {{journey:4}}
 
 <div class="sofar" markdown="1">
-**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. 정문이 서연을 확인했고, 민준이 등록한 `invoice-summary`의 코드가 실행되기 시작했습니다.
+**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈습니다. Agent Platform APIs가 서연을 확인했고, 민준이 등록한 `invoice-summary`의 코드가 실행되기 시작했습니다.
 </div>
 
 <p class="part">설명</p>
@@ -21,11 +21,11 @@
 ## 무슨 일이 일어나나
 
 <ol class="flow">
-<li data-say="Agent 코드는 도구의 이름과 버전, 그리고 조회어만 넘깁니다. 주소나 비밀번호를 넣을 자리가 없습니다.">{{icon:runtime}}<b>1. 이름과 조회어를 넘긴다</b><span>Agent 코드<br><strong>주소·자격증명 없음</strong></span></li>
+<li data-say="Agent 코드는 도구의 이름과 버전, 그리고 검색어(query)만 넘깁니다. 주소나 비밀번호를 넣을 자리가 없습니다.">{{icon:runtime}}<b>1. 이름과 검색어를 넘긴다</b><span>Agent 코드<br><strong>주소·자격증명 없음</strong></span></li>
 <li data-say="플랫폼이 이 도구가 Manifest에 적혀 있는지, 호출자에게 읽기 권한이 있는지를 봅니다.">{{icon:gateway}}<b>2. 써도 되는 도구인지 본다</b><span>Agent Gateway 도구 경로</span></li>
-<li data-say="플랫폼이 이 호출 한 번에만 쓸 수 있는 출입증(lease)을 받아 ERP를 대신 부릅니다. 출입증은 Agent에게 가지 않습니다." class="hi">{{icon:key}}<b>3. 플랫폼이 ERP를 대신 부른다</b><span>Credential Broker의 lease</span></li>
+<li data-say="플랫폼이 Credential Broker에서 lease를 받아 ERP를 대신 호출합니다. lease는 이 호출에만 묶인, 실제 자격증명을 가리키는 불투명 참조이고 Agent에게 전달되지 않습니다." class="hi">{{icon:key}}<b>3. 플랫폼이 ERP를 대신 호출한다</b><span>Credential Broker의 lease</span></li>
 <li data-say="ERP가 돌려준 내용만 Agent에게 돌아옵니다. 응답 어디에도 토큰이나 주소는 없습니다.">{{icon:tools}}<b>4. 결과만 돌아온다</b><span>청구서 내용</span></li>
-<li data-say="메일 보내기처럼 바깥을 바꾸는 일은 사람이 승인할 때까지 실행이 멈춥니다.">{{icon:approve}}<b>5. 보내는 일은 승인까지 멈춘다</b><span>쓰기 도구 + 사람 승인</span></li>
+<li data-say="메일 보내기처럼 외부 시스템에 영향을 주는 작업은 사람이 승인할 때까지 실행이 멈춥니다.">{{icon:approve}}<b>5. 보내는 일은 승인까지 멈춘다</b><span>쓰기 도구 + 사람 승인</span></li>
 </ol>
 
 ## 실물 보기
@@ -127,7 +127,7 @@ Agent가 주소를 직접 넘기는 길은 계약에 없습니다. 그런 길이
 4. 로컬에서 실행해 보고 적합성 검사의 C8(선언하지 않은 도구, 자격증명 노출)을 확인합니다.
 5. 쓰기 도구가 필요하면 읽기 Agent에 덧붙이지 말고 별도 Agent로 나눕니다.
 
-**내 PC에서 해 보기** 저장소 루트에서 실행합니다. 로컬에서는 이야기 속 이름 대신 아래 대역을 씁니다.
+**내 PC에서 해 보기** 저장소 루트에서 실행합니다. 로컬에서는 이야기 속 이름 대신 아래 mock 도구를 씁니다.
 
 | 이야기 | 내 PC |
 |---|---|
@@ -153,7 +153,7 @@ curl -s -X POST http://127.0.0.1:8765/v1/agents/invoice-summary/invocations \
 {"invocationId":"inv-9946215c02f347bd8ba5de71ca079905","agentVersion":"0.1.0","status":"succeeded","output":{"type":"message","content":"mock:Summarize the invoice: tool:청구서 INV-2048 요약해 줘"},"traceparent":"00-d0f1038087eb42d6b187b4c8ba5caa2a-ae9b01ef32f942d6-01","routeDecisionId":"route-self-hosted","usage":{"inputTokens":7,"outputTokens":7}}
 ```
 
-`output.content` 안의 `tool:청구서 INV-2048 요약해 줘`가 도구가 돌려준 값입니다. 로컬 도구는 받은 조회어 앞에 `tool:`을, 로컬 모델은 받은 글 앞에 `mock:`을 붙여 돌려주는 대역이라 실제 요약은 나오지 않습니다. 호출 번호와 추적 번호는 실행할 때마다 달라집니다. 쓰기와 승인은 `make scenarios`의 S5, S6a 줄에서 확인합니다(PostgreSQL이 필요합니다. [로컬 환경 구성](07-hands-on.md)).
+`output.content` 안의 `tool:청구서 INV-2048 요약해 줘`가 도구가 돌려준 값입니다. 로컬 mock 도구는 받은 검색어 앞에 `tool:`을, mock 모델은 받은 글 앞에 `mock:`을 붙여 돌려주므로 실제 요약은 나오지 않습니다. 호출 번호와 추적 번호는 실행할 때마다 달라집니다. 쓰기와 승인은 `make scenarios`의 S5, S6a 줄에서 확인합니다(PostgreSQL이 필요합니다. [로컬 환경 구성](07-hands-on.md)).
 
 <div class="scope" markdown="1">
 **제공 범위 (v0.1)**
@@ -182,13 +182,13 @@ curl -s -X POST http://127.0.0.1:8765/v1/agents/invoice-summary/invocations \
 
 ## 코드로 보기: 도구 경로를 붙인다
 
-[정문을 붙인](03-one-request.md) 코드에 두 번째 조각을 붙입니다. 이번에 지울 것은 Agent 코드에 남아 있는 비밀번호 한 줄입니다.
+[Agent Platform APIs를 붙인](03-one-request.md) 코드에 두 번째 조각을 붙입니다. 이번에 지울 것은 Agent 코드에 남아 있는 비밀번호 한 줄입니다.
 
 {{blocks:2}}
 
 ### 도구 경로가 없을 때
 
-정문까지 붙인 Agent의 코드입니다.
+Agent Platform APIs까지 붙인 Agent의 코드입니다.
 
 ```python
 ERP_PASSWORD = "erp-s3cret"
@@ -220,7 +220,7 @@ def handle(content):
     결과만 Agent에게 돌려준다
 ```
 
-코드로 옮기면 정문 코드에 다음이 더해집니다.
+코드로 옮기면 `mini_platform.py`에 다음이 더해집니다.
 
 <!-- kind: example -->
 ```python
@@ -249,7 +249,7 @@ class Context:
 - **③** 실제 호출보다 먼저 Manifest를 봅니다. 이름이 없으면 ④까지 가지 못하므로 ERP에는 아무 요청도 나가지 않습니다.
 - **④** Manifest에 있는 이름만 여기까지 옵니다. 돌려주는 것은 ERP의 응답뿐이고 `VAULT`의 값은 `Context` 밖으로 나가지 않습니다.
 
-정문은 한 줄만 바뀝니다. Agent를 부를 때 `Context`를 함께 건넵니다.
+`enter()`는 한 줄만 바뀝니다. Agent를 호출할 때 `Context` 객체를 함께 넘깁니다.
 
 ```diff
 -    result = {"status": 200, "output": agent.handle(request["content"])}
@@ -281,7 +281,7 @@ class Context:
      return world.model(f"{invoice['vendor']} {invoice['amount']:,}원, 납기 {invoice['due']}")
 ```
 
-비밀번호 줄이 사라졌고, ERP를 직접 부르던 줄이 `ctx.call_tool`로 바뀌었습니다. `ctx`는 플랫폼이 건네주는 손잡이입니다. Agent가 바깥으로 나가는 길이 이 손잡이 하나로 좁아지면, 플랫폼은 그 한 곳에서만 검사하고 기록하면 됩니다. 마지막 줄의 `world.model`은 아직 직접 호출로 남아 있습니다.
+비밀번호 줄이 사라졌고, ERP를 직접 부르던 줄이 `ctx.call_tool`로 바뀌었습니다. `ctx`는 플랫폼이 넘겨주는 `Context` 객체입니다. Agent가 외부를 호출하는 경로가 이 객체 하나로 좁아지면, 플랫폼은 그 한 곳에서만 검사하고 기록하면 됩니다. 마지막 줄의 `world.model`은 아직 직접 호출로 남아 있습니다.
 
 ### 검사 결과
 
@@ -322,7 +322,7 @@ def undeclared_tool_denied():
 | 이 코드 | 실제 플랫폼 |
 |---|---|
 | `TOOLS` | Tool Registry. 도구의 이름, 버전, 읽기·쓰기 구분을 등록합니다 |
-| `VAULT` | Credential Broker. 비밀번호 대신 이 호출 한 번에만 쓰는 출입증(lease)을 발급합니다 |
+| `VAULT` | Credential Broker. 비밀번호 대신 이 호출에만 묶인 lease(실제 자격증명을 가리키는 불투명 참조)를 발급합니다 |
 | `Context.call_tool` | Agent Gateway의 도구 경로. 호출마다 정책을 확인하고 기록합니다 |
 | `manifest.json` | Agent Manifest의 `capabilities.tools` |
 | `PermissionError` | 403 |
@@ -341,7 +341,7 @@ Agent는 도구의 이름만 알고, 주소와 비밀번호는 플랫폼이 쥐�
 </details>
 
 <details markdown="1"><summary>Q2. 서연의 앱이 403 Policy denied를 받았습니다. 승인이 없어서인지 승인이 만료돼서인지 앱이 구별할 수 있나요?</summary>
-앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 번호를 운영자에게 전달하면 도구 경로의 기록에서 이유를 확인해 줍니다.
+앱이 받는 응답이 같아서 구별할 수 없습니다. 호출 번호를 전달하면 운영자가 도구 경로의 기록에서 이유를 확인합니다.
 </details>
 
 <details markdown="1"><summary>Q3. 메일 도구를 부른 뒤 응답이 끊겼습니다. Agent가 한 번 더 보내면 안 되는 이유는 무엇인가요?</summary>

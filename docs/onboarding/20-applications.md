@@ -10,7 +10,7 @@
 
 ## 장면
 
-같은 하루를 사람 기준으로 다시 봅니다. 민준은 터미널에서 Manifest를 검증하고 Agent를 띄웠고, 서연은 재무팀 업무 앱에서 질문을 보냈고, 지훈은 승인함에서 메일 발송과 `1.3.0`의 승격을 승인했습니다. 세 사람이 쓴 도구는 달랐지만 Agent를 부르고 상태를 보고 승인하는 일은 모두 같은 정문의 같은 API로 갑니다. 다만 이 가운데 지금 실제로 해 볼 수 있는 것과 아직 약속만 있는 것이 섞여 있습니다.
+같은 하루를 사람 기준으로 다시 봅니다. 민준은 터미널에서 Manifest를 검증하고 Agent를 띄웠고, 서연은 재무팀 업무 앱에서 질문을 보냈고, 지훈은 승인함에서 메일 발송과 `1.3.0`의 승격을 승인했습니다. 세 사람이 쓴 도구는 달랐지만 Agent를 부르고 상태를 보고 승인하는 일은 모두 Agent Platform APIs의 같은 API로 갑니다. 다만 이 가운데 지금 실제로 해 볼 수 있는 것과 아직 약속만 있는 것이 섞여 있습니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} AI Platform Applications가 없다면** 팀마다 검증 스크립트와 승인 화면을 따로 만들고, 화면마다 다른 뒷문이 생깁니다.
@@ -57,8 +57,8 @@ Idempotency-Key: <요청 번호>
  "execution": {"mode": "sync", "timeoutMs": 30000}}
 ```
 
-- 달라지는 것은 `Authorization`의 토큰, 곧 누가 불렀는지뿐입니다. 그래서 하준은 어느 화면에서 누르든 403을 받습니다.
-- 화면이 Agent를 직접 실행하거나 ERP에 직접 닿는 길은 없습니다.
+- 달라지는 것은 `Authorization`의 토큰, 즉 누가 호출했는지뿐입니다. 그래서 하준은 어느 화면에서 누르든 403을 받습니다.
+- 화면이 Agent를 직접 실행하거나 ERP에 직접 접근하는 경로는 없습니다.
 
 ## 직접 해 보기
 
@@ -136,7 +136,7 @@ curl -i -H "Authorization: Bearer mock-user" http://127.0.0.1:8765/v1/invocation
 
 ## 한 문장으로
 
-터미널에서 하든 화면에서 하든 결국 같은 정문을 두드립니다.
+터미널에서 하든 화면에서 하든 결국 같은 Agent Platform APIs를 호출합니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해 점검**
@@ -146,7 +146,7 @@ curl -i -H "Authorization: Bearer mock-user" http://127.0.0.1:8765/v1/invocation
 </details>
 
 <details markdown="1"><summary>Q2. 서연이 Space 카탈로그에서 Agent를 실행하는 것과 민준이 curl로 부르는 것은 플랫폼 입장에서 무엇이 다른가요?</summary>
-토큰이 가리키는 사람만 다릅니다. 같은 API에 같은 모양의 요청이 도착하고 같은 관문을 지납니다.
+토큰이 가리키는 사람만 다릅니다. 같은 API에 같은 모양의 요청이 도착하고 같은 검사 단계를 거칩니다.
 </details>
 
 <details markdown="1"><summary>Q3. 민준의 팀이 추적 화면을 직접 만들려고 합니다. 먼저 무엇을 확인해야 하나요?</summary>

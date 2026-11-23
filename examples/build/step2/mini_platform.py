@@ -4,9 +4,9 @@ from pathlib import Path
 
 import world
 
-USERS = {"token-seoyeon": "서연", "token-hajun": "하준"}  # 회사 IdP의 대역
+USERS = {"token-seoyeon": "서연", "token-hajun": "하준"}  # 회사 IdP를 흉내 낸 가짜 사용자 목록
 done = {}  # 요청 번호 -> (내용, 결과)
-VAULT = {"erp": world.ERP_PASSWORD}  # 비밀번호 보관소의 대역
+VAULT = {"erp": world.ERP_PASSWORD}  # Credential Broker를 흉내 낸 가짜 보관소
 TOOLS = {"tool-erp-read": lambda args: world.erp_read(VAULT["erp"], args["invoice_id"])}
 MANIFEST = json.loads((Path(__file__).parent / "manifest.json").read_text(encoding="utf-8"))
 

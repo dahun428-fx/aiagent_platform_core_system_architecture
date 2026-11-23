@@ -13,7 +13,7 @@
 <nav class="journey" aria-label="청구서 Agent의 하루, 11개 장면 중 10번째"><ol><li class="done"><a href="docs--onboarding--03-one-request.html"><i>①</i>부른다</a></li><li class="done"><a href="docs--onboarding--05-agents-and-manifest.html"><i>②</i>어떻게 여기 있나</a></li><li class="done"><a href="docs--onboarding--11-runtime-memory.html"><i>③</i>실행된다</a></li><li class="done"><a href="docs--onboarding--15-agent-tools.html"><i>④</i>ERP를 읽고 메일을 보내려 한다</a></li><li class="done"><a href="docs--onboarding--16-agent-identity.html"><i>⑤</i>누구 권한으로</a></li><li class="done"><a href="docs--onboarding--17-agent-gateway.html"><i>⑥</i>모델에 묻는다</a></li><li class="done"><a href="docs--onboarding--04-trust.html"><i>⑦</i>함정을 만난다</a></li><li class="done"><a href="docs--onboarding--12-observability-evaluation.html"><i>⑧</i>답이 틀렸다</a></li><li class="done"><a href="docs--onboarding--18-agent-evaluation.html"><i>⑨</i>점수를 매긴다</a></li><li class="on"><a href="docs--onboarding--19-agent-tuning.html"><i>⑩</i>고쳐서 다시 올린다</a></li><li class=""><a href="docs--onboarding--20-applications.html"><i>⑪</i>어디서 이 일을 하나</a></li></ol></nav>
 
 <div class="sofar">
-<p><strong>지금까지</strong> 민준이 지시문 두 문장을 고친 <code>invoice-summary 1.3.0</code>이 시험지 <code>3.0.0</code>에서 37/40 = 0.925를 받아 승격 후보가 됐습니다. 운영 중인 것은 아직 <code>1.2.0</code>입니다.</p>
+<p><strong>지금까지</strong> 민준이 지시문 두 문장을 고친 <code>invoice-summary 1.3.0</code>이 평가 데이터셋 <code>3.0.0</code>에서 37/40 = 0.925를 받아 승격 후보가 됐습니다. 운영 중인 것은 아직 <code>1.2.0</code>입니다.</p>
 </div>
 <h2 id="장면">장면</h2>
 <p><code>1.3.0</code>은 등록됐고 평가도 통과했습니다. 그래도 서연의 요청은 여전히 <code>1.2.0</code>이 받습니다. 업무 요청을 받으려면 프로덕션 승인까지 받아야 합니다. 민준은 승인에 필요한 근거 여섯 가지를 한 장에 모으면서, 반복 채점에서 흔들린 두 행도 숨기지 않고 적습니다. 지훈은 그 한 장을 보고, 위험도가 medium이고 읽기 전용인 점을 들어 승인합니다. 그 순간부터 <code>1.3.0</code>이 업무 요청을 받습니다.</p>
@@ -46,7 +46,7 @@
 </tr>
 <tr>
 <td>평가 결과</td>
-<td>시험지 <code>3.0.0</code>에서 두 지표 모두 37/40 = 0.925(번호 질문 28/28, 거래처명 질문 9/12). 따로 남겨 둔 시험지 18/20 = 0.90</td>
+<td>평가 데이터셋 <code>3.0.0</code>에서 두 지표 모두 37/40 = 0.925(번호 질문 28/28, 거래처명 질문 9/12). 따로 남겨 둔 평가 데이터셋 18/20 = 0.90</td>
 </tr>
 <tr>
 <td>롤백 검증</td>
@@ -63,7 +63,7 @@
 </tbody>
 </table></div>
 <ul>
-<li>평가 결과 칸에는 전체 점수 하나가 아니라 질문 유형별 점수와 따로 남겨 둔 시험지의 점수를 함께 적습니다.</li>
+<li>평가 결과 칸에는 전체 점수 하나가 아니라 질문 유형별 점수와 따로 남겨 둔 평가 데이터셋의 점수를 함께 적습니다.</li>
 <li>"알려진 한계"는 요건이 아니지만 승인자가 무엇을 받아들이는지 알고 승인하게 합니다.</li>
 </ul>
 <h2 id="잘못되면">잘못되면</h2>
@@ -125,8 +125,8 @@
 <p><strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg> 주의</strong> 실행 환경을 등록했다고 프로덕션 승인을 받은 것은 아닙니다. 이 설계는 개발자 PC나 Mac mini가 어느새 프로덕션 환경으로 쓰이는 일을 막으려고 둘을 구분합니다. SLO는 실행 환경과 업무 위험도에 따라 단계적으로 정의합니다.</p>
 </div>
 <p>멈췄다 이어 하는 실행(Durable, HITL)은 <a href="docs--onboarding--11-runtime-memory.html">Agent Runtime과 Memory</a>와 <a href="docs--onboarding--15-agent-tools.html">Agent Tools</a>에서, 평가 결과로 Agent를 고치는 흐름은 <a href="docs--onboarding--19-agent-tuning.html">Agent Tuning</a>에서 다룹니다.</p>
-<h2 id="초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</h2>
-<p>플랫폼은 모든 모듈을 한꺼번에 구현하지 않습니다. 아래의 종단 간 실행 경로를 먼저 완성하고, 그 위에 도구, RAG, Durable 실행, Multi-Agent, 분산 실행 환경을 차례로 더합니다.</p>
+<h2 id="초기-구현-범위-e2e-실행-경로">초기 구현 범위: E2E 실행 경로</h2>
+<p>플랫폼은 모든 모듈을 한꺼번에 구현하지 않습니다. 요청이 들어와 응답이 나갈 때까지의 E2E(end-to-end) 실행 경로를 먼저 완성하고, 그 위에 도구, RAG, Durable 실행, Multi-Agent, 분산 실행 환경을 차례로 더합니다.</p>
 <ol class="flow">
 <li data-say="내 PC의 Agent와 Manifest를 검증합니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>로컬 Agent</b><span>Manifest 검증</span></li>
 <li data-say="Agent Platform APIs로 호출해 인증·신원·정책 검사를 거칩니다."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/><path d="M2 21h20"/></svg><b>Agent Platform APIs</b><span>인증 · Identity · 정책</span></li>
@@ -164,7 +164,7 @@
 <ul>
 <li>개발과 실험은 팀이 알아서 하고, 프로덕션 승격은 검증 근거 6가지로 판단합니다.</li>
 <li>배포 프로파일은 local, shared-experiment, production 세 가지이고, 등록과 승인은 서로 다른 단계입니다.</li>
-<li>종단 간 실행 경로를 먼저 완성하고 기능은 차례로 더합니다.</li>
+<li>E2E 실행 경로를 먼저 완성하고 기능은 차례로 더합니다.</li>
 </ul>
 </div>
 <div class="refs">
@@ -173,4 +173,4 @@
 <li>평가 기반 개선과 운영 모니터링: <a href="docs--onboarding--10-references.html#ref-industry">클라우드 Agent 플랫폼</a></li>
 </ul>
 </div>
-<nav class="pager"><a href="docs--onboarding--19-agent-tuning.html"><small>이전</small><b>Agent Tuning</b></a><a class="next" href="docs--onboarding--20-applications.html"><small>다음</small><b>AI Platform Applications</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#실물-보기">실물 보기</a><a href="#잘못되면">잘못되면</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#초기-구현-범위-종단-간-실행-경로">초기 구현 범위: 종단 간 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>
+<nav class="pager"><a href="docs--onboarding--19-agent-tuning.html"><small>이전</small><b>Agent Tuning</b></a><a class="next" href="docs--onboarding--20-applications.html"><small>다음</small><b>AI Platform Applications</b></a></nav><p class="file-link">원본 파일: <a href="../docs/onboarding/06-lifecycle.md">docs/onboarding/06-lifecycle.md</a></p></article><nav class="toc" aria-label="이 문서의 목차"><h2>이 문서에서</h2><a href="#장면">장면</a><a href="#실물-보기">실물 보기</a><a href="#잘못되면">잘못되면</a><a href="#개발-방식-local-first-cli-first">개발 방식 (Local-First, CLI-First)</a><a href="#수명주기-단계">수명주기 단계</a><a href="#프로덕션-승인-요건-must">프로덕션 승인 요건 (MUST)</a><a href="#배포-프로파일">배포 프로파일</a><a href="#초기-구현-범위-e2e-실행-경로">초기 구현 범위: E2E 실행 경로</a><a href="#ci-품질-게이트">CI 품질 게이트</a><a href="#한-문장으로">한 문장으로</a></nav></main><footer>AI Agent Platform 기술 표준 v0.1 · 회사 환경 / 제품 / 운영 수치 TBD · 로컬 오프라인 열람 지원</footer></div></body></html>

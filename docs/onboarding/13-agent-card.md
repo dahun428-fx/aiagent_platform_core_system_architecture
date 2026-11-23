@@ -36,7 +36,7 @@
 | 발견(discovery) | A2A 1.0.0 Agent Card | Agent의 기능, 접속 인터페이스, 인증 방식을 알림 |
 | 호출 | 공통 Agent 통신 계약(`cross-agent.schema.json`) | 상위 호출 ID, 축소된 권한 범위, 호출 깊이·예산 전달 |
 
-호출까지 A2A 프로토콜로 할지는 선택입니다. 발견 정보는 Agent Card 형식으로 발행합니다.
+호출까지 A2A 프로토콜로 할지는 선택입니다. Agent를 찾는 데 필요한 정보는 Agent Card 형식으로 발행합니다.
 
 ## Agent Card 필드 (A2A 1.0.0)
 
@@ -122,7 +122,7 @@
 
 ## 제공 범위
 
-v0.1은 Agent Card를 발행하고 소비하는 규칙까지 정의합니다. 카드를 만들고 서명하는 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계에서 제공합니다.
+v0.1은 Agent Card를 발행하고 사용하는 규칙까지 정의합니다. 카드를 만들고 서명하는 구현, Registry 조회 API 계약, A2A 프로토콜 adapter는 후속 단계에서 제공합니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해도 점검**
@@ -143,7 +143,7 @@ production-approved 상태의 버전에만 발행합니다.
 <div class="summary" markdown="1">
 **요약**
 
-- Agent를 발견할 때는 A2A 1.0.0 Agent Card를, 호출할 때는 공통 Agent 통신 계약을 따릅니다.
+- Agent를 찾을 때는 A2A 1.0.0 Agent Card를, 호출할 때는 공통 Agent 통신 계약을 따릅니다.
 - 사내 Agent의 카드는 인증된 Registry 조회로만 볼 수 있고, 상세 정보는 확장 카드에만 둡니다.
 - Registry가 카드를 JCS로 정규화한 뒤 JWS로 서명하고, 받는 쪽은 서명을 검증한 카드만 믿습니다.
 </div>

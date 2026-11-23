@@ -5,12 +5,12 @@
 {{journey:2}}
 
 <div class="sofar" markdown="1">
-**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, 정문이 서연을 확인한 뒤 `invoice-summary`라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.
+**지금까지** 서연이 "청구서 INV-2048 요약해 줘"를 보냈고, Agent Platform APIs가 서연을 확인한 뒤 `invoice-summary`라는 Agent를 찾았습니다. 이 Agent는 어떻게 거기 있게 됐을까요. 3주 전으로 돌아갑니다.
 </div>
 
 ## 장면
 
-3주 전 민준은 템플릿 폴더를 복사해 `invoice-summary`를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서 한 장, 곧 Manifest를 채웠습니다. 첫 검증은 소스의 `revision`에 `main`이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.
+3주 전 민준은 템플릿 폴더를 복사해 `invoice-summary`를 만들었습니다. 코드를 플랫폼에 올리지는 않았습니다. 대신 이 Agent가 무엇을 쓰고 무엇을 할 수 있는지 선언하는 파일인 Manifest를 채웠습니다. 플랫폼은 Manifest에 선언한 만큼만 허용합니다. 첫 검증은 소스의 `revision`에 `main`이라고 적은 탓에 실패했습니다. 민준이 그 자리를 커밋 번호로 바꾸자 검증을 통과했고, 그 버전이 목록(Registry)에 올랐습니다.
 
 <div class="point" markdown="1">
 **{{icon:bulb}} Agent Factory가 없다면** 플랫폼은 Agent가 어떤 도구를 쓰고 어떤 데이터를 다루는지 알 길이 없어, 통제하려면 팀마다 다른 코드를 일일이 읽어야 합니다.
@@ -20,7 +20,7 @@
 
 <ol class="flow">
 <li data-say="빈 화면에서 시작하지 않습니다. 동작하는 템플릿 폴더를 복사해 고칩니다.">{{icon:code}}<b>1. 틀을 복사한다</b><span>templates/agents/</span></li>
-<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다.">{{icon:manifest}}<b>2. 신청서(Manifest)를 채운다</b><span>agent-manifest.json</span></li>
+<li data-say="Manifest에 이 Agent의 이름과 버전, 쓰는 도구, 필요한 권한, 다루는 데이터의 등급을 적습니다.">{{icon:manifest}}<b>2. Manifest를 채운다</b><span>agent-manifest.json</span></li>
 <li data-say="내 PC에서 agentctl validate가 형식을 검사합니다. 틀린 곳은 올리기 전에 잡힙니다." class="hi">{{icon:test}}<b>3. 검사가 틀린 곳을 잡는다</b><span>agentctl validate · conformance</span></li>
 <li data-say="통과한 버전이 Registry에 오릅니다. 한번 오른 버전은 내용이 바뀌지 않습니다.">{{icon:control}}<b>4. 통과한 버전이 목록에 오른다</b><span>Registry · 불변 버전</span></li>
 </ol>
@@ -86,7 +86,7 @@ $ python scripts/agentctl.py validate examples/agents/invoice-summary/agent-mani
 
 <details class="more" markdown="1"><summary>더 보기: Manifest 전문과 블록별 의미</summary>
 
-로컬 예제 `examples/agents/invoice-summary/agent-manifest.json` 전문입니다. 로컬에서는 도구 이름이 대역 `tool-search`입니다.
+로컬 예제 `examples/agents/invoice-summary/agent-manifest.json` 전문입니다. 로컬에서는 도구 이름이 mock 도구 `tool-search`입니다.
 
 <!-- kind: run boundary: local -->
 
@@ -214,7 +214,7 @@ python scripts/agentctl.py run --port 8765 --agents-dir examples/agents
 
 ## 한 문장으로
 
-Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 적은 신청서를 먼저 검사합니다.
+Agent를 만들어 올리는 곳이고, 무엇을 쓰고 무엇을 할 수 있는지 선언한 Manifest를 먼저 검사합니다.
 
 <div class="check" markdown="1">
 **{{icon:question}} 이해 점검**
